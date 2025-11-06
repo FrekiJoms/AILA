@@ -1,0 +1,1975 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AILA — Interface</title>
+
+<!-- Markdown + sanitizer -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
+
+<!-- dito yung design sa interface -->
+<style>
+
+/* Dropdown container */
+.dropdown-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: #e6fbff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  box-sizing: border-box;
+}
+
+.dropdown-item:hover {
+  background: linear-gradient(180deg, var(--accent1), var(--accent2));
+  color: #042022;
+  transform: translateX(2px);
+}
+
+/* FAQ buttons inside dropdown */
+.faq-buttons .faq-btn {
+  font-size: 12px !important;
+  padding: 6px 8px !important;
+  margin: 2px !important;
+  white-space: nowrap;
+}
+
+/* Scrollable FAQ section if too many items */
+.faq-buttons {
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.faq-buttons::-webkit-scrollbar {
+  width: 4px;
+}
+
+.faq-buttons::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--accent2), var(--accent1));
+  border-radius: 2px;
+}
+  /* Feedback button styling for header */
+.header-feedback-btn {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid rgba(255,255,255,0.04);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  font-size: 10px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.header-feedback-btn:hover {
+  color: #e8fbff;
+  border-color: rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.06);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,210,255,0.1);
+}
+
+.header-feedback-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0,210,255,0.1);
+}
+  :root{
+    --bg1:#041428; --bg2:#07263a; --bg3:#03304a;
+    --muted:#9fb6c6;
+    --accent1:#00d1ff; /* bright cyan */
+    --accent2:#1dd3c9; /* teal */
+    --bubble:#0b2130;
+    --user:#063c3f;
+    --glass: rgba(255,255,255,0.03);
+    --glass-2: rgba(255,255,255,0.018);
+    --success:#2fe27a;
+    --danger:#ff5c6c;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  }
+
+  /* animated gradient background */
+  html,body{height:100%;margin:0;background:linear-gradient(120deg,var(--bg1),var(--bg2),var(--bg3));background-size:300% 300%;animation:grad 14s ease infinite;color:#e8fbff}
+  @keyframes grad{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+  /* center app */
+  .app{display:flex;align-items:center;justify-content:center;height:100vh;padding:20px;box-sizing:border-box}
+
+  /* chat container */
+.chat {
+  width: 940px; 
+  max-width: 95vw;
+  height: 760px; 
+  max-height: 92vh;
+  background: linear-gradient(180deg, var(--glass-2), rgba(255,255,255,0.006));
+  border-radius: 14px; 
+  box-shadow: 0 20px 60px rgba(2,8,20,0.75);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.03);
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Chat with hidden FAQ buttons - larger chat area */
+.chat.faq-hidden {
+  height: 820px; /* Larger when FAQ is hidden */
+  max-height: 95vh;
+}
+
+.chat.faq-hidden .main {
+  flex: 1 1 auto; /* Allow main to expand */
+}
+
+.chat.faq-hidden .messages {
+  max-height: 600px; /* More space for messages */
+}
+
+/* Main area - dynamic height */
+.main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Messages area - dynamic sizing */
+.messages {
+  flex: 1;
+  padding: 20px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-behavior: smooth;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 480px; /* Default height */
+}
+
+/* Enhanced composer layout */
+.composer {
+  position: sticky;
+  bottom: 0;
+  padding: 12px 16px;
+  background: linear-gradient(180deg, rgba(3,6,10,0.9), rgba(4,8,16,0.98));
+  border-top: 1px solid rgba(255,255,255,0.03);
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  max-width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+/* Fitted textarea */
+#input {
+  flex: 1;
+  min-height: 32px;
+  max-height: 70px;
+  height: 36px; /* Start with minimum height */
+  width: 100%;
+  resize: none;
+  background: rgba(255,255,255,0.02);
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #e6fbff;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.4;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  overflow-y: hidden; /* Hide scrollbar when not needed */
+}
+
+#input:focus {
+  border-color: var(--accent1);
+  box-shadow: 0 0 0 3px rgba(0,210,255,0.1);
+  background: rgba(255,255,255,0.04);
+}
+
+#input::placeholder {
+  color: rgba(159,182,198,0.6);
+}
+
+/* Auto-resize textarea */
+#input.auto-resize {
+  height: auto !important;
+  overflow-y: hidden;
+}
+
+/* Fitted send button */
+#sendBtn {
+  background: linear-gradient(180deg, var(--accent1), var(--accent2));
+  color: #042022;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  min-width: 70px;
+  height: 44px; /* Match textarea minimum height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+#sendBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,210,255,0.3);
+}
+
+#sendBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+#sendBtn:active {
+  transform: translateY(0);
+}
+
+/* FAQ buttons hidden state with smooth transitions */
+.faq-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.faq-buttons.hidden {
+  display: none;
+}
+
+/* All quick buttons hidden state */
+.welcome-actions.hidden {
+  opacity: 0;
+  transform: translateY(-20px);
+  pointer-events: none;
+  max-height: 0;
+  overflow: hidden;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.sugg-buttons.hidden {
+  opacity: 0;
+  transform: translateY(-20px);
+  pointer-events: none;
+  max-height: 0;
+  overflow: hidden;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Welcome actions visible state */
+.welcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 40px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Suggestion buttons visible state */
+.sugg-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 880px) {
+  .chat {
+    width: 94vw;
+    height: 88vh;
+  }
+  
+  .chat.faq-hidden {
+    height: 90vh;
+  }
+  
+  .composer {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  
+  #input {
+    font-size: 16px;
+    padding: 8px 10px;
+  }
+  
+  #sendBtn {
+    padding: 8px 12px;
+    min-width: 60px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 520px) {
+  .chat {
+    height: 85vh;
+  }
+  
+  .chat.faq-hidden {
+    height: 88vh;
+  }
+  
+  .composer {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+  
+  #input {
+    min-height: 40px;
+    padding: 8px 10px;
+  }
+  
+  #sendBtn {
+    padding: 8px 10px;
+    min-width: 55px;
+    height: 40px;
+    font-size: 13px;
+  }
+}
+
+/* Animation for chat resize */
+@keyframes chatResize {
+  0% {
+    height: 760px;
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.01);
+  }
+  100% {
+    height: 820px;
+    transform: scale(1);
+  }
+}
+
+.chat.resizing {
+  animation: chatResize 0.4s ease-out;
+}
+
+/* Smooth transitions for all interactive elements */
+.faq-btn,
+.welcome-btn,
+.sugg-btn,
+.orient-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Pulse animation for resize notification */
+@keyframes resizePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.chat.pulse-resize {
+  animation: resizePulse 0.3s ease-out;
+}
+
+  /* header */
+  .header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.04);backdrop-filter:blur(6px)}
+  .brand{display:flex;align-items:center;gap:14px}
+  .logo-area{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent1),var(--accent2));box-shadow:0 10px 30px rgba(0,210,255,0.06);transition:transform .45s,box-shadow .24s}
+  .logo-area:hover{animation:logoFloat 2.6s ease-in-out infinite}
+  @keyframes logoFloat{0%{transform:translateX(-6px) rotate(-2deg)}50%{transform:translateX(6px) rotate(2deg)}100%{transform:translateX(-6px) rotate(-2deg)}}
+  .logo-glow{ box-shadow:0 26px 68px rgba(0,210,255,0.45), inset 0 1px 0 rgba(255,255,255,0.06); transform:scale(1.06) rotate(2deg); }
+
+  .title{font-weight:700;font-size:15px;color:#e8fbff}
+  .subtitle{font-size:12px;color:var(--muted)}
+
+  /* main */
+  .main{display:flex;flex-direction:column;flex:1;overflow:hidden}
+  .messages{flex:1;padding:20px;overflow:auto;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
+  .msg{max-width:78%;padding:12px 16px;border-radius:14px;line-height:1.45;font-size:14px;box-shadow:0 12px 40px rgba(2,6,23,0.45);opacity:0;transform:translateY(12px);animation:msgEnter .32s ease forwards}
+  @keyframes msgEnter{to{opacity:1;transform:translateY(0)}}
+  .msg.bot{align-self:flex-start;background:linear-gradient(180deg,var(--bubble), rgba(255,255,255,0.02));color:#dff8ff;border-top-left-radius:6px; border:1px solid rgba(0,0,0,0.12)}
+  .msg.user{align-self:flex-end;background:linear-gradient(180deg,var(--user), #064e4e);color:#eafff4;border-top-right-radius:6px;border:1px solid rgba(0,0,0,0.12)}
+
+  /* message content: subtle glow on hover on desktop */
+  .msg:hover{filter:drop-shadow(0 6px 18px rgba(0,0,0,0.2))}
+
+  /* faq inside bubble */
+  .faq-buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;opacity:0;transform:translateY(6px);animation:faqIn .34s ease forwards;animation-delay:.04s}
+  @keyframes faqIn{to{opacity:1;transform:translateY(0)}}
+  .faq-btn{background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);color:#e6fbff;padding:8px 12px;border-radius:10px;font-size:13px;cursor:pointer;transition:transform .14s,box-shadow .14s}
+  .faq-btn:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(0,210,255,0.08)}
+  .faq-btn.sending{animation:faqSend .6s ease}
+  @keyframes faqSend{0%{transform:translateY(0)}50%{transform:translateY(-6px)}100%{transform:translateY(0)}}
+
+  /* suggestions */
+  .sugg-buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .sugg-btn{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(44, 33, 33, 0.01));border:1px solid rgba(255,255,255,0.03);color:#e6fbff;padding:8px 12px;border-radius:10px;font-size:13px;cursor:pointer;transition:transform .12s}
+  .sugg-btn:hover{transform:translateY(-3px);background:linear-gradient(180deg,var(--accent1),var(--accent2));color:#042022}
+
+  /* Style for your orientation button */
+.orient-btn {
+  background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.015));
+  border: 1px solid rgba(255,255,255,0.05);
+  color: #e6fbff;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.orient-btn:hover {
+  transform: translateY(-3px);
+  background: linear-gradient(180deg, var(--accent1), var(--accent2));
+  color: #042022;
+  box-shadow: 0 8px 25px rgba(0,210,255,0.15);
+}
+
+.orient-btn.hidden {
+  opacity: 0 !important;
+  transform: translateY(-10px) scale(0.95) !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+.orient-btn:not(.hidden) {
+  animation: buttonAppear 0.3s ease-out;
+}
+
+/* FAQ Toggle Switch - Green ON, Red OFF */
+.faq-toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 3px;
+  border-radius: 5px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  transition: all 0.2s ease;
+}
+
+.faq-toggle-container.active {
+  background: rgba(47,226,122,0.08);
+  border-color: rgba(47,226,122,0.2);
+}
+
+.faq-toggle-container.inactive {
+  background: rgba(255,92,108,0.08);
+  border-color: rgba(255,92,108,0.2);
+}
+
+.faq-toggle-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.faq-toggle-container.active .faq-toggle-label {
+  color: #2fe27a;
+}
+
+.faq-toggle-container.inactive .faq-toggle-label {
+  color: #ff5c6c;
+}
+
+.faq-toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 22px;
+}
+
+.faq-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.faq-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255,92,108,0.2);
+  border: 1px solid rgba(255,92,108,0.3);
+  transition: 0.3s ease;
+  border-radius: 22px;
+}
+
+.faq-toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background: #ff5c6c;
+  transition: 0.3s ease;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(255,92,108,0.3);
+}
+
+input:checked + .faq-toggle-slider {
+  background: rgba(47,226,122,0.2);
+  border-color: rgba(47,226,122,0.4);
+}
+
+input:checked + .faq-toggle-slider:before {
+  transform: translateX(20px);
+  background: #2fe27a;
+  box-shadow: 0 2px 6px rgba(47,226,122,0.4);
+}
+
+.faq-toggle-slider:hover {
+  background: rgba(255,92,108,0.25);
+  border-color: rgba(255,92,108,0.4);
+}
+
+input:checked + .faq-toggle-slider:hover {
+  background: rgba(47,226,122,0.25);
+  border-color: rgba(47,226,122,0.5);
+}
+
+.faq-buttons.hidden {
+  display: none !important;
+}
+  /* typing indicator */
+  .typing{display:inline-flex;gap:6px;align-items:center;padding:6px 8px;border-radius:10px;background:rgba(0,0,0,0.12);margin-top:6px}
+  .dot{width:7px;height:7px;border-radius:50%;background:#dff7ff;opacity:.4;animation:dotBlink 1s infinite}
+  .dot:nth-child(2){animation-delay:.12s}.dot:nth-child(3){animation-delay:.24s}
+  @keyframes dotBlink{0%{opacity:.15;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}100%{opacity:.15;transform:translateY(0)}}
+
+  /* composer layout (text box dito mo e customize) */
+.composer {
+  position: sticky;
+  bottom: 0;
+  padding: 12px 16px;
+  background: linear-gradient(180deg, rgba(3,6,10,0.9), rgba(4,8,16,0.98));
+  border-top: 1px solid rgba(255,255,255,0.03);
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Improved textarea styling */
+textarea#input {
+  flex: 1;
+  min-height: 48px;
+  max-height: 120px;
+  height: auto;
+  resize: none;
+  background: rgba(255,255,255,0.02);
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #e6fbff;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s ease;
+  line-height: 1.4;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+textarea#input:focus {
+  border-color: var(--accent1);
+  box-shadow: 0 0 0 3px rgba(0,210,255,0.1);
+  background: rgba(255,255,255,0.04);
+}
+
+textarea#input::placeholder {
+  color: rgba(159,182,198,0.6);
+}
+
+textarea#input.expanded {
+  min-height: 60px;
+}
+
+/* Enhanced send button */
+button#sendBtn {
+  background: linear-gradient(180deg, var(--accent1), var(--accent2));
+  color: #042022;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  min-width: 80px;
+  height: fit-content;
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+button#sendBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,210,255,0.3);
+}
+
+button#sendBtn:active {
+  transform: translateY(0);
+}
+
+button#sendBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+  background: rgba(255,255,255,0.1) !important;
+  color: rgba(255,255,255,0.3) !important;
+}
+
+/* Loading/sending state */
+button#sendBtn.sending {
+  background: linear-gradient(180deg, #666, #888) !important;
+  color: #ccc !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 880px) {
+  .composer {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  
+  textarea#input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 10px 12px;
+  }
+  
+  button#sendBtn {
+    padding: 10px 14px;
+    min-width: 70px;
+  }
+}
+
+@media (max-width: 520px) {
+  .composer {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+  
+  textarea#input {
+    min-height: 44px;
+    padding: 8px 10px;
+  }
+  
+  button#sendBtn {
+    padding: 8px 12px;
+    min-width: 60px;
+    font-size: 13px;
+  }
+}
+
+/* Smooth scroll to input when composer becomes active */
+.composer:focus-within {
+  box-shadow: 0 -2px 20px rgba(0,210,255,0.1);
+}
+
+/* Auto-resize animation */
+textarea#input {
+  transition: height 0.2s ease;
+}
+
+  /* welcome screen styles */
+  .welcome-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    padding: 40px 20px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  }
+
+  .welcome-logo {
+    width: 84px;
+    height: 84px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    box-shadow: 0 14px 40px rgba(0,210,255,0.06);
+    margin-bottom: 24px;
+    animation: breathe 2.6s ease-in-out infinite;
+  }
+
+  @keyframes breathe {0%{transform:translateY(0) scale(1); box-shadow:0 14px 40px rgba(0,210,255,0.04)}50%{transform:translateY(-6px) scale(1.03); box-shadow:0 30px 80px rgba(0,210,255,0.14)}100%{transform:translateY(0) scale(1); box-shadow:0 14px 40px rgba(0,210,255,0.04)}}
+
+  .welcome-title {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .welcome-subtitle {
+    font-size: 16px;
+    color: var(--muted);
+    margin-bottom: 40px;
+    max-width: 500px;
+  }
+
+  .welcome-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 60px;
+  }
+
+  .welcome-btn {
+    background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.03);
+    color: #e6fbff;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .welcome-btn:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(180deg, var(--accent1), var(--accent2));
+    color: #042022;
+    box-shadow: 0 10px 30px rgba(0,210,255,0.2);
+  }
+
+  .welcome-input {
+    width: 100%;
+    max-width: 600px;
+    min-height: 60px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 16px;
+    color: #e6fbff;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s ease;
+    resize: none;
+  }
+
+  .welcome-input:focus {
+    border-color: var(--accent1);
+    box-shadow: 0 0 0 4px rgba(0,210,255,0.06);
+  }
+
+  /* scrollbar */
+  .messages::-webkit-scrollbar{width:10px}
+  .messages::-webkit-scrollbar-track{background:transparent}
+  .messages::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--accent2),var(--accent1));border-radius:999px;box-shadow:inset 0 0 0 2px rgba(0,0,0,0.15)}
+  .messages{scrollbar-width:thin;scrollbar-color:linear-gradient(180deg,var(--accent2),var(--accent1)) transparent}
+
+  .msg a{color:var(--accent1);text-decoration:underline}
+
+  /* responsive */
+  @media (max-width:880px){ .chat{width:94vw;height:88vh} .logo-area{width:48px;height:48px} }
+  @media (max-width:520px){ .composer{padding:10px} textarea{min-height:48px} .messages{padding:12px} .msg{max-width:90%} .welcome-logo{width:64px;height:64px} .welcome-title{font-size:24px} }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="chat" role="application" aria-label="AILA chat">
+    <div class="header">
+      <div class="brand">
+        <div id="logo" class="logo-area" title="AILA logo">
+          <!-- SVG circuit-style logo in header -->
+          <svg xmlns="http://www.w3.org/2000/svg" 
+          width="800px" 
+          height="800px" 
+          viewBox="0 0 24 24" 
+          fill="none">
+      <path fill-rule="evenodd" 
+          clip-rule="evenodd" 
+          d="M7.81696 2.97331C8.0365 2.38786 8.59618 2 9.22145 2H14.7784C15.4037 2 15.9634 2.38786 16.1829 2.97332L22.1829 18.9733C22.5507 19.9539 21.8258 21 20.7784 21H17.2214C16.5962 21 16.0365 20.6121 15.817 20.0267L11.9999 9.848L10.068 15H12.0334C12.6587 15 13.2184 15.3879 13.4379 15.9733L14.5629 18.9733C14.9307 19.9539 14.2058 21 13.1585 21H3.22145C2.17414 21 1.44922 19.9539 1.81696 18.9733L7.81696 2.97331ZM9.56795 4L3.94295 19H12.4369L11.6869 17H8.62495C8.29697 17 7.98984 16.8392 7.80302 16.5696C7.61621 16.3 7.57346 15.956 7.68862 15.6489L11.0636 6.64888C11.21 6.25857 11.5831 6 11.9999 6C12.4168 6 12.7899 6.25857 12.9363 6.64888L17.568 19H20.0569L14.4319 4H9.56795Z" 
+          fill="#000000"/>
+      </svg>
+            <!-- Animated elements -->
+            <defs>
+              <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+                <stop offset="0" stop-color="#00d1ff"/>
+                <stop offset="1" stop-color="#1dd3c9"/>
+              </linearGradient>
+            </defs>
+            <rect x="4" y="4" width="56" height="56" rx="10" fill="none" stroke="url(#g1)" stroke-width="2" opacity="0.12"/>
+            <g stroke="url(#g1)" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 32h8" stroke-dasharray="20" stroke-dashoffset="20">
+                <animate attributeName="stroke-dashoffset" from="20" to="0" dur="1.6s" repeatCount="indefinite"/>
+              </path>
+              <path d="M44 32h-8" stroke-dasharray="20" stroke-dashoffset="20">
+                <animate attributeName="stroke-dashoffset" from="20" to="0" dur="1.6s" repeatCount="indefinite" begin="0.15s"/>
+              </path>
+              <circle cx="32" cy="20" r="2.6" fill="url(#g1)">
+                <animate attributeName="r" values="2.6;3.8;2.6" dur="1.6s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="32" cy="44" r="2.6" fill="url(#g1)">
+                <animate attributeName="r" values="2.6;3.8;2.6" dur="1.6s" repeatCount="indefinite" begin="0.35s"/>
+              </circle>
+            </g>
+          </svg>
+        </div>
+
+        <div>
+          <div class="title">AILA</div>
+          <div class="subtitle">Artificial Intelligent Learning Assistant</div>
+          <span class="subtitle">Ver-0.8.5</span>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="faq-toggle-container">
+      <span class="faq-toggle-label"></span>
+      <label class="faq-toggle-switch">
+        <input type="checkbox" id="faqToggle" checked>
+        <span class="faq-toggle-slider"></span>
+      </label>
+    </div>
+
+    <button id="feedbackBtn" class="header-feedback-btn">
+      📝
+    </button>
+  </div>
+</div>
+
+    <div class="main">
+      <div class="messages" id="messages" aria-live="polite" role="log">
+        <!-- Welcome screen will be inserted here -->
+      </div>
+
+      <div class="composer">
+        <textarea id="input" placeholder="Type a message..." aria-label="Message input"></textarea>
+        <button id="sendBtn" class="send">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ========== CONFIG ========== */
+const CHAT_WEBHOOK = 'https://frekijoms.app.n8n.cloud/webhook/aila-chat';
+
+// Dropdown toggle functionality
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.dropdown')) {
+    const allDropdowns = document.querySelectorAll('.dropdown');
+    allDropdowns.forEach(dropdown => {
+      const content = dropdown.querySelector('.dropdown-content');
+      if (content) content.style.display = 'none';
+    });
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const allDropdowns = document.querySelectorAll('.dropdown');
+    allDropdowns.forEach(dropdown => {
+      const content = dropdown.querySelector('.dropdown-content');
+      if (content) content.style.display = 'none';
+    });
+  }
+});
+/* ========== FAQ TOGGLE FUNCTIONALITY ========== */
+const faqToggle = document.getElementById('faqToggle');
+const faqToggleContainer = document.querySelector('.faq-toggle-container');
+
+let faqVisible = localStorage.getItem('faqVisible');
+if (faqToggle && faqToggleContainer) {
+  if (faqVisible === null) {
+    faqVisible = 'true';
+    localStorage.setItem('faqVisible', faqVisible);
+  }
+  
+  faqToggle.checked = faqVisible === 'true';
+  updateToggleState();
+  
+  faqToggle.addEventListener('change', function() {
+    faqVisible = this.checked ? 'true' : 'false';
+    localStorage.setItem('faqVisible', faqVisible);
+    updateToggleState();
+    showToggleNotification();
+  });
+}
+
+function updateToggleState() {
+  if (faqToggle && faqToggle.checked) {
+    faqToggleContainer.classList.add('active');
+    faqToggleContainer.classList.remove('inactive');
+    showAllQuickButtons();
+  } else {
+    faqToggleContainer.classList.add('inactive');
+    faqToggleContainer.classList.remove('active');
+    hideAllQuickButtons();
+  }
+}
+
+function showAllQuickButtons() {
+  // FAQ buttons
+  const faqButtons = document.querySelectorAll('.faq-buttons');
+  faqButtons.forEach(btn => {
+    btn.classList.remove('hidden');
+  });
+  
+  // Welcome page buttons
+  const welcomeButtons = document.querySelectorAll('.welcome-actions');
+  welcomeButtons.forEach(btn => {
+    btn.classList.remove('hidden');
+  });
+  
+  // Suggestion buttons (inside messages)
+  const suggButtons = document.querySelectorAll('.sugg-buttons');
+  suggButtons.forEach(btn => {
+    btn.classList.remove('hidden');
+  });
+  
+  // FAQ toggle buttons
+  const faqToggleBtns = document.querySelectorAll('.sugg-btn');
+  faqToggleBtns.forEach(btn => {
+    btn.classList.remove('hidden');
+  });
+  
+  // Add your custom orient button
+  const orientButtons = document.querySelectorAll('.orient-btn');
+  orientButtons.forEach(btn => {
+    btn.classList.remove('hidden');
+    btn.style.opacity = '1';
+    btn.style.transform = 'translateY(0) scale(1)';
+    btn.style.pointerEvents = 'auto';
+  });
+  
+  // Any quick ask buttons (ALL button types)
+  const quickAskButtons = document.querySelectorAll('.faq-btn, .welcome-btn, .sugg-btn, .orient-btn');
+  quickAskButtons.forEach(btn => {
+    btn.classList.remove('hidden');
+    btn.style.opacity = '1';
+    btn.style.transform = 'translateY(0) scale(1)';
+    btn.style.pointerEvents = 'auto';
+  });
+}
+
+function hideAllQuickButtons() {
+  // FAQ buttons
+  const faqButtons = document.querySelectorAll('.faq-buttons');
+  faqButtons.forEach(btn => {
+    btn.classList.add('hidden');
+  });
+  
+  // Welcome page buttons
+  const welcomeButtons = document.querySelectorAll('.welcome-actions');
+  welcomeButtons.forEach(btn => {
+    btn.classList.add('hidden');
+  });
+  
+  // Suggestion buttons (inside messages)
+  const suggButtons = document.querySelectorAll('.sugg-buttons');
+  suggButtons.forEach(btn => {
+    btn.classList.add('hidden');
+  });
+  
+  // FAQ toggle buttons
+  const faqToggleBtns = document.querySelectorAll('.sugg-btn');
+  faqToggleBtns.forEach(btn => {
+    btn.classList.add('hidden');
+  });
+  
+  // Hide your custom orient button
+  const orientButtons = document.querySelectorAll('.orient-btn');
+  orientButtons.forEach(btn => {
+    btn.classList.add('hidden');
+    btn.style.opacity = '0';
+    btn.style.transform = 'translateY(-10px) scale(0.95)';
+    btn.style.pointerEvents = 'none';
+  });
+  
+  // Any quick ask buttons (ALL button types)
+  const quickAskButtons = document.querySelectorAll('.faq-btn, .welcome-btn, .sugg-btn, .orient-btn');
+  quickAskButtons.forEach(btn => {
+    btn.classList.add('hidden');
+    btn.style.opacity = '0';
+    btn.style.transform = 'translateY(-10px) scale(0.95)';
+    btn.style.pointerEvents = 'none';
+  });
+}
+
+/* ========== ENHANCED TOGGLE FUNCTIONALITY ========== */
+
+// Apply toggle state when switching between welcome and chat
+function applyToggleToCurrentView() {
+  if (faqToggle && faqToggle.checked) {
+    showAllQuickButtons();
+  } else {
+    hideAllQuickButtons();
+  }
+}
+
+// Override showWelcomeScreen to include toggle state
+const originalShowWelcomeScreen = showWelcomeScreen;
+showWelcomeScreen = function() {
+  originalShowWelcomeScreen();
+  applyToggleToCurrentView();
+};
+
+// Update appendMessage to respect toggle state
+const originalAppendMessage = appendMessage;
+appendMessage = function(text, who='bot', attachFAQs=false, suggestions=[]) {
+  const result = originalAppendMessage(text, who, attachFAQs, suggestions);
+  
+  // Apply toggle state to newly created buttons
+  setTimeout(() => {
+    applyToggleToCurrentView();
+  }, 50);
+  
+  return result;
+};
+/* =============================================== */
+
+/* ========== FEEDBACK BUTTON FUNCTIONALITY ========== */
+const feedbackBtn = document.getElementById('feedbackBtn');
+
+// Add click event to feedback button
+if (feedbackBtn) {
+  feedbackBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    
+    // Show brief loading animation
+    const originalText = feedbackBtn.innerHTML;
+    feedbackBtn.innerHTML = '⏳...';
+    feedbackBtn.disabled = true;
+    
+    // Auto redirect after brief delay
+    setTimeout(() => {
+      // send feedback form link here
+      window.open('https://forms.gle/cNRtaUZBwDuPoUk77','_blank');
+      
+      // Reset button after redirect
+      setTimeout(() => {
+        feedbackBtn.innerHTML = originalText;
+        feedbackBtn.disabled = false;
+      }, 2000);
+      
+    }, 300); // 300ms delay before redirect
+  });
+}
+/* ================================================= */
+/* FAQ's show up button (pwede mo itong dagdagan or kukuhaan or e change)*/
+const faqs = [
+  "Who is AILA?",
+  "Who made AILA?",
+  "What's in ICT?",
+  "What is MRP?",
+  "What is MPS?",
+  "What is BOM?",
+  "What is Inventory",
+  "What is PO?",
+  "What is WO?",
+  "How to do dashboard?",
+  "How to do pivot table?",
+  "How can I prepare for oral validation",
+  "References?",
+  "Main developer of AILA?",
+];
+
+/* dito mo e ccustomize if may babagohin or e dadagdag na template questions */
+const offlineResponses = {
+  "Hi": "Hellow kuys! I'm AILA, your AI learning assistant. How can I help you today?",
+  "Orientation to data processing": `\n**Orientation to Data Processing**
+  \n\n- Ngayon, magbibigay muna ako ng overview tungkol sa process flow ng ating data processing activity. Mayroon na ba sa inyo ang may karanasan sa manufacturing? Pamilyar ba kayo sa role ng isang material planner?
+  \n- Ang material planner ay may mahalagang papel: tiyakin na lahat ng raw materials at components ay available sa tamang oras, tamang bilang, at tamang specification upang maiwasan ang delay sa production. Ang kanilang trabaho ay nakabatay sa Bills of Materials (BOM), kasama ang pag-check ng inventory at pag-request ng supply batay sa pangangailangan ng production.
+  \n- Sa activity natin, gagayahin natin ang prinsipyong ito. Upang mabuo ang mini conveyor system, gagawa tayo ng structured Material Requirement Planning (MRP). Dito natin ililista at iko-compute ang lahat ng raw materials at components na kailangan. Pagkatapos, makikita natin kung sapat ang inventory o kung kailangan pa ng additional supply para maging tuloy-tuloy ang production flow.
+`,    
+  "kuys": "bahala kana dyan",
+  "yawa ka": "yawa pud ka giatay",
+  "Juswa": "Hi sheika hehehe labyu",
+  "Main developer of AILA?": "The main programmer, front-end coder of AILA is **[Joshua M. Narvasa](https://web.facebook.com/Jomong.things)**",
+  "juswa": "Hi sheika hehehe labyu",
+  "kuys naman": "joke lang poo",
+  "Hellow": "Hellow kuys! I'm AILA, your AI learning assistant. How can I help you today?",
+  "Who made AILA": "\nHi kuys! 👋\n\nAILA stands for Artificial Intelligence Learning Assistant! It's embedded inside the ICT Website and helps answer questions about:\n\n- ICT tasks\n- MRP lessons  \n- Spreadsheet workflows\n- Module requirements\n\nAILA retrieves information ONLY from official internal documents using RAG tools.\n\nAILA was developed by a group of LA's from the ICT department. All members contributed of creating AILA turning it into a reality 😊\n\nNeed help with anything kuys?",
+  "Who is AILA?": "\n\n Hi kuys! 👋\n\n AILA stands for **Artificial Intelligent Learning Assistant**.\n\n It was designed to address the ***challenge of the unbalanced ratio*** between trainees to LAs &LFs.\n\n Initiated by a team of dedicated Learning Assistants, AILA aims to **benefit everyone in Dual Tech** by enabling better, faster, and more effective training tool.\n\n  .\n\n .\n\n✌*Alam mo yung AILA? Ang ibig sabihin nun* ***Artificial Intelligent Learning Assistant***. \n\n *Ginawa siya kasi ang daming trainees pero kaunti lang ang LAs at LFs. Naisip ng mga Learning Assistant na gumawa ng AILA para mas madali, mas mabilis, at mas epektibo ang training sa Dual Tech. Simple lang, tulong siya para sa lahat.*",
+  "What's in ICT?": "\n\nHi kuys!😊 \n\nTrainees will learn three key skills: \n\n1. Data analysis using Pivot Tables \n\n2. Data visualization through charts \n\n3. Data manipulation with formulas like SUMIF and XLOOKUP.",
+  "What is MRP?": "\n\nHi kuys! 👋 \n\nMRP means Material Requirement Planning - it's a system to help plan production and manage materials efficiently 📊. \n\nKuys, MRP helps determine:\n- What materials are needed\n- How much to order  \n- When to order them\n\nIt has key modules like: \n\n1. MPS (Master Production Schedule) \n\n2. BOM (Bill of Materials) \n\n3. Inventory Control \n\n4. Purchase Orders \n\n5. Dashboard \n\n6. Work Orders \n\n7. Pivot Table \n\nFor more details, check the MRP Guide or Spreadsheet links! 😊",
+  "What is MPS?": `
+Hi kuys! 👋
+**MPS (Master Production Schedule)** plans:
+• what to produce,  
+• when to produce it,  
+• and how much to make.
+*Ang MPS ay tumutulong para planuhin kung ano ang ipo-produce, kailan gagawin, at gaano karami ang kailangan.*
+\n\n
+(***EXAMPLE LANG TO HA!!*** Baka kopyahin mo kuys ha, Haha):
+\n\n
+<table border="1">
+  <thead>
+    <tr>
+      <th>Product Code</th>
+      <th>Product Description</th>
+      <th>Planned Qty</th>
+      <th>Actual Qty</th>
+      <th>Schedule Week</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>PROD001</td>
+      <td>Mechatronics Trainer Board</td>
+      <td>100</td>
+      <td>90</td>
+      <td>Week 1</td>
+      <td>Completed</td>
+    </tr>
+    <tr>
+      <td>PROD002</td>
+      <td>Mechatronics Trainer Board</td>
+      <td>120</td>
+      <td>110</td>
+      <td>Week 1</td>
+      <td>Completed</td>
+    </tr>
+    <tr>
+      <td>PROD003</td>
+      <td>Mechatronics Trainer Board</td>
+      <td>80</td>
+      <td>70</td>
+      <td>Week 1</td>
+      <td>Completed</td>
+    </tr>
+  </tbody>
+</table>
+
+\n
+Ito ay para sa **mga produkto mismo**, hindi para sa parts or components.
+`,
+  "What is BOM?": `Hi kuys! 👋\n\n **What is BOM?**\n BOM (Bill of Materials) is a product’s recipe — it lists all the materials and quantities needed to build the product.\n
+  \n *Ang BOM ay parang resipe ng isang produkto. Nandiyan yung mga materials at kung gaano karami ang kailangan para mabuo ito.*
+  \n\n Here is an example Bill of Materials 
+  (***EXAMPLE LANG TO HA!!*** Baka kopyahin mo kuys ha, Haha):
+  \n\n <table border="1" cellpadding="6" cellspacing="0" style="border-collapse: collapse; width: 100%; text-align: left;">
+ <thead>
+    <tr>
+      <th>Product</th>
+      <th>Item Code</th>
+      <th>Item Description</th>
+      <th>Specification</th>
+      <th>Unit Price</th>
+      <th>Qty</th>
+      <th>UOM</th>
+      <th>Safety Stock</th>
+      <th>Lead Time (days)</th>
+      <th>Approved Supplier</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Trainer Board</td>
+      <td>ITM001</td>
+      <td>Terminal Blocks</td>
+      <td>12 pairs, 15A</td>
+      <td>P150.00</td>
+      <td>15</td>
+      <td>pcs</td>
+      <td>50</td>
+      <td>7</td>
+      <td>Supplier A</td>
+    </tr>
+    <tr>
+      <td>Trainer Board</td>
+      <td>ITM002</td>
+      <td>Limit Switch</td>
+      <td>SPDT Micro-limit Switch, Long Arm</td>
+      <td>P580.00</td>
+      <td>12</td>
+      <td>pcs</td>
+      <td>30</td>
+      <td>5</td>
+      <td>Supplier B</td>
+    </tr>
+    </tr>
+  </tbody>
+</table>
+`,
+  "What is Inventory": `
+Hi kuys! 👋
+**Inventory** monitors stock levels:
+• Opening balance  
+• Purchases received  
+• Issued to production  
+• Ending balance  
+*Ang Inventory ay nagbabantay ng dami ng stocks — mula sa opening balance, purchases, reorders, hanggang sa ending balance.
+Tinutulungan nito na alam kung kailangang mag-restock at gumawa ng purchase order sa tamang oras.*
+\n\n
+(***EXAMPLE LANG TO HA!!*** Baka kopyahin mo kuys ha, Haha):
+\n\n
+<table border="1">
+  <thead>
+    <tr>
+      <th>Item Code</th>
+      <th>Description</th>
+      <th>Opening Stock</th>
+      <th>Purchases Received</th>
+      <th>Issued to Production</th>
+      <th>Ending Balance</th>
+      <th>Safety Stock Level</th>
+      <th>Reorder Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ITM001</td>
+      <td>Terminal Blocks</td>
+      <td>60</td>
+      <td>0</td>
+      <td>20</td>
+      <td>40</td>
+      <td>50</td>
+      <td>Reorder</td>
+    </tr>
+    <tr>
+      <td>ITM002</td>
+      <td>Limit Switch</td>
+      <td>40</td>
+      <td>10</td>
+      <td>15</td>
+      <td>35</td>
+      <td>30</td>
+      <td>Available</td>
+    </tr>
+    <tr>
+      <td>ITM003</td>
+      <td>Solenoid Valve</td>
+      <td>25</td>
+      <td>0</td>
+      <td>10</td>
+      <td>15</td>
+      <td>20</td>
+      <td>Reorder</td>
+    </tr>
+  </tbody>
+</table>
+\n\n
+**Kuys! eto naman yung example na formula na gagamitin natin:**
+1️⃣ **Ending Balance Formula**  
+\`Opening Stock + Purchases Received – Issued to Production\`  
+Or in Sheets:
+\`=C2 + D2 - E2\`
+• For **ITM001:** = 60 + 0 - 20 → **40**  
+\n
+2️⃣ **Safety Stock Lookup (from BOM sheet)**  
+\`=XLOOKUP(A2, BOM!$B$2:$B, BOM!$H$2:$H)\`
+• Finds the Safety Stock Level of each item using Item Code  
+• Returns Safety Stock value from **BOM sheet column H**
+\n
+3️⃣ **Reorder Status Formula**  
+\`=IF(F2 <= G2, "Reorder", "Available")\`
+`,
+  "What is PO?": `
+Hi kuys! 👋
+
+**PO (Purchase Order)** is used when an item needs to be re-ordered to replenish component stocks.  
+It acts as a **formal request sent to the supplier** to restock needed materials.
+\n
+*Ang PO ay ginagamit kapag kailangan nang mag-reorder ng items para mapunuan ang kulang na materials.  
+Ito ang formal na request na pinapadala sa supplier para mag-restock ng components.*
+\n\n
+(***EXAMPLE LANG TO HA!!*** Baka kopyahin mo kuys ha, Haha):
+\n\n
+<table border="1">
+  <thead>
+    <tr>
+      <th>PO Number</th>
+      <th>Item Code</th>
+      <th>Description</th>
+      <th>Qty Ordered</th>
+      <th>Unit Price</th>
+      <th>Total Cost</th>
+      <th>Order Date</th>
+      <th>Lead Time (days)</th>
+      <th>Expected Delivery Date</th>
+      <th>Supplier</th>
+      <th>Actual Delivery Date</th>
+      <th>Delivery Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>PO001</td>
+      <td>ITM001</td>
+      <td>Terminal Blocks</td>
+      <td>150</td>
+      <td>94.50</td>
+      <td>14,175.00</td>
+      <td>10/01/2025</td>
+      <td>7</td>
+      <td>10/08/2025</td>
+      <td>Supplier A</td>
+      <td></td>
+      <td>Pending</td>
+    </tr>
+    <tr>
+      <td>PO002</td>
+      <td>ITM003</td>
+      <td>Solenoid Valve</td>
+      <td>30</td>
+      <td>2500.00</td>
+      <td>75,000.00</td>
+      <td>10/03/2025</td>
+      <td>10</td>
+      <td>10/13/2025</td>
+      <td>Supplier C</td>
+      <td>10/13/2025</td>
+      <td>On Time</td>
+    </tr>
+  </tbody>
+</table>
+\n\n
+**PO Formulas Used (Google Sheets):**
+1️⃣ **Total Cost Formula**  
+\`=D2 * E2\`
+2️⃣ **Expected Delivery Date**  
+\`=G2 + H2\`
+3️⃣ **Delivery Status Formula**  
+\`=IF(J2="", "Pending", IF(J2 <= I2, "On Time", "Delayed"))\`
+`,
+  "What is WO?": `
+Hi kuys! 👋
+**WO (Work Order)** is an internal instruction that authorizes and guides production of a specific product.
+It tells the team what to build, how many, when to start, and when it must be finished.
+*Ang WO o Work Order ay internal na utos na nagbibigay ng pahintulot at gabay sa paggawa ng isang partikular na produkto.
+Dito nakalagay kung ano ang gagawin, gaano karami, kailan sisimulan, at kailan dapat matapos.*
+\n\n
+(***EXAMPLE LANG TO HA!!*** Baka kopyahin mo kuys ha, Haha):
+\n\n
+<table border="1">
+  <thead>
+    <tr>
+      <th>WO No.</th>
+      <th>Product</th>
+      <th>Qty to Build</th>
+      <th>Start Date</th>
+      <th>Due Date</th>
+      <th>Assigned To</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>WO-2025-001</td>
+      <td>Mechatronics Trainer Board</td>
+      <td>150</td>
+      <td>2025-09-21</td>
+      <td>2025-09-28</td>
+      <td>Operator A</td>
+      <td>In Progress</td>
+    </tr>
+  </tbody>
+</table>
+\n\n
+**Work Order Formulas Used (Google Sheets):**
+1️⃣ **Duration (How many days to build)**  
+\`=E2 - D2\`  
+• Calculates number of days between Start Date and Due Date
+\n
+2️⃣ **Status Automation (optional)**  
+\`=IF(TODAY() < D2, "Not Started", IF(TODAY() > E2, "Delayed", "In Progress"))\`  
+• Before start date → Not Started  
+• Past due date → Delayed  
+• Within schedule → In Progress
+\n
+3️⃣ **Qty Remaining (how much is left to produce)**  
+(only if you track progress qty in another column)  
+\`=C2 - F2\`  
+• Shows how many units still need to be completed
+`,
+  "How to do pivot table?": "\n\n Hi kuys! 👋\n\n A Pivot Table streamlines **data analysis** by summarizing and organizing large amounts of information **quickly and efficiently**. This is helpful to create CHARTS later\n\n \n\n \n\n Ang Pivot Table ay **madaling paraan para ayusin at ibuod** ang madaming data.\n\n Mabilis siyang gamitin at malaking tulong ito pag gagawa ka ng charts.\n\n\n\n\n\n Paano gawin: \n\n\n\n1. I-click yung buong sheet na **may mga sulat lang**.\n\n2. Pumunta sa **Insert**.\n\n3. Piliin ang **Pivot Table**, tapos **New Worksheet**. \n\n4. Now pwede mo na itong e edit \n\n Aral well kuys!😊",
+  "How to do dashboard?":`
+Hi kuys! 👋
+
+**Data Visualization(Dashboard)** makes data easier to see and understand.
+It uses charts and graphs so information becomes clearer and faster to analyze.
+
+*Ang Data Visualization ay ginagamit para mas madali makita at maintindihan ang data.
+Gumagamit ito ng charts at graphs para mas malinaw ipakita ang impormasyon at mas madali itong maipresenta sa oral validation.*
+\n\n
+**Purpose of Data Visualization:**
+• Converts raw data into visual insights
+• Helps identify patterns and trends
+• Makes reports easier to explain and understand
+\n\n
+**Steps to Create a Dashboard:**
+1️⃣ Gather all relevant data in one sheet
+2️⃣ Use Pivot Tables to summarize key metrics
+3️⃣ Insert Charts (bar, line, pie) based on Pivot Table data
+4️⃣ Arrange charts neatly on a separate Dashboard sheet
+5️⃣ Add titles, labels, and legends for clarity
+
+\n\n
+`,
+"How can I prepare for oral validation": ` 
+\n
+Kuys, here's how to prepare for oral validation in MRP (Material Requirements Planning):  
+\n
+1. **Master the MRP Process Flow**: Understand how data moves from **MPS → BOM → Inventory → PO → Dashboard**. Be ready to explain each step.  
+\n
+2. **Practice Spreadsheet Skills**:  
+   - Use formulas correctly (e.g., IFERROR) to calculate requirements.  
+   - Link sheets (MPS, BOM, Inventory, PO) without errors.  
+   - Format sheets neatly for readability.  
+\n
+3. **Create Reports**:  
+   - Learn to make pivot tables, charts, and dashboards.  
+   - Practice explaining insights from these visuals.  
+\n
+4. **Simulate the Full Workflow**: Integrate all sheets and validate data accuracy.  
+\n
+5. **Practice Oral Explanation**:  
+   - Clearly explain your logic and steps in updating the workbook.  
+   - Be ready to answer questions about formulas, formatting, and results.  
+\n
+Kuys, focus on understanding the *why* and *how* of each step! 📊✨  
+Kuys, need more help? Just ask! 😊`,
+"References?": ` 
+Kuys,  and find the resources and click the accessibility
+\n*Kuys, tignan mo yung header natin, tapos sa header, hanapin mo yung Resources. Pag nakita mo na, i-click mo yung Accessibility.*
+`,
+"Tell me about Module 1: Understanding the MRP System": `Hi kuys! 👋
+Module 1: Understanding the MRP System is your foundation for learning Material Requirement Planning! Here's what it covers:
+\n
+**Duration:** 1 hour
+**Competency:** Data Manipulation and Analyzation
+**Level:** 3 (controlled educational/demonstration)
+\n
+**Learning Objectives:**
+- Identify data relationships and flow in MRP spreadsheets
+- Demonstrate interaction between MPS, BOM, Inventory, and Purchase Orders
+- Explain how spreadsheet formulas support MRP decisions
+- Interpret KPIs from the Dashboard
+\n
+**Key Terms You'll Learn:**
+- **MRP:** System for calculating materials needed for production
+- **MPS:** Master Production Schedule - what to make and when
+- **BOM:** Bill of Materials - list of components needed
+- **Inventory:** Materials on hand and available
+- **Lead Time:** Time between ordering and receiving materials
+- **Safety Stock:** Extra inventory to prevent shortages
+- **Reorder Point:** When to order new stock
+- **Purchase Order:** Formal request to suppliers
+- **Dashboard:** Visual summary of performance indicators
+\n
+**The MRP Data Cycle:**
+You'll work through a real example - like a client ordering 12 Mechatronics Trainer Boards. The order drives the MPS, which feeds into BOM calculations. Inventory checks material availability, and if needed, Purchase Orders are created. The Dashboard tracks everything and provides insights for better planning.
+\n
+**Activity:**
+You'll analyze the MRP workbook by identifying the purpose of each tab (MPS, BOM, Inventory, Purchase Orders, Dashboard) and how data flows between them.
+\n
+This module prepares you for deeper MRP applications in the next modules! 📊`,
+"How to transfer between modules": `
+To transfer between MRP modules, you need to complete the current module first through:
+\n
+1. **Finish all activities** - Complete all required tasks, quizzes, and outputs for your current module
+2. **Pass oral validation** - Learning Assistants will assess your understanding through questioning
+3. **Submit outputs** - Hand in your activity sheets and required deliverables  
+4. **Get approval** - Once validated, you can proceed to the next module
+\n
+The modules build on each other:
+- Module 1 → Module 2: Focus moves from theory to hands-on spreadsheet work
+- Module 2 → Module 3: Advanced analysis and dashboard creation
+- Module 3 → Final Presentation: Last and final step after you've finished all modules
+\n
+Make sure to master each module before moving forward! 📚`,
+"Tell me about Module 2: Working with MRP Data Using Spreadsheet": `
+Module 2 is all about working with Material Requirement Planning (MRP) data using spreadsheets! 📊
+\n
+**Key points:**
+- **Duration:** 1 hour (Level 3)
+- **Focus:** Spreadsheet-based MRP simulation
+- **Main competency:**Data manipulation across different sheets
+\n
+**What you'll learn:**
+- Working with Master Production Schedule (MPS), Bill of Materials (BOM), Inventory, and Purchase Orders
+- Applying spreadsheet formulas and formatting for consistency
+- Maintaining an audit-ready workbook
+\n
+**Main activity:**
+You'll get a case scenario where a client orders 12 Mechatronics Trainer Boards for delivery in 4 weeks. You need to:
+- Set weekly production plans in **MPS**
+- Compute material requirements in **BOM**
+- Update stock movement in **Inventory**
+- Record supplier details and costs in **Purchase Orders**
+\n
+**Skills covered:**
+- Excel tools: Freeze Panes, Filters, Wrap Text, Conditional Formatting
+- Lookup functions (XLOOKUP/VLOOKUP)
+- Logical formulas (IF statements)
+- Summation formulas (SUMIF)
+- Basic arithmetic for stock balance calculations
+\n
+The module prepares you for handling real MRP data used in planning, production, and procurement! 🛠️`,
+"Tell me about Module 3: Data Analysis and Visualization": "\nModule 3 is all about **Data Analysis and Visualization** in MRP! 📊\n**Key points:** \n- **Duration:**: 1-2hours \n- **Focus:** Data sheets and tables \n- **Main competency:** Data Visualization and Data Analyzation\n\nHere's what you'll learn:\n\n**Main Focus:** Analyzing and visualizing MRP data to help production and procurement decisions.\n\n**Key Topics:**\n- Creating pivot tables from MRP data (Inventory, Purchase Orders, Master Production Schedule)\n- Building charts and dashboards to show supplier performance, production progress, and material costs\n- Interpreting reports to find trends and areas for improvement\n\n**Activities You'll Do:**\n- Summarize MRP workbook data with pivot tables\n- Create charts showing supplier performance (lead time vs cost, etc.)\n- Build dashboards that visualize production output vs plan and inventory status\n\n**Assessment Criteria:**\n- Pivot table accuracy\n- Chart design and data representation\n- Dashboard integration and presentation\n- Analytical interpretation of results\n\nThis module helps management monitor important KPIs like lead time, costs, and fulfillment rates to make better decisions for continuous improvement! 😊",
+"add more": "addmore",
+};
+/* ===================================================== */
+
+const messagesEl = document.getElementById('messages');
+const input = document.getElementById('input');
+const sendBtn = document.getElementById('sendBtn');
+const logoArea = document.getElementById('logo');
+
+/* Marked + DOMPurify */
+marked.setOptions({ breaks: true, gfm: true });
+function renderSafeMarkdown(mdText) {
+  if (typeof mdText !== 'string') mdText = String(mdText || '');
+  const urlRx = /(\b(https?:\/\/|www\.)[^\s<>()]+)/gi;
+  const pre = mdText.replace(urlRx, (m)=>{ if (m.startsWith('<') && m.endsWith('>')) return m; return `<${m}>`; });
+  const raw = marked.parse(pre);
+  return DOMPurify.sanitize(raw, { ADD_ATTR: ['target','rel','style'] });
+}
+
+/* welcome screen*/
+function showWelcomeScreen() {
+  const welcomeHTML = `
+    <div class="welcome-screen">
+      <div class="welcome-logo">
+        <!-- small SVG logo -->
+        <svg xmlns="http://www.w3.org/2000/svg" 
+              width="800px" 
+              height="800px" 
+              viewBox="0 0 24 24" 
+              fill="none">
+  <path fill-rule="evenodd" 
+      clip-rule="evenodd" 
+      d="M7.81696 2.97331C8.0365 2.38786 8.59618 2 9.22145 2H14.7784C15.4037 2 15.9634 2.38786 16.1829 2.97332L22.1829 18.9733C22.5507 19.9539 21.8258 21 20.7784 21H17.2214C16.5962 21 16.0365 20.6121 15.817 20.0267L11.9999 9.848L10.068 15H12.0334C12.6587 15 13.2184 15.3879 13.4379 15.9733L14.5629 18.9733C14.9307 19.9539 14.2058 21 13.1585 21H3.22145C2.17414 21 1.44922 19.9539 1.81696 18.9733L7.81696 2.97331ZM9.56795 4L3.94295 19H12.4369L11.6869 17H8.62495C8.29697 17 7.98984 16.8392 7.80302 16.5696C7.61621 16.3 7.57346 15.956 7.68862 15.6489L11.0636 6.64888C11.21 6.25857 11.5831 6 11.9999 6C12.4168 6 12.7899 6.25857 12.9363 6.64888L17.568 19H20.0569L14.4319 4H9.56795Z"
+      fill="#000000"/>
+        </svg>
+          <defs>
+            <defs>
+      <linearGradient id="blueGreenGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="blue" />
+      <stop offset="100%" stop-color="green" />
+    </linearGradient>
+  </defs>                                   
+          <rect x="12" y="12" width="40" height="40" rx="8" fill="url(#blueGreenGradient)" stroke="url(#welcomeG)" stroke-width="2" opacity="0.12"/>
+          <g stroke="url(#welcomeG)" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M24 32h6" stroke-dasharray="20" stroke-dashoffset="20">
+              <animate attributeName="stroke-dash  offset" from="20" to="0" dur="1.6s" repeatCount="indefinite"/>
+            </path>
+            <path d="M38 32h-6" stroke-dasharray="20" stroke-dashoffset="20">
+              <animate attributeName="stroke-dashoffset" from="20" to="0" dur="1.6s" repeatCount="indefinite" begin="0.15s"/>
+            </path>
+            <circle cx="32" cy="24" r="2.6" fill="url(#welcomeG)">
+              <animate attributeName="r" values="2.6;3.8;2.6" dur="1.6s" repeatCount="indefinite"/>
+            </circle>
+          </g>
+        </svg>
+      </div>
+      
+      <h1 class="welcome-title">Welcome to AILA</h1>
+      <p class="welcome-subtitle">Hi kuys! I'm AILA, Feel free to ask any questions related to our Kaizenset ICT Data Processing</p>
+      
+      <div class="welcome-actions">
+        <button class="welcome-btn" onclick="useSuggestion('Who is AILA?')">Who is AILA?</button>
+        <button class="welcome-btn" onclick="useSuggestion('Who made AILA')">Who made AILA?</button>
+        <button class="welcome-btn" onclick="useSuggestion('Hi')">Hi</button>
+        <button class="welcome-btn" onclick="useSuggestion('Orientation to data processing')">Oriention to data processing</button>
+      </div>
+  `;
+  
+  messagesEl.innerHTML = welcomeHTML;
+  
+  const welcomeInput = document.getElementById('welcomeInput');
+  welcomeInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      const value = welcomeInput.value.trim();
+      if (value) {
+        useSuggestion(value);
+      }
+    }
+  });
+  
+  welcomeInput.focus();
+}
+
+/* Function to handle suggestions and welcome input */
+function useSuggestion(text) {
+  // Clear welcome screen
+  messagesEl.innerHTML = '';
+  // Send the message
+  appendMessage(text, 'user');
+  sendToBackend(text, true);
+}
+
+/* Append message, ensure anchors open new tab */
+function appendMessage(text, who='bot', attachFAQs=false, suggestions=[]) {
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ' + who;
+  wrap.innerHTML = renderSafeMarkdown(text);
+  wrap.querySelectorAll('a').forEach(a => {
+    a.setAttribute('target','_blank');
+    a.setAttribute('rel','noopener noreferrer');
+  });
+
+      // --- Quick Actions dropdown (FAQs, Modules, Orientation) ---
+  if (who === 'bot') {
+    const actionWrap = document.createElement('div');
+    actionWrap.className = 'sugg-buttons';
+
+    // Dropdown container with proper positioning
+    const dropdownContainer = document.createElement('div');
+    dropdownContainer.style.position = 'relative';
+    dropdownContainer.style.display = 'inline-block';
+    dropdownContainer.style.marginRight = '8px';
+
+    // Main dropdown button
+    const dropdownBtn = document.createElement('button');
+    dropdownBtn.className = 'sugg-btn';
+    dropdownBtn.textContent = '📋 Quick Actions';
+    dropdownBtn.style.position = 'relative';
+
+    // Dropdown content with proper positioning
+    const dropdownContent = document.createElement('div');
+    dropdownContent.style.position = 'absolute';
+    dropdownContent.style.top = '100%';
+    dropdownContent.style.left = '0';
+    dropdownContent.style.display = 'none';
+    dropdownContent.style.minWidth = '240px';
+    dropdownContent.style.background = 'linear-gradient(180deg, var(--glass-2), rgba(255,255,255,0.006))';
+    dropdownContent.style.border = '1px solid rgba(255,255,255,0.03)';
+    dropdownContent.style.borderRadius = '10px';
+    dropdownContent.style.boxShadow = '0 8px 25px rgba(0,0,0,0.3)';
+    dropdownContent.style.padding = '8px';
+    dropdownContent.style.marginTop = '4px';
+    dropdownContent.style.zIndex = '9999';
+    dropdownContent.style.maxWidth = '300px';
+
+    // FAQs section
+    const faqSection = document.createElement('div');
+    faqSection.style.marginBottom = '8px';
+    
+    const faqToggleBtn = document.createElement('button');
+    faqToggleBtn.className = 'dropdown-item sugg-btn';
+    faqToggleBtn.textContent = '📚 Click here kuys!';
+    faqToggleBtn.style.width = '100%';
+    faqToggleBtn.style.marginBottom = '4px';
+
+    const faqDiv = document.createElement('div');
+    faqDiv.className = 'faq-buttons';
+    faqDiv.style.display = 'none';
+    faqDiv.style.flexWrap = 'wrap';
+    faqDiv.style.gap = '4px';
+    faqDiv.style.marginTop = '4px';
+    faqDiv.style.maxHeight = '200px';
+    faqDiv.style.overflowY = 'auto';
+
+    faqs.forEach(q => {
+      const fb = document.createElement('button');
+      fb.className = 'faq-btn';
+      fb.textContent = q;
+      fb.style.fontSize = '12px';
+      fb.style.padding = '6px 8px';
+      fb.addEventListener('click', () => onFaqClick(fb, q));
+      faqDiv.appendChild(fb);
+    });
+
+    // Module section
+    const moduleSection = document.createElement('div');
+    moduleSection.style.marginBottom = '8px';
+    
+    const moduleBtn = document.createElement('button');
+    moduleBtn.className = 'dropdown-item sugg-btn';
+    moduleBtn.textContent = '📦 Modules';
+    moduleBtn.style.width = '100%';
+    moduleBtn.style.marginBottom = '4px';
+    
+    const moduleDiv = document.createElement('div');
+    moduleDiv.className = 'faq-buttons';
+    moduleDiv.style.display = 'none';
+    moduleDiv.style.flexWrap = 'wrap';
+    moduleDiv.style.gap = '4px';
+    moduleDiv.style.marginTop = '4px';
+    
+    const module1Btn = document.createElement('button');
+    module1Btn.className = 'faq-btn';
+    module1Btn.textContent = 'Module 1: Understanding the MRP System';
+    module1Btn.addEventListener('click', () => {
+      appendMessage('Tell me about Module 1: Understanding the MRP System', 'user');
+      sendToBackend('Tell me about Module 1: Understanding the MRP System', true);
+      dropdownContent.style.display = 'none';
+    });
+    
+    const module2Btn = document.createElement('button');
+    module2Btn.className = 'faq-btn';
+    module2Btn.textContent = 'Module 2: Working with MRP Data Using Spreadsheet';
+    module2Btn.addEventListener('click', () => {
+      appendMessage('Tell me about Module 2: Working with MRP Data Using Spreadsheet', 'user');
+      sendToBackend('Tell me about Module 2: Working with MRP Data Using Spreadsheet', true);
+      dropdownContent.style.display = 'none';
+    });
+    
+    const module3Btn = document.createElement('button');
+    module3Btn.className = 'faq-btn';
+    module3Btn.textContent = 'Module 3: Data Analysis and Visualization';
+    module3Btn.addEventListener('click', () => {
+      appendMessage('Tell me about Module 3: Data Analysis and Visualization', 'user');
+      sendToBackend('Tell me about Module 3: Data Analysis and Visualization', true);
+      dropdownContent.style.display = 'none';
+    });
+
+     const transmoduleBtn = document.createElement('button');
+    transmoduleBtn.className = 'faq-btn';
+    transmoduleBtn.textContent = 'Transfer Between Modules';
+    transmoduleBtn.addEventListener('click', () => {
+      appendMessage('How to transfer between modules', 'user');
+      sendToBackend('How to transfer between modules', true);
+      dropdownContent.style.display = 'none';
+    });
+    
+    moduleDiv.appendChild(module1Btn);
+    moduleDiv.appendChild(module2Btn);
+    moduleDiv.appendChild(module3Btn);
+    moduleDiv.appendChild(transmoduleBtn);
+
+    // Orientation section
+    const orientSection = document.createElement('div');
+    const orientBtn = document.createElement('button');
+    orientBtn.className = 'dropdown-item sugg-btn';
+    orientBtn.textContent = '📊 Orientation to Data Processing';
+    orientBtn.style.width = '100%';
+    orientBtn.addEventListener('click', () => {
+      const orientationText = "Orientation to data processing";
+      appendMessage(orientationText, 'user');
+      sendToBackend(orientationText, true);
+      dropdownContent.style.display = 'none';
+    });
+
+    // Toggle logic
+    faqToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isVisible = faqDiv.style.display === 'flex';
+      faqDiv.style.display = isVisible ? 'none' : 'flex';
+      if (!isVisible) moduleDiv.style.display = 'none';
+    });
+
+    moduleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isVisible = moduleDiv.style.display === 'flex';
+      moduleDiv.style.display = isVisible ? 'none' : 'flex';
+      if (!isVisible) faqDiv.style.display = 'none';
+    });
+
+    // Build dropdown structure
+    faqSection.appendChild(faqToggleBtn);
+    faqSection.appendChild(faqDiv);
+    
+    moduleSection.appendChild(moduleBtn);
+    moduleSection.appendChild(moduleDiv);
+    
+    orientSection.appendChild(orientBtn);
+
+    dropdownContent.appendChild(faqSection);
+    dropdownContent.appendChild(moduleSection);
+    dropdownContent.appendChild(orientSection);
+
+    // Build the container
+    dropdownContainer.appendChild(dropdownBtn);
+    dropdownContainer.appendChild(dropdownContent);
+
+    actionWrap.appendChild(dropdownContainer);
+    wrap.appendChild(actionWrap);
+
+    // Dropdown toggle functionality
+    setTimeout(() => {
+      let isDropdownOpen = false;
+
+      dropdownBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        isDropdownOpen = !isDropdownOpen;
+        dropdownContent.style.display = isDropdownOpen ? 'block' : 'none';
+        
+        // Close sub-panels when closing main dropdown
+        if (!isDropdownOpen) {
+          faqDiv.style.display = 'none';
+          moduleDiv.style.display = 'none';
+        }
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', () => {
+        if (isDropdownOpen) {
+          isDropdownOpen = false;
+          dropdownContent.style.display = 'none';
+          faqDiv.style.display = 'none';
+          moduleDiv.style.display = 'none';
+        }
+      });
+
+      // Close with Escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isDropdownOpen) {
+          isDropdownOpen = false;
+          dropdownContent.style.display = 'none';
+          faqDiv.style.display = 'none';
+          moduleDiv.style.display = 'none';
+        }
+      });
+    }, 100);
+  }
+
+  messagesEl.appendChild(wrap);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  return wrap;
+}
+
+/* show typing indicator and glow logo */
+function showTyping() {
+  const t = document.createElement('div'); t.className = 'typing'; t.id = 'typingIndicator';
+  t.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+  messagesEl.appendChild(t);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  logoArea.classList.add('logo-glow');
+}
+function hideTyping() {
+  const t = document.getElementById('typingIndicator'); if (t) t.remove();
+  logoArea.classList.remove('logo-glow');
+}
+
+/* FAQ clicked */
+function onFaqClick(btn, question) {
+  btn.classList.add('sending');
+  setTimeout(()=> btn.classList.remove('sending'), 600);
+
+  appendMessage(question, 'user');
+  const parentFaq = btn.closest('.faq-buttons'); if (parentFaq) parentFaq.remove();
+
+  sendToBackend(question, true);
+}
+
+/* send to backend; backend may include suggestions[] */
+/* send to backend; use offlineResponses if offline or network fails */
+function sendToBackend(text, askSuggestions = false) {
+  showTyping();
+  const payload = { 
+    message: text, 
+    sessionId: 'guest_' + Date.now(), 
+    name: 'Guest', 
+    email: null, 
+    askForSuggestions: !!askSuggestions 
+  };
+
+  // helper: find offline answer if exists
+  function getOfflineAnswer(q) {
+    const foundKey = Object.keys(offlineResponses).find(k => 
+      q.toLowerCase().includes(k.toLowerCase())
+    );
+    return foundKey ? offlineResponses[foundKey] : 
+      "🔴OFFLINE: Kuys! tulog pa si AILA, click mo nalang yung button for more common questions. \n- *AILA can still response in templated answers given below, CLICK THE BUTTON*";
+  }
+
+  fetch('https://frekijoms.app.n8n.cloud/webhook/aila-chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(async res => {
+    hideTyping();
+    if (!res.ok) throw new Error('Network response not ok');
+    const data = await res.json().catch(() => ({}));
+    const reply = (data && data.reply)
+      ? data.reply
+      : getOfflineAnswer(text);
+
+    const suggestions = Array.isArray(data?.suggestions)
+      ? data.suggestions
+      : generateSuggestionsFromBoth(text, reply);
+
+    appendMessage(reply, 'bot', false, suggestions);
+    pulseLogoOnce();
+  })
+  .catch(err => {
+    hideTyping();
+    console.warn('Offline mode triggered:', err);
+    const reply = getOfflineAnswer(text);
+    appendMessage(reply, 'bot', true); // show FAQ buttons in offline mode
+  });
+}
+
+/* composer send */
+function sendMessage() {
+  const t = input.value.trim();
+  if (!t) return;
+  appendMessage(t,'user');
+  input.value = '';
+  sendToBackend(t, true);
+}
+
+/* quick logo pulse once */
+function pulseLogoOnce() {
+  logoArea.classList.add('logo-glow');
+  setTimeout(()=> logoArea.classList.remove('logo-glow'), 1250);
+}
+
+/* send events */
+sendBtn.addEventListener('click', sendMessage);
+input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+
+// Initialize welcome screen
+showWelcomeScreen();
+
+/* auto-scroll */
+const ro = new MutationObserver(()=> messagesEl.scrollTop = messagesEl.scrollHeight);
+ro.observe(messagesEl, { childList:true, subtree:true });
+
+/* focus input quickly */
+window.addEventListener('load', ()=> setTimeout(()=> input.focus(), 250));
+
+</script>
+</body>
+</html>
