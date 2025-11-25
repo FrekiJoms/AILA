@@ -2530,7 +2530,7 @@ if (SpeechRecognition) {
 
     const startSilenceTimer = () => {
         clearTimeout(silenceTimer);
-        silenceTimer = setTimeout(stopListening, 3000); // 3-second timer
+        silenceTimer = setTimeout(stopListening, 5250); // 5.25-second timer
     };
 
     voiceBtn.addEventListener('click', () => {
