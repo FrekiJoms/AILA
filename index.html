@@ -2518,7 +2518,7 @@ if (SpeechRecognition) {
                 watchdogTimer = setTimeout(() => {
                     // This will only run if recognition.onstart doesn't fire
                     recognition.stop(); // Stop any pending attempts
-                    appendMessage("🔴 **Voice Service Unavailable**\n\n- The microphone failed to start. This can happen when the page is embedded in another site (like Google Sites).\n- **Solution:** Please try opening AILA in its own, separate browser tab.", 'bot');
+                    appendMessage("🔴 **Voice Service Unavailable**\n\n- The microphone failed to start. This can happen when the page is embedded in another site (like Google Sites).",'bot');
                 }, 1500); // 1.5 second timeout
 
             } catch (e) {
