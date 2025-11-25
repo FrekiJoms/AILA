@@ -944,33 +944,52 @@ textarea#input {
   .messages {
     padding: 10px;
   }
-/* --- Mobile Composer: Final Fix --- */
-textarea#input {
-    min-height: 48px !important;
-    height: 48px !important;
-    padding: 13px 55px 13px 18px !important; /* Top, Right, Bottom, Left */
-    border-radius: 24px !important;
-}
-.composer-actions {
-    right: 12px; /* Position button container */
-}
-/* Base style for Send button AND Voice button */
-#sendBtn, #voiceBtn {
-    width: 32px !important;
-    height: 32px !important;
-    border-radius: 50% !important; /* Force them to be circles */
-}
-/* Give the Voice button a visible circular background */
-#voiceBtn {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-}
-/* Ensure the hover state is also consistent */
-#voiceBtn:hover {
-    background-color: rgba(255, 255, 255, 0.15) !important;
-}
-}
-/* --- End of Mobile View Enhancements --- */
-
+      /* --- Mobile Composer: Aggressive Override Fix --- */
+      textarea#input {
+          min-height: 48px !important;
+          height: 48px !important;
+          padding: 13px 56px 13px 18px !important;
+          border-radius: 24px !important;
+      }
+      .composer-actions {
+          right: 18px; /* MOVED LEFT: Pulls container fully inside the border */
+          width: 32px;
+          height: 32px;
+          display: block; /* Override flex bugs */
+          top: 50%;
+          transform: translateY(-50%); /* Ensure perfect vertical centering */
+      }
+      /* AGGRESSIVELY OVERRIDE BOTH buttons to be identical circles */
+      #sendBtn, #voiceBtn {
+          position: absolute !important;
+          top: 0 !important;
+          left: 0 !important;
+          width: 32px !important;
+          height: 32px !important;
+          min-width: 32px !important; /* Prevent squashing */
+          min-height: 32px !important; /* Prevent squashing */
+          border-radius: 50% !important; /* Force circle */
+          padding: 0 !important;
+          box-sizing: border-box !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+      }
+      /* Target the Send SVG icon specifically to fix distortion */
+      #sendBtn svg {
+          width: 18px !important;
+          height: 18px !important;
+          min-width: 18px !important;
+          min-height: 18px !important;
+      }
+      /* Style for the Voice button to ensure visual consistency */
+      #voiceBtn {
+          background-color: rgba(255, 255, 255, 0.1) !important;
+      }
+      #voiceBtn:hover {
+          background-color: rgba(255, 255, 255, 0.15) !important;
+      }
+    }
 </style>
 </head>
 <body>
