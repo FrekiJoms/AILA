@@ -35,7 +35,26 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
 <style>
-/* --- Message List Fade-Out Effect --- */
+/* --- Video Embed Styles --- */
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0;
+  overflow: hidden;
+  max-width: 100%;
+  background: #000;
+  border-radius: 12px;
+  margin: 12px 0;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
 
 .dropdown-item {
   display: block;
@@ -1253,6 +1272,7 @@ const faqs = [
 /* dito mo e ccustomize if may babagohin or e dadagdag na template questions */
 const offlineResponses = {
   // random templated questions //
+  "video": "https://www.youtube.com/watch?v=VsniBavLF4E",
   "Hi": "Hellow kuys! I'm AILA, your AI learning assistant. How can I help you today?",
   "Orientation to data processing": `Hi kuys!👋
   \n**Orientation to Data Processing**
@@ -2059,15 +2079,54 @@ const input = document.getElementById('input');
 const sendBtn = document.getElementById('sendBtn');
 const logoArea = document.getElementById('logo');
 
+function convertVideoLinksToEmbeds(text) {
+  let processedText = text;
+
+  // YouTube Regex
+  const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{11})/g;
+  
+  // Google Drive Regex (now more flexible)
+  const gdriveRegex = /https:\/\/drive\.google\.com\/file\/d\/([\w-]{25,})(?:\/(?:view|edit|usp=sharing))?/g;
+
+  // Replace YouTube links
+  processedText = processedText.replace(youtubeRegex, (match, videoId) => {
+    console.log('[AILA Debug] Found YouTube video. ID:', videoId); // DEBUG
+    if (!videoId) return match; 
+    const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+    console.log('[AILA Debug] Constructed YouTube Embed URL:', embedUrl); // DEBUG
+    return `<div class="video-container"><iframe src="${embedUrl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+  });
+  
+  // Replace Google Drive links
+  processedText = processedText.replace(gdriveRegex, (match, fileId) => {
+    console.log('[AILA Debug] Found Google Drive video. ID:', fileId); // DEBUG
+    if (!fileId) return match;
+    const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+    console.log('[AILA Debug] Constructed Google Drive Embed URL:', embedUrl); // DEBUG
+    return `<div class="video-container"><iframe src="${embedUrl}"></iframe></div>`;
+  });
+
+  return processedText;
+}
+
 /* Marked + DOMPurify */
 marked.setOptions({ breaks: true, gfm: true });
 function renderSafeMarkdown(mdText) {
   if (typeof mdText !== 'string') mdText = String(mdText || '');
+
+  // CORRECTED: The regular expression no longer uses double backslashes
   const urlRx = /(\b(https?:\/\/|www\.)[^\s<>()]+)/gi;
+
   const pre = mdText.replace(urlRx, (m)=>{ if (m.startsWith('<') && m.endsWith('>')) return m; return `<${m}>`; });
   const raw = marked.parse(pre);
-  return DOMPurify.sanitize(raw, { ADD_ATTR: ['target','rel','style'] });
+  
+  // UPDATED: Allow iframe, div, and necessary attributes for video embeds
+  return DOMPurify.sanitize(raw, { 
+      ADD_TAGS: ['iframe', 'div'], 
+      ADD_ATTR: ['target', 'rel', 'style', 'allow', 'allowfullscreen', 'src', 'frameborder', 'class'] 
+  });
 }
+
 /* welcome logo */
 /* welcome screen*/
 function showWelcomeScreen() {
@@ -2109,208 +2168,217 @@ function useSuggestion(text) {
   sendToBackend(text, true);
 }
 
-function appendMessage(text, who='bot', attachFAQs=false, suggestions=[]) {
-  const wrap = document.createElement('div');
-  wrap.className = 'msg ' + who;
-  wrap.innerHTML = renderSafeMarkdown(text);
-  wrap.querySelectorAll('a').forEach(a => {
-    a.setAttribute('target','_blank');
-    a.setAttribute('rel','noopener noreferrer');
-  });
+function appendMessage(text, who = 'bot', attachFAQs = false, suggestions = []) {
+    const wrap = document.createElement('div');
+    wrap.className = 'msg ' + who;
 
-  if (who === 'bot') {
-    const actionWrap = document.createElement('div');
-    actionWrap.className = 'sugg-buttons';
+    // --- NEW LOGIC: Convert video links before rendering ---
+    let contentToRender = text;
+    if (who === 'bot') {
+        contentToRender = convertVideoLinksToEmbeds(text);
+    }
+    // --- END NEW LOGIC ---
 
-    const dropdownContainer = document.createElement('div');
-    dropdownContainer.style.position = 'relative';
-    dropdownContainer.style.display = 'inline-block';
-    dropdownContainer.style.marginRight = '8px';
+    wrap.innerHTML = renderSafeMarkdown(contentToRender); // Use the processed content
 
-    const dropdownBtn = document.createElement('button');
-    dropdownBtn.className = 'sugg-btn';
-    dropdownBtn.textContent = '📋 Quick Actions';
-    dropdownBtn.style.position = 'relative';
-
-    const dropdownContent = document.createElement('div');
-    dropdownContent.style.position = 'absolute';
-    dropdownContent.style.top = '100%';
-    dropdownContent.style.left = '0';
-    dropdownContent.style.display = 'none';
-    dropdownContent.style.minWidth = '240px';
-    dropdownContent.style.background = 'linear-gradient(180deg, var(--glass-2), rgba(255,255,255,0.006))';
-    dropdownContent.style.border = '1px solid rgba(255,255,255,0.03)';
-    dropdownContent.style.borderRadius = '10px';
-    dropdownContent.style.boxShadow = '0 8px 25px rgba(0,0,0,0.3)';
-    dropdownContent.style.padding = '8px';
-    dropdownContent.style.marginTop = '4px';
-    dropdownContent.style.zIndex = '9999';
-    dropdownContent.style.maxWidth = '300px';
-
-    // templated questions and buttons section
-    const faqSection = document.createElement('div');
-    faqSection.style.marginBottom = '8px';
-    // show up buttons
-    // suggestion button area
-    const faqToggleBtn = document.createElement('button');
-    faqToggleBtn.className = 'dropdown-item sugg-btn';
-    faqToggleBtn.textContent = '📚 Click here kuys!';
-    faqToggleBtn.style.width = '100%';
-    faqToggleBtn.style.marginBottom = '4px';
-
-    const faqDiv = document.createElement('div');
-    faqDiv.className = 'faq-buttons';
-    faqDiv.style.display = 'none';
-    faqDiv.style.flexWrap = 'wrap';
-    faqDiv.style.gap = '4px';
-    faqDiv.style.marginTop = '4px';
-    faqDiv.style.maxHeight = '200px';
-    faqDiv.style.overflowY = 'auto';
-
-    faqs.forEach(q => {
-      const fb = document.createElement('button');
-      fb.className = 'faq-btn';
-      fb.textContent = q;
-      fb.style.fontSize = '12px';
-      fb.style.padding = '6px 8px';
-      fb.addEventListener('click', () => onFaqClick(fb, q));
-      faqDiv.appendChild(fb);
-    });
-    const moduleSection = document.createElement('div');
-    moduleSection.style.marginBottom = '8px';
-    
-    // module button area
-    const moduleBtn = document.createElement('button');
-    moduleBtn.className = 'dropdown-item sugg-btn';
-    moduleBtn.textContent = '📦 Modules';
-    moduleBtn.style.width = '100%';
-    moduleBtn.style.marginBottom = '1px';
-    
-    const moduleDiv = document.createElement('div');
-    moduleDiv.className = 'faq-buttons';
-    moduleDiv.style.display = 'none';
-    moduleDiv.style.flexWrap = 'wrap';
-    moduleDiv.style.gap = '4px';
-    moduleDiv.style.marginTop = '4px';
-    
-    const module1Btn = document.createElement('button');
-    module1Btn.className = 'faq-btn';
-    module1Btn.textContent = 'Module 1: Understanding the MRP System';
-    module1Btn.addEventListener('click', () => {
-      appendMessage('Tell me about Module 1: Understanding the MRP System', 'user');
-      sendToBackend('Tell me about Module 1', true);
-      dropdownContent.style.display = 'none';
-    });
-    
-    const module2Btn = document.createElement('button');
-    module2Btn.className = 'faq-btn';
-    module2Btn.textContent = 'Module 2: Working with MRP Data Using Spreadsheet';
-    module2Btn.addEventListener('click', () => {
-      appendMessage('Tell me about Module 2: Working with MRP Data Using Spreadsheet', 'user');
-      sendToBackend('Tell me about Module 2', true);
-      dropdownContent.style.display = 'none';
-    });
-    
-    const module3Btn = document.createElement('button');
-    module3Btn.className = 'faq-btn';
-    module3Btn.textContent = 'Module 3: Data Analysis and Visualization';
-    module3Btn.addEventListener('click', () => {
-      appendMessage('Tell me about Module 3: Data Analysis and Visualization', 'user');
-      sendToBackend('Tell me about Module 3', true);
-      dropdownContent.style.display = 'none';
+    wrap.querySelectorAll('a').forEach(a => {
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener noreferrer');
     });
 
-     const transmoduleBtn = document.createElement('button');
-    transmoduleBtn.className = 'faq-btn';
-    transmoduleBtn.textContent = 'Transfer Between Modules';
-    transmoduleBtn.addEventListener('click', () => {
-      appendMessage('How to transfer between modules', 'user');
-      sendToBackend('How to transfer between modules', true);
-      dropdownContent.style.display = 'none';
-    });
-    
-    const orientBtn = document.createElement('button');
-    orientBtn.className = 'faq-btn';
-    orientBtn.textContent = '📊 Orientation to Data Processing';
-    orientBtn.addEventListener('click', () => {
-      const orientationText = "Orientation to data processing";
-      appendMessage(orientationText, 'user');
-      sendToBackend(orientationText, true);
-      dropdownContent.style.display = 'none';
-    });
-    
-    moduleDiv.appendChild(module1Btn);
-    moduleDiv.appendChild(module2Btn);
-    moduleDiv.appendChild(module3Btn);
-    moduleDiv.appendChild(transmoduleBtn);
-    moduleDiv.appendChild(orientBtn);
+    if (who === 'bot') {
+        const actionWrap = document.createElement('div');
+        actionWrap.className = 'sugg-buttons';
 
-    faqToggleBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isVisible = faqDiv.style.display === 'flex';
-      faqDiv.style.display = isVisible ? 'none' : 'flex';
-      if (!isVisible) moduleDiv.style.display = 'none';
-    });
+        const dropdownContainer = document.createElement('div');
+        dropdownContainer.style.position = 'relative';
+        dropdownContainer.style.display = 'inline-block';
+        dropdownContainer.style.marginRight = '8px';
 
-    moduleBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isVisible = moduleDiv.style.display === 'flex';
-      moduleDiv.style.display = isVisible ? 'none' : 'flex';
-      if (!isVisible) faqDiv.style.display = 'none';
-    });
+        const dropdownBtn = document.createElement('button');
+        dropdownBtn.className = 'sugg-btn';
+        dropdownBtn.textContent = '📋 Quick Actions';
+        dropdownBtn.style.position = 'relative';
 
-    faqSection.appendChild(faqToggleBtn);
-    faqSection.appendChild(faqDiv);
-    
-    moduleSection.appendChild(moduleBtn);
-    moduleSection.appendChild(moduleDiv);
+        const dropdownContent = document.createElement('div');
+        dropdownContent.style.position = 'absolute';
+        dropdownContent.style.top = '100%';
+        dropdownContent.style.left = '0';
+        dropdownContent.style.display = 'none';
+        dropdownContent.style.minWidth = '240px';
+        dropdownContent.style.background = 'linear-gradient(180deg, var(--glass-2), rgba(255,255,255,0.006))';
+        dropdownContent.style.border = '1px solid rgba(255,255,255,0.03)';
+        dropdownContent.style.borderRadius = '10px';
+        dropdownContent.style.boxShadow = '0 8px 25px rgba(0,0,0,0.3)';
+        dropdownContent.style.padding = '8px';
+        dropdownContent.style.marginTop = '4px';
+        dropdownContent.style.zIndex = '9999';
+        dropdownContent.style.maxWidth = '300px';
 
-    dropdownContent.appendChild(faqSection);
-    dropdownContent.appendChild(moduleSection);
+        // templated questions and buttons section
+        const faqSection = document.createElement('div');
+        faqSection.style.marginBottom = '8px';
+        // show up buttons
+        // suggestion button area
+        const faqToggleBtn = document.createElement('button');
+        faqToggleBtn.className = 'dropdown-item sugg-btn';
+        faqToggleBtn.textContent = '📚 Click here kuys!';
+        faqToggleBtn.style.width = '100%';
+        faqToggleBtn.style.marginBottom = '4px';
 
-    dropdownContainer.appendChild(dropdownBtn);
-    dropdownContainer.appendChild(dropdownContent);
+        const faqDiv = document.createElement('div');
+        faqDiv.className = 'faq-buttons';
+        faqDiv.style.display = 'none';
+        faqDiv.style.flexWrap = 'wrap';
+        faqDiv.style.gap = '4px';
+        faqDiv.style.marginTop = '4px';
+        faqDiv.style.maxHeight = '200px';
+        faqDiv.style.overflowY = 'auto';
 
-    actionWrap.appendChild(dropdownContainer);
-    wrap.appendChild(actionWrap);
+        faqs.forEach(q => {
+            const fb = document.createElement('button');
+            fb.className = 'faq-btn';
+            fb.textContent = q;
+            fb.style.fontSize = '12px';
+            fb.style.padding = '6px 8px';
+            fb.addEventListener('click', () => onFaqClick(fb, q));
+            faqDiv.appendChild(fb);
+        });
+        const moduleSection = document.createElement('div');
+        moduleSection.style.marginBottom = '8px';
 
-    setTimeout(() => {
-      let isDropdownOpen = false;
+        // module button area
+        const moduleBtn = document.createElement('button');
+        moduleBtn.className = 'dropdown-item sugg-btn';
+        moduleBtn.textContent = '📦 Modules';
+        moduleBtn.style.width = '100%';
+        moduleBtn.style.marginBottom = '1px';
 
-      dropdownBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        isDropdownOpen = !isDropdownOpen;
-        dropdownContent.style.display = isDropdownOpen ? 'block' : 'none';
-        
-        if (!isDropdownOpen) {
-          faqDiv.style.display = 'none';
-          moduleDiv.style.display = 'none';
-        }
-      });
+        const moduleDiv = document.createElement('div');
+        moduleDiv.className = 'faq-buttons';
+        moduleDiv.style.display = 'none';
+        moduleDiv.style.flexWrap = 'wrap';
+        moduleDiv.style.gap = '4px';
+        moduleDiv.style.marginTop = '4px';
 
-      document.addEventListener('click', () => {
-        if (isDropdownOpen) {
-          isDropdownOpen = false;
-          dropdownContent.style.display = 'none';
-          faqDiv.style.display = 'none';
-          moduleDiv.style.display = 'none';
-        }
-      });
+        const module1Btn = document.createElement('button');
+        module1Btn.className = 'faq-btn';
+        module1Btn.textContent = 'Module 1: Understanding the MRP System';
+        module1Btn.addEventListener('click', () => {
+            appendMessage('Tell me about Module 1: Understanding the MRP System', 'user');
+            sendToBackend('Tell me about Module 1', true);
+            dropdownContent.style.display = 'none';
+        });
 
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && isDropdownOpen) {
-          isDropdownOpen = false;
-          dropdownContent.style.display = 'none';
-          faqDiv.style.display = 'none';
-          moduleDiv.style.display = 'none';
-        }
-      });
-    }, 100);
-  }
+        const module2Btn = document.createElement('button');
+        module2Btn.className = 'faq-btn';
+        module2Btn.textContent = 'Module 2: Working with MRP Data Using Spreadsheet';
+        module2Btn.addEventListener('click', () => {
+            appendMessage('Tell me about Module 2: Working with MRP Data Using Spreadsheet', 'user');
+            sendToBackend('Tell me about Module 2', true);
+            dropdownContent.style.display = 'none';
+        });
 
-  messagesEl.appendChild(wrap);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-  return wrap;
+        const module3Btn = document.createElement('button');
+        module3Btn.className = 'faq-btn';
+        module3Btn.textContent = 'Module 3: Data Analysis and Visualization';
+        module3Btn.addEventListener('click', () => {
+            appendMessage('Tell me about Module 3: Data Analysis and Visualization', 'user');
+            sendToBackend('Tell me about Module 3', true);
+            dropdownContent.style.display = 'none';
+        });
+
+        const transmoduleBtn = document.createElement('button');
+        transmoduleBtn.className = 'faq-btn';
+        transmoduleBtn.textContent = 'Transfer Between Modules';
+        transmoduleBtn.addEventListener('click', () => {
+            appendMessage('How to transfer between modules', 'user');
+            sendToBackend('How to transfer between modules', true);
+            dropdownContent.style.display = 'none';
+        });
+
+        const orientBtn = document.createElement('button');
+        orientBtn.className = 'faq-btn';
+        orientBtn.textContent = '📊 Orientation to Data Processing';
+        orientBtn.addEventListener('click', () => {
+            const orientationText = "Orientation to data processing";
+            appendMessage(orientationText, 'user');
+            sendToBackend(orientationText, true);
+            dropdownContent.style.display = 'none';
+        });
+
+        moduleDiv.appendChild(module1Btn);
+        moduleDiv.appendChild(module2Btn);
+        moduleDiv.appendChild(module3Btn);
+        moduleDiv.appendChild(transmoduleBtn);
+        moduleDiv.appendChild(orientBtn);
+
+        faqToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isVisible = faqDiv.style.display === 'flex';
+            faqDiv.style.display = isVisible ? 'none' : 'flex';
+            if (!isVisible) moduleDiv.style.display = 'none';
+        });
+
+        moduleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isVisible = moduleDiv.style.display === 'flex';
+            moduleDiv.style.display = isVisible ? 'none' : 'flex';
+            if (!isVisible) faqDiv.style.display = 'none';
+        });
+
+        faqSection.appendChild(faqToggleBtn);
+        faqSection.appendChild(faqDiv);
+
+        moduleSection.appendChild(moduleBtn);
+        moduleSection.appendChild(moduleDiv);
+
+        dropdownContent.appendChild(faqSection);
+        dropdownContent.appendChild(moduleSection);
+
+        dropdownContainer.appendChild(dropdownBtn);
+        dropdownContainer.appendChild(dropdownContent);
+
+        actionWrap.appendChild(dropdownContainer);
+        wrap.appendChild(actionWrap);
+
+        setTimeout(() => {
+            let isDropdownOpen = false;
+
+            dropdownBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                isDropdownOpen = !isDropdownOpen;
+                dropdownContent.style.display = isDropdownOpen ? 'block' : 'none';
+
+                if (!isDropdownOpen) {
+                    faqDiv.style.display = 'none';
+                    moduleDiv.style.display = 'none';
+                }
+            });
+
+            document.addEventListener('click', () => {
+                if (isDropdownOpen) {
+                    isDropdownOpen = false;
+                    dropdownContent.style.display = 'none';
+                    faqDiv.style.display = 'none';
+                    moduleDiv.style.display = 'none';
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && isDropdownOpen) {
+                    isDropdownOpen = false;
+                    dropdownContent.style.display = 'none';
+                    faqDiv.style.display = 'none';
+                    moduleDiv.style.display = 'none';
+                }
+            });
+        }, 100);
+    }
+
+    messagesEl.appendChild(wrap);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return wrap;
 }
 
 const safe = (fn) => { try { fn(); } catch(e) { console.warn('safe error', e); } };
