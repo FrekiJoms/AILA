@@ -214,37 +214,7 @@
   height: auto !important;
   overflow-y: hidden;
 }
-#sendBtn {
-  background: linear-gradient(180deg, var(--accent1), var(--accent2));
-  color: #042022;
-  border: none;
-  padding: 100% 100%;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 14px;
-  transition: all 0.2s ease;
-  min-width: 70px;
-  height: 44px; 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-#sendBtn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,210,255,0.3);
-}
-#sendBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none !important;
-  box-shadow: none !important;
-}
-#sendBtn:active {
-  transform: translateY(0);
-}
+
 .faq-buttons {
   display: flex;
   flex-wrap: wrap;
@@ -417,8 +387,6 @@ textarea#input, #input {
     padding: 12px;
     line-height: 1.45;
   }
-button#sendBtn { min-width: 64px; height: 48px; padding: 12px 14px; font-size: 15px; border-radius: 12px; }
-
 
 .logo-area:hover { animation: none; transform: none; }
 .msg:hover { filter: none; }
@@ -659,57 +627,7 @@ textarea#input::placeholder {
 textarea#input.expanded {
   min-height: 60px;
 }
-button#sendBtn {
-  background: linear-gradient(180deg, var(--accent1), var(--accent2));
-  color: #042022;
-  border: none;
-  padding: 12px 16px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 14px;
-  transition: all 0.2s ease;
-  min-width: 80px;
-  height: fit-content;
-  align-self: flex-end;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  white-space: nowrap;
-}
-button#sendBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,210,255,0.3);
-}
-button#sendBtn:active {
-  transform: translateY(0);
-}
-button#sendBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none !important;
-  box-shadow: none !important;
-  background: rgba(255,255,255,0.1) !important;
-  color: rgba(255,255,255,0.3) !important;
-}
-button#sendBtn.sending {
-  background: linear-gradient(180deg, #666, #888) !important;
-  color: #ccc !important;
-}
-@media (max-width: 880px) {
-  .composer {
-    padding: 10px 12px;
-    gap: 8px;
-  }
-  textarea#input {
-    font-size: 16px;
-    padding: 10px 12px;
-  }
-  button#sendBtn {
-    padding: 10px 14px;
-    min-width: 70px;
-  }
-}
+
 @media (max-width: 520px) {
   .composer {
     padding: 8px 10px;
@@ -725,44 +643,67 @@ button#sendBtn.sending {
     font-size: 13px;
   }
 }
-/* New styles for positioning buttons inside the text area */
+/* --- Composer Styles --- */
 .composer {
-    position: relative; /* This is essential for positioning the buttons inside */
+    position: relative;
+    padding: 12px 16px;
+    box-sizing: border-box;
+    border-top: 1px solid rgba(255,255,255,0.03);
+    background: linear-gradient(180deg, rgba(3,6,10,0.9), rgba(4,8,16,0.98));
 }
 
 textarea#input {
-    /* Add space on the right so text doesn't go under the buttons */
-    padding-right: 85px !important;
-    border-radius: 24px; /* Makes the textarea have rounded corners */
-    height: 52px;
+    width: 100%;
     min-height: 52px;
-    padding-left: 20px;
-    padding-top: 15px;
+    max-height: 120px;
+    height: 52px;
+    resize: none;
+    background: rgba(255,255,255,0.02);
+    padding: 15px 85px 15px 20px; /* Top, Right, Bottom, Left */
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #e6fbff;
+    font-size: 16px;
+    font-family: inherit;
+    line-height: 1.4;
+    outline: none;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+textarea#input:focus {
+  border-color: var(--accent1);
+  box-shadow: 0 0 0 3px rgba(0,210,255,0.1);
+  background: rgba(255,255,255,0.04);
+}
+
+textarea#input::placeholder {
+  color: rgba(159,182,198,0.6);
 }
 
 .composer-actions {
-    position: absolute; /* Take the buttons out of the normal document flow */
-    right: 8px;      /* Anchor them to the right side of the composer */
-    top: 50%;          /* Center them vertically */
+    position: absolute;
+    right: 24px;
+    top: 50%;
     transform: translateY(-50%);
     display: flex;
     align-items: center;
     gap: 4px;
 }
 
-/* Clean up button styles */
 .composer-btn, .send {
     background: transparent;
     border: none;
     cursor: pointer;
     width: 36px;
     height: 36px;
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--muted);
     border-radius: 50%;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .composer-btn:hover, .send:hover {
@@ -770,14 +711,35 @@ textarea#input {
     color: #e6fbff;
 }
 
-/* Hide the send button by default. We'll show it with JS. */
 #sendBtn {
-    display: none;
+    background: var(--accent1);
+    color: #042022;
 }
 
-.composer:focus-within {
-  box-shadow: 0 -2px 20px rgba(0,210,255,0.1);
+#sendBtn:hover {
+    background: var(--accent2);
+    color: #042022;
 }
+
+#sendBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+  background: rgba(255,255,255,0.1) !important;
+  color: rgba(255,255,255,0.3) !important;
+}
+
+/* --- End of Composer Styles --- */
+.is-hidden {
+    opacity: 0 !important;
+    transform: scale(0.7) !important;
+    pointer-events: none !important;
+    width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
 textarea#input {
   transition: height 0.2s ease;
 }
@@ -2347,6 +2309,60 @@ function pulseLogoOnce() {
   logoArea.classList.add('logo-glow');
   setTimeout(()=> logoArea.classList.remove('logo-glow'), 1250);
 }
+// --- New Logic for Composer Buttons ---
+const voiceBtn = document.getElementById('voiceBtn');
+
+// 1. Show/Hide button based on input
+sendBtn.classList.add('is-hidden'); // Hide send button by default
+
+input.addEventListener('input', () => {
+    const hasText = input.value.trim().length > 0;
+    sendBtn.classList.toggle('is-hidden', !hasText);
+    voiceBtn.classList.toggle('is-hidden', hasText);
+});
+
+// 2. Voice Recognition Logic
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition;
+
+if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    voiceBtn.addEventListener('click', () => {
+        recognition.start();
+    });
+
+    recognition.onstart = () => {
+        voiceBtn.style.color = 'var(--accent1)'; // Indicate listening
+        voiceBtn.title = "Listening...";
+    };
+
+    recognition.onend = () => {
+        voiceBtn.style.color = 'var(--muted)'; // Back to normal color
+        voiceBtn.title = "Use voice";
+    };
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[event.results.length - 1][0].transcript;
+        input.value = transcript;
+        // Manually trigger the 'input' event to swap to the send button
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+
+    recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+        alert("Voice recognition error: " + event.error);
+    };
+
+} else {
+    console.warn("Speech Recognition not supported in this browser.");
+    voiceBtn.style.display = 'none'; // Hide if not supported
+}
+
+// --- End of New Logic ---
 
 sendBtn.addEventListener('click', sendMessage);
 input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
