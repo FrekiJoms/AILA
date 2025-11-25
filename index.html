@@ -82,6 +82,8 @@
   color: var(--muted);
   border: 1px solid rgba(255,255,255,0.04);
   padding: 8px 12px;
+  margin-left: 15px;
+  margin-right: 15px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.12s ease;
@@ -644,6 +646,60 @@ textarea#input.expanded {
   }
 }
 /* --- Composer Styles --- */
+/* --- New Styles for Voice Mode --- */
+
+/* 1. Sound Wave Animation */
+.sound-wave {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: none; /* Hidden by default */
+    align-items: center;
+    gap: 3px;
+    height: 18px;
+    pointer-events: none; /* Make sure it's not clickable */
+}
+
+.sound-wave span {
+    display: block;
+    width: 3px;
+    height: 100%;
+    background-color: var(--accent1);
+    border-radius: 2px;
+    animation: wave 1.2s ease-in-out infinite;
+}
+
+.sound-wave span:nth-child(2) { animation-delay: 0.2s; }
+.sound-wave span:nth-child(3) { animation-delay: 0.4s; }
+.sound-wave span:nth-child(4) { animation-delay: 0.6s; }
+
+@keyframes wave {
+    0%, 100% { transform: scaleY(0.2); }
+    50% { transform: scaleY(1); }
+}
+
+/* 2. Icon States for the Voice Button */
+.stop-icon {
+    display: none; /* Hide stop icon by default */
+}
+
+#voiceBtn.listening .mic-icon {
+    display: none; /* Hide mic when listening */
+}
+
+#voiceBtn.listening .stop-icon {
+    display: block; /* Show stop icon when listening */
+    color: var(--accent1);
+}
+
+/* 3. Textarea adjustments for when listening */
+textarea#input.voice-active {
+    padding-left: 50px !important; /* Make space for the sound wave */
+}
+
+/* --- End of New Styles --- */
+
 .composer {
     position: relative;
     padding: 12px 16px;
@@ -844,6 +900,51 @@ textarea#input {
 
   @media (max-width:880px){ .chat{width:94vw;height:88vh} .logo-area{width:48px;height:48px} }
   @media (max-width:520px){ .composer{padding:10px} textarea{min-height:48px} .messages{padding:12px} .msg{max-width:90%} .welcome-logo{width:85px;height:85px} .welcome-title{font-size:24px} }
+/* --- Mobile View Enhancements --- */
+@media (max-width: 600px) {
+  /* Make app container and chat window full screen */
+  .app {
+    padding: 0;
+  }
+  .chat {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    max-height: none;
+  }
+
+  /* Simplify Header */
+  .header {
+    padding: 8px 12px;
+  }
+  .header .subtitle {
+    display: none; /* Hides "Artificial Intelligent..." and the Version number */
+  }
+  .brand {
+    gap: 12px; /* Reduce gap between logo and title */
+  }
+  .brand > div:last-child {
+    display: flex;
+    align-items: center; /* Vertically center the main title with the logo */
+  }
+  .title {
+    font-size: 18px; /* Slightly reduce title font size */
+  }
+  .logo-area {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* Adjust composer and messages for smaller screens */
+  .composer {
+    padding: 8px 10px;
+  }
+  .messages {
+    padding: 10px;
+  }
+}
+/* --- End of Mobile View Enhancements --- */
+
 </style>
 </head>
 <body>
@@ -885,11 +986,17 @@ textarea#input {
       </div>
     </div>
     <div class="composer">
+      <div id="soundWave" class="sound-wave">
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+</div>
   <textarea id="input" placeholder="Ask anything..." aria-label="Message input"></textarea>
   <div class="composer-actions">
     <button id="voiceBtn" class="composer-btn" title="Use voice">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mic"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3
-0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+<svg class="mic-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+<svg class="stop-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="7" width="10" height="10" rx="1.5"></rect></svg>
     </button>
     <button id="sendBtn" class="send">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 11L12 6L17 11M12 18V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
@@ -2309,11 +2416,14 @@ function pulseLogoOnce() {
   logoArea.classList.add('logo-glow');
   setTimeout(()=> logoArea.classList.remove('logo-glow'), 1250);
 }
-// --- New Logic for Composer Buttons ---
-const voiceBtn = document.getElementById('voiceBtn');
 
-// 1. Show/Hide button based on input
+// --- New Logic for Composer Buttons & Voice ---
+const voiceBtn = document.getElementById('voiceBtn');
+const soundWave = document.getElementById('soundWave');
+
+// 1. Show/Hide button based on text input
 sendBtn.classList.add('is-hidden'); // Hide send button by default
+voiceBtn.classList.remove('is-hidden'); // Ensure voice is visible
 
 input.addEventListener('input', () => {
     const hasText = input.value.trim().length > 0;
@@ -2324,44 +2434,90 @@ input.addEventListener('input', () => {
 // 2. Voice Recognition Logic
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition;
+let isListening = false;
+let silenceTimer;
 
 if (SpeechRecognition) {
     recognition = new SpeechRecognition();
     recognition.lang = 'en-US';
-    recognition.continuous = false;
-    recognition.interimResults = false;
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    const stopListening = () => {
+        if (isListening) {
+            recognition.stop();
+        }
+    };
+
+    const startSilenceTimer = () => {
+        clearTimeout(silenceTimer);
+        silenceTimer = setTimeout(stopListening, 3000); // 3-second timer
+    };
 
     voiceBtn.addEventListener('click', () => {
-        recognition.start();
+        if (isListening) {
+            stopListening();
+        } else {
+            input.value = ''; // Clear input for new voice session
+            recognition.start();
+        }
     });
 
     recognition.onstart = () => {
-        voiceBtn.style.color = 'var(--accent1)'; // Indicate listening
-        voiceBtn.title = "Listening...";
+        isListening = true;
+        voiceBtn.classList.add('listening');
+        voiceBtn.title = "Stop listening";
+        soundWave.style.display = 'flex';
+        input.classList.add('voice-active');
+        input.dispatchEvent(new Event('input', { bubbles: true })); // Hide send btn
+        startSilenceTimer();
     };
 
     recognition.onend = () => {
-        voiceBtn.style.color = 'var(--muted)'; // Back to normal color
+        isListening = false;
+        clearTimeout(silenceTimer);
+        voiceBtn.classList.remove('listening');
         voiceBtn.title = "Use voice";
+        soundWave.style.display = 'none';
+        input.classList.remove('voice-active');
+
+        // CORE FIX: Check for text and send it.
+        const messageToSend = input.value.trim();
+        if (messageToSend.length > 0) {
+            sendMessage(); // Automatically send the message.
+        } else {
+            // If no message was captured, just ensure UI is reset.
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
     };
 
     recognition.onresult = (event) => {
-        const transcript = event.results[event.results.length - 1][0].transcript;
-        input.value = transcript;
-        // Manually trigger the 'input' event to swap to the send button
-        input.dispatchEvent(new Event('input', { bubbles: true }));
+        let final_transcript = '';
+        let interim_transcript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+                final_transcript += event.results[i][0].transcript;
+            } else {
+                interim_transcript += event.results[i][0].transcript;
+            }
+        }
+        input.value = final_transcript + interim_transcript;
+        startSilenceTimer(); // Reset silence timer on any new speech
     };
 
     recognition.onerror = (event) => {
         console.error("Speech recognition error:", event.error);
-        alert("Voice recognition error: " + event.error);
+        if (event.error !== 'no-speech') {
+          alert("Voice recognition error: " + event.error);
+        }
+        // onend will be called automatically by the browser on error.
     };
 
 } else {
     console.warn("Speech Recognition not supported in this browser.");
-    voiceBtn.style.display = 'none'; // Hide if not supported
+    voiceBtn.style.display = 'none';
 }
-
 // --- End of New Logic ---
 
 sendBtn.addEventListener('click', sendMessage);
