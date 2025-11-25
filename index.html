@@ -899,6 +899,17 @@ textarea#input {
   .messages{scrollbar-width:thin;scrollbar-color:linear-gradient(180deg,var(--accent2),var(--accent1)) transparent}
            
        /* --- Final Composer & Pill Text Area Style --- */
+       .footer-disclaimer {
+        position: absolute;
+        bottom: 10px; /* Sits at the very bottom */
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 12px;
+        color: var(--muted);
+        z-index: 5;
+      }
+      
       .composer {
         background: transparent !important; /* Removes the unwanted black box */
         border-top: none !important;
@@ -1090,6 +1101,10 @@ textarea#input {
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 11L12 6L17 11M12 18V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
     </button>
   </div>
+  <div class="footer-disclaimer">
+  AILA can make mistakes. Check important info.
+</div>
+
 </div>
 </div>
 </div>
