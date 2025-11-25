@@ -27,18 +27,6 @@
 ################################################################################################################-->
 <html lang="en">
 <head>
-  <script>
-  // This is the "iframe breaker" script.
-  // If the page is detected inside a frame, it forces the top-level window to navigate to the correct page URL.
-  // This permanently fixes the "mirrored UI" issue regardless of hosting configuration.
-  if (window.top !== window.self) {
-    try {
-      window.top.location = window.self.location;
-    } catch (e) {
-      console.error("Failed to break out of iframe. This may be due to security restrictions.", e);
-    }
-  }
-</script>
 <link rel="icon" href="icon.png">
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -1282,7 +1270,7 @@ const faqs = [
 const offlineResponses = {
   // random templated questions //
   "video": "https://www.youtube.com/watch?v=2jZHx5BvmO0",
-  "Hi": "Hellow kuys! I'm AILA. Here is a test video to see if it works: https://drive.google.com/file/d/1NcZ5BYRyabR3HtbeQrcvKkq8jRoehmQ9/view",
+  "Hi": "Hellow kuys! I'm AILA. Here is a test video to see if it works:  https://drive.google.com/file/d/1NcZ5BYRyabR3HtbeQrcvKkq8jRoehmQ9/view",
   "Orientation to data processing": `Hi kuys!👋
   \n**Orientation to Data Processing**
   \n\n- Ngayon, magbibigay muna ako ng overview tungkol sa process flow ng ating data processing activity. Mayroon na ba sa inyo ang may karanasan sa manufacturing? Pamilyar ba kayo sa role ng isang material planner?
@@ -2091,21 +2079,22 @@ const logoArea = document.getElementById('logo');
 function convertVideoLinksToEmbeds(text) {
   let processedText = text;
 
-  // YouTube Regex
-  const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{11})/g;
-  
-  // Google Drive Regex (now more flexible)
-  const gdriveRegex = /https:\/\/drive\.google\.com\/file\/d\/([\w-]{25,})(?:\/(?:view|edit|usp=sharing))?/g;
+  // This regex will find both YouTube and Google Drive links.
+  const videoUrlRegex = /https?:\/\/(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/|drive\.google\.com\/file\/d\/)[\w-]+(?:[\/?][\w-.=&]*)?/g;
 
-  // Replace YouTube links
-  processedText = processedText.replace(youtubeRegex, (match, videoId) => {
-    console.log('[AILA Debug] Found YouTube video. ID:', videoId); // DEBUG
-    if (!videoId) return match; 
-    const embedUrl = `https://www.youtube.com/embed/${videoId}`;
-    console.log('[AILA Debug] Constructed YouTube Embed URL:', embedUrl); // DEBUG
-    return `<div class="video-container"><iframe src="${embedUrl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+  processedText = processedText.replace(videoUrlRegex, (url) => {
+    let linkText = "Click to watch video";
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      linkText = "[Click to watch YouTube video]";
+    } else if (url.includes('drive.google.com')) {
+      linkText = "[Click to watch Google Drive video]";
+    }
+    // This creates a Markdown-style link, which will be converted to a proper <a> tag later.
+    return `${linkText}(${url})`;
   });
-  
+
+  return processedText;
+
   // Replace Google Drive links
   processedText = processedText.replace(gdriveRegex, (match, fileId) => {
     console.log('[AILA Debug] Found Google Drive video. ID:', fileId); // DEBUG
