@@ -168,35 +168,36 @@
       -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
       mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
     }
-/* --- Horizontally Scrollable Tables (Corrected) --- */
-.msg .content table {
-  display: block; /* Allows overflow properties to work on the table */
-  width: 100%;    /* Explicitly set width to contain the scrolling area */
-  overflow-x: auto; /* Enables horizontal scrolling ONLY when the table is too wide */
-  border-spacing: 0; /* Removes default spacing */
+/* --- Horizontally Scrollable Tables (Corrected & Simplified) --- */
+.msg table {
+  display: block;          /* Allows overflow properties to work */
+  max-width: 100%;         /* Prevents table from breaking the message bubble layout */
+  overflow-x: auto;        /* Enables horizontal scrolling ONLY when needed */
+  border-spacing: 0;       /* Removes default table spacing for a cleaner look */
+  border-collapse: collapse; /* Ensures borders are clean and single-lined */
 }
 
-/* Apply nowrap to cells to force horizontal overflow */
-.msg .content th,
-.msg .content td {
+/* Style for table headers and cells */
+.msg th,
+.msg td {
   padding: 10px 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  white-space: nowrap; /* CRITICAL: Prevents cell content from wrapping */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;     /* CRITICAL: Prevents cell content from wrapping and forces scrolling */
 }
 
 /* --- Custom Scrollbar for Tables --- */
-.msg .content table::-webkit-scrollbar {
-  height: 8px;
+.msg table::-webkit-scrollbar {
+  height: 8px; /* Height of the scrollbar */
 }
-.msg .content table::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
+.msg table::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2); /* The track (the bar) of the scrollbar */
 }
-.msg .content table::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+.msg table::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2); /* The draggable scrolling handle */
   border-radius: 4px;
 }
-.msg .content table::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+.msg table::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3); /* Handle on hover */
 }
 
 .composer {
@@ -402,9 +403,10 @@ textarea#input { transition: height 160ms ease; -webkit-text-size-adjust: 100%; 
     background: transparent;
     border: none;
     box-shadow: none;
-    width: 100%;          /* Force the container to take full width */
+    width: 80vw;          /* Force the container to take full width */
     max-width: none;      /* CRITICAL: Override the base max-width from .msg */
-    box-sizing: border-box; /* Ensure padding is included in the width */
+    box-sizing: border-box;
+    overflow-wrap: break-word; /* Ensure padding is included in the width */
 
     /* --- Preserved Styles --- */
     color: #dff8ff;
@@ -874,6 +876,10 @@ textarea#input {
 /* --- Mobile View Enhancements --- */
 /* --- FORCED UNIFIED MOBILE & TABLET VIEW --- */
 @media (max-width: 900px) {
+      /* --- Fix for Mobile Table Scrolling --- */
+      .msg table {
+        -webkit-overflow-scrolling: touch; /* Enables momentum-based scrolling on iOS */
+      }
 
   /* 1. Reset the page to prevent any scrolling or extra space. */
   html, body {
