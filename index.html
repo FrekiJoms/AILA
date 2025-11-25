@@ -1011,6 +1011,56 @@ textarea#input {
 </style>
 </head>
 <body>
+<script>
+  // This script MUST be right after the <body> tag to run first.
+  if (window.top !== window.self) {
+    // This detects if the page is loaded inside an iframe.
+    // To prevent the "mirrored UI", we replace the entire page with an error message.
+    document.documentElement.innerHTML = `
+      <head>
+        <title>Configuration Error</title>
+        <style>
+          body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #0b101b; 
+            color: #e2e8f0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0;
+            text-align: center;
+            padding: 1rem;
+          }
+          .container {
+            max-width: 600px;
+            padding: 2rem;
+            border: 1px solid #4a5568;
+            border-radius: 12px;
+            background-color: #1a2233;
+          }
+          h1 { color: #f56565; }
+          code { 
+            background-color: #4a5568; 
+            padding: 0.2rem 0.4rem; 
+            border-radius: 4px;
+            font-size: 0.9rem;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>Hosting Configuration Error</h1>
+          <p>AILA has detected that it is being loaded inside of itself. This breaks the application and causes the "mirrored UI" you are seeing.</p>
+          <p>This is a hosting platform issue, not a code problem.</p>
+          <hr style="border-color: #4a5568; margin: 1rem 0;">
+          <p><b>To fix this:</b> Please configure your hosting platform (<code>edgeone.app</code>) to serve the <code>index.html</code> file <b>directly</b> instead of embedding it in an iframe.</p>
+        </div>
+      </body>
+    `;
+  }
+</script>
+
 <div class="app">
   <div class="chat" role="application" aria-label="AILA chat">
     <div class="header">
