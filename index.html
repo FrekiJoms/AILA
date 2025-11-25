@@ -858,7 +858,7 @@ textarea#input {
         resize: none !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important; 
         min-height: 48px !important;
-        background: #1C2532 !important; 
+        background: #1c2532e0 !important; 
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.445) !important;
         overflow-y: hidden !important;
         resize: none !important;
@@ -2485,6 +2485,7 @@ const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecogni
 let recognition;
 let isListening = false;
 let silenceTimer;
+let watchdogTimer; // <-- NEW: The watchdog timer
 
 if (SpeechRecognition) {
     recognition = new SpeechRecognition();
@@ -2507,12 +2508,32 @@ if (SpeechRecognition) {
         if (isListening) {
             stopListening();
         } else {
-            input.value = ''; // Clear input for new voice session
-            recognition.start();
+            // Clear previous state and start recognition
+            input.value = ''; 
+            try {
+                recognition.start();
+
+                // --- NEW: Start the watchdog timer ---
+                clearTimeout(watchdogTimer); // Clear any old timers
+                watchdogTimer = setTimeout(() => {
+                    // This will only run if recognition.onstart doesn't fire
+                    recognition.stop(); // Stop any pending attempts
+                    appendMessage("🔴 **Voice Service Unavailable**\n\n- The microphone failed to start. This can happen when the page is embedded in another site (like Google Sites).\n- **Solution:** Please try opening AILA in its own, separate browser tab.", 'bot');
+                }, 1500); // 1.5 second timeout
+
+            } catch (e) {
+                console.error("Error starting recognition:", e);
+                // This catch handles immediate errors if .start() fails right away
+                clearTimeout(watchdogTimer);
+                appendMessage(`🔴 **Voice Error:** Could not start voice recognition. Error: ${e.message}`, 'bot');
+            }
         }
     });
 
     recognition.onstart = () => {
+        // --- NEW: Voice recognition started successfully, so cancel the watchdog ---
+        clearTimeout(watchdogTimer);
+        
         isListening = true;
         voiceBtn.classList.add('listening');
         voiceBtn.title = "Stop listening";
@@ -2523,19 +2544,20 @@ if (SpeechRecognition) {
     };
 
     recognition.onend = () => {
-        isListening = false;
+        // --- NEW: Clear timers as a cleanup step ---
+        clearTimeout(watchdogTimer);
         clearTimeout(silenceTimer);
+
+        isListening = false;
         voiceBtn.classList.remove('listening');
         voiceBtn.title = "Use voice";
         soundWave.style.display = 'none';
         input.classList.remove('voice-active');
 
-        // CORE FIX: Check for text and send it.
         const messageToSend = input.value.trim();
         if (messageToSend.length > 0) {
-            sendMessage(); // Automatically send the message.
+            sendMessage();
         } else {
-            // If no message was captured, just ensure UI is reset.
             input.dispatchEvent(new Event('input', { bubbles: true }));
         }
     };
@@ -2556,18 +2578,38 @@ if (SpeechRecognition) {
     };
 
     recognition.onerror = (event) => {
+        // --- NEW: Clear watchdog on explicit error ---
+        clearTimeout(watchdogTimer);
         console.error("Speech recognition error:", event.error);
-        if (event.error !== 'no-speech') {
-          alert("Voice recognition error: " + event.error);
+        
+        if (event.error === 'no-speech') {
+            return; 
         }
-        // onend will be called automatically by the browser on error.
+
+        let errorMessage = "🔴 **Voice Error:** Something went wrong. Please try again.";
+
+        if (event.error === 'not-allowed') {
+            errorMessage = "🔴 **Microphone Access Denied.**\nTo use voice input, please allow microphone access in your browser's site settings. The voice button will now be hidden to prevent further errors.";
+            
+            // Permanently hide the voice button if permission is denied
+            voiceBtn.style.display = 'none';
+
+        } else if (event.error === 'audio-capture') {
+            errorMessage = "🔴 **No Microphone Found.**\nPlease make sure a microphone is connected and configured.";
+        }
+
+        // This uses your existing function to show a message in the chat, NOT an alert.
+        appendMessage(errorMessage, 'bot');
     };
 
 } else {
+    // This part handles browsers that don't support voice recognition at all
     console.warn("Speech Recognition not supported in this browser.");
     voiceBtn.style.display = 'none';
+    // Optional: Inform the user that voice is not supported
+    // You can uncomment the line below if you want a message to appear in chat
+    // appendMessage("🔴 **Voice Not Supported**\n\nYour browser does not support the Web Speech API, so voice input is unavailable.", 'bot');
 }
-// --- End of New Logic ---
 
 sendBtn.addEventListener('click', sendMessage);
 input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
