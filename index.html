@@ -904,12 +904,22 @@ textarea#input {
         border-top: none !important;
         display: flex !important;
         gap: 10px !important;
+        position: absolute !important;
+        bottom: 0;
+        left: 5px;
+        right: 5px;
+        z-index: 10;
         padding: 8px 12px !important;
+        background: transparent !important;
+        border-top: none !important;
         /* Add horizontal padding to create margins on the left and right */
         padding-left: 10px !important;
         padding-right: 10px !important;
         border-radius: 28px !important;
-        padding-bottom: 10px !important;
+        padding-bottom: 9.5px !important;
+      }
+      .messages{
+        padding-bottom: 120px !important;
       }
 
       textarea#input {
@@ -921,7 +931,7 @@ textarea#input {
         border: 1px solid rgba(255, 255, 255, 0.1) !important; 
         min-height: 48px !important;
         /* A more noticeable background and a shadow to lift it from the page */
-        background: rgba(28, 39, 53, 0.041) !important; 
+        background: #1C2532 !important; 
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.445) !important;
         overflow-y: hidden !important;
         resize: none !important;
@@ -935,7 +945,7 @@ textarea#input {
   @media (max-width:880px){ .chat{width:94vw;height:88vh} .logo-area{width:48px;height:48px} }
   @media (max-width:520px){ .composer{padding:10px} textarea{min-height:48px} .messages{padding:12px} .msg{max-width:90%} .welcome-logo{width:85px;height:85px} .welcome-title{font-size:24px} }
 /* --- Mobile View Enhancements --- */
-@media (max-width: 600px) {
+@media (max-width: 900px) {
   /* Make app container and chat window full screen */
   .app {
     padding: 0;
@@ -980,8 +990,8 @@ textarea#input {
       textarea#input {
           min-height: 48px !important;
           height: 48px !important;
-          padding: 13px 56px 13px 18px !important;
           border-radius: 24px !important;
+          padding-bottom: 20px !important;
       }
       .composer-actions {
           right: 18px; /* MOVED LEFT: Pulls container fully inside the border */
@@ -989,6 +999,7 @@ textarea#input {
           height: 32px;
           display: block; /* Override flex bugs */
           top: 50%;
+          padding-bottom: 0.2px !important;
           transform: translateY(-50%); /* Ensure perfect vertical centering */
       }
       /* AGGRESSIVELY OVERRIDE BOTH buttons to be identical circles */
