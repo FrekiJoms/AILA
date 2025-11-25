@@ -262,50 +262,7 @@
   margin-top: 10px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-@media (max-width: 900px) {
-  .chat {
-    width: 94vw;
-    height: 88vh;
-  }
-  .chat.faq-hidden {
-    height: 90vh;
-  } 
-  .composer {
-    padding: 10px 12px;
-    gap: 8px;
-  }  
-  #input {
-    font-size: 16px;
-    padding: 8px 10px;
-  } 
-  #sendBtn {
-    padding: 8px 12px;
-    min-width: 60px;
-    height: 40px;
-  }
-}
-@media (max-width: 520px) {
-  .chat {
-    height: 85vh;
-  } 
-  .chat.faq-hidden {
-    height: 88vh;
-  }
-  .composer {
-    padding: 8px 10px;
-    gap: 6px;
-  }
-  #input {
-    min-height: 40px;
-    padding: 8px 10px;
-  }
-  #sendBtn {
-    padding: 8px 10px;
-    min-width: 55px;
-    height: 40px;
-    font-size: 13px;
-  }
-}
+
 
 @keyframes chatResize {
   0% {
@@ -348,77 +305,12 @@
   --tap-size: 44px;
 }
 
-@media (max-width: 900px) {
-      .app { 
-        height: 725px;
-      }
-      .chat {
-        width: 100vw;
-        max-width: 100vw;
-        height: 60vh;
-        max-height: 100vh; /* Ensure it doesn't exceed viewport height */
-        border-radius: 0;
-        margin: 0;
-      }
-
-.header {
-    padding: 10px;
-    gap: 8px;
-  }
-
-.brand { gap: 10px; }
-.messages { padding: 12px; max-height: calc(100vh - 220px); } /* leave space for header + composer */
-.msg { font-size: 12px; max-width: 88%; }
-
-.welcome-title { font-size: 22px; }
-.welcome-subtitle { font-size: 14px; max-width: 92%; }
-
-.faq-btn, .sugg-btn, .dropdown-item, .header-feedback-btn, .orient-btn {
-    min-height: var(--tap-size);
-    padding: 10px 14px;
-    font-size: 15px;
-  }
-
-.composer { padding: 10px; gap: 8px; }
-textarea#input, #input {
-    min-height: 56px;
-    font-size: 16px;
-    padding: 12px;
-    padding-top: 20px;
-    line-height: 1.45;
-  }
-
-.logo-area:hover { animation: none; transform: none; }
-.msg:hover { filter: none; }
-
-
-.sugg-buttons .dropdown-content,
-.dropdown-content {
-    position: fixed !important;
-    left: 8px !important;
-    right: 8px !important;
-    bottom: 8px !important;
-    top: auto !important;
-    max-height: 42vh !important;
-    display: none;
-    overflow: auto;
-    border-radius: 12px !important;
-    padding: 10px !important;
-    z-index: 100000 !important;
-    box-shadow: 0 18px 40px rgba(0,0,0,0.45) !important;
-  }
-
-.faq-buttons { gap: 10px; }
-}
 
 .logo-area { overflow:hidden; }
 .logo-area img { width:100%; height:100%; object-fit:cover; display:block; }
 
 textarea#input { transition: height 160ms ease; -webkit-text-size-adjust: 100%; }
 
-@media (max-width: 520px) {
-  body { font-size: 15px; }
-}
 .header {
   border-radius: 20px;
 }
@@ -619,21 +511,7 @@ textarea#input.expanded {
   min-height: 60px;
 }
 
-@media (max-width: 520px) {
-  .composer {
-    padding: 8px 10px;
-    gap: 6px;
-  }
-  textarea#input {
-    min-height: 44px;
-    padding: 8px 10px;
-  }
-  button#sendBtn {
-    padding: 8px 12px;
-    min-width: 60px;
-    font-size: 13px;
-  }
-}
+
 /* --- Composer Styles --- */
 /* --- New Styles for Voice Mode --- */
 
@@ -904,7 +782,7 @@ textarea#input {
         padding-left: 10px ;
         padding-right: 15px ;
         border-radius: 100px !important;
-        padding-bottom: px;
+        padding-bottom: 15px;
       }
       .messages{
         padding-bottom: 120px !important;
@@ -935,13 +813,23 @@ textarea#input {
  
   .msg a{color:var(--accent1);text-decoration:underline}
   
-  @media (max-width:880px){ .chat{width:94vw;height:88vh} .logo-area{width:48px;height:48px} }
-  @media (max-width:520px){ .composer{padding:10px} textarea{min-height:48px} .messages{padding:12px} .msg{max-width:90%} .welcome-logo{width:85px;height:85px} .welcome-title{font-size:24px} }
 /* --- Mobile View Enhancements --- */
-@media (max-width: 900px) {
+@media (max-width: 630px) {
+  body{
+    overflow-y: hidden;
+    overflow-x: hidden;
+  }
+  .composer {
+    padding-left: 10px;
+    gap: 8px;
+  }
+  textarea#input {
+    min-height: 48px;
+    font-size: 16px;
+  }
   .footer-disclaimer {
-        position: center;
-        bottom: 10px !important; /* Sits at the very bottom */
+        position: absolute;
+        bottom: 5px; /* Sits at the very bottom */
         left: 0;
         right: 0;
         text-align: center;
@@ -949,95 +837,61 @@ textarea#input {
         color: var(--muted);
         z-index: 5;
       }
-  .app {
-    padding: 0;
-  }
-  .chat {
-    width: 100%;
-    height: 100%;
-    border-radius: 0;
-    max-height: none;
-  }
+      .app {
+        width: 100%;
+        height: 100%;    /* Use vh (viewport height) to guarantee it fills the screen */
+        padding: 0;
+        margin: 0;
+        border-radius: 0;
+        max-width: none;
+        max-height: none;
+      }
+      .chat {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+        max-height: none;
+      }
 
-  /* Simplify Header */
+  /* --- 2. Header & Brand --- */
   .header {
     padding: 8px 12px;
   }
   .header .subtitle {
-    display: none; /* Hides "Artificial Intelligent..." and the Version number */
+    display: none;
   }
   .brand {
-    gap: 12px; /* Reduce gap between logo and title */
-  }
-  .brand > div:last-child {
-    display: flex;
-    align-items: center; /* Vertically center the main title with the logo */
+    gap: 12px; 
   }
   .title {
-    font-size: 18px; /* Slightly reduce title font size */
+    font-size: 18px;
   }
   .logo-area {
     width: 40px;
     height: 40px;
   }
 
-  .messages {
-    padding: 10px;
+  /* --- Hide the scrollbar inside the messages list --- */
+  .messages::-webkit-scrollbar {
+        display: none; /* For Chrome, Safari, etc. */
+      }
+      .messages {
+        -ms-overflow-style: none;  /* For IE and Edge */
+        scrollbar-width: none;  /* For Firefox */
+      }
+  .msg {
+    max-width: 90%;
   }
-      /* --- Mobile Composer: Aggressive Override Fix --- */
-      textarea#input {
-          min-height: 48px !important;
-          height: 48px !important;
-          border-radius: 24px !important;
-          padding-bottom: 15px !important;
-          line-height: 100px;
-      }
-      .composer{
-          padding-left: 15px;
-          padding-right: 8px;
-          right: 5px;
-          left: 5px;
-        }
-      .composer-actions {
-          right: 18px; /* MOVED LEFT: Pulls container fully inside the border */
-          width: 32px;
-          height: 32px;
-          display: block; /* Override flex bugs */
-          top: 50%;
-          padding-bottom: 0.2px !important;
-          transform: translateY(-50%); /* Ensure perfect vertical centering */
-      }
-      /* AGGRESSIVELY OVERRIDE BOTH buttons to be identical circles */
-      #sendBtn, #voiceBtn {
-          position: absolute !important;
-          top: 3 !important;
-          left: 0 !important;
-          width: 32px !important;
-          height: 32px !important;
-          min-width: 32px !important; /* Prevent squashing */
-          min-height: 32px !important; /* Prevent squashing */
-          border-radius: 50% !important; /* Force circle */
-          padding: 0 !important;
-          box-sizing: border-box !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-      }
-      /* Target the Send SVG icon specifically to fix distortion */
-      #sendBtn svg {
-          width: 18px !important;
-          height: 18px !important;
-          min-width: 18px !important;
-          min-height: 18px !important;
-      }
-      /* Style for the Voice button to ensure visual consistency */
-      #voiceBtn {
-          background-color: rgba(255, 255, 255, 0.1) !important;
-      }
-      #voiceBtn:hover {
-          background-color: rgba(255, 255, 255, 0.15) !important;
-      }
-    }
+  .welcome-logo {
+    width: 85px;
+    height: 85px;
+  }
+  .welcome-title {
+    font-size: 24px;
+  }
+
+  }
+
 </style>
 </head>
 <body>
