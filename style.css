@@ -871,17 +871,15 @@ textarea#input {
 }
 
 .welcome-screen {
+  scale: 0.90;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
-  /* Makes it fit its container */
   text-align: center;
   padding: 20px;
-  /* Adjusts the outer spacing */
   box-sizing: border-box;
-  /* Ensures padding is calculated correctly */
 }
 
 .welcome-logo {
@@ -1262,7 +1260,7 @@ textarea#input {
 /* Style for the descriptive text inside a dropdown */
 .module-dropdown-content .description {
   padding: 10px 12px;
-  font-size: 13px;
+  font-size: 12.5px;
   color: white;
   font-style: bold;
   line-height: 1.4;
@@ -1323,6 +1321,20 @@ textarea#input {
 /* --- Mobile View Enhancements --- */
 /* --- FORCED UNIFIED MOBILE & TABLET VIEW --- */
 @media (max-width: 900px) {
+  .module-dropdown-content .description {
+      padding-bottom: 10px;
+      padding-top: 0;
+      margin-top: 0;
+      font-size: 10px;
+      color: white;
+      font-style: bold;
+      line-height: 1.4;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      margin-bottom: 5px;
+    }
+  .welcome-screen {
+      scale: 1;
+  }
   .welcome-actions {
     display: flex;
     flex-direction: column;

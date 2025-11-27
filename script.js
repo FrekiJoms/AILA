@@ -8,7 +8,7 @@ const modalQuestions = {
       "Information Sheet": "nothing",
       "Activity Sheet": "nothing",
       "Performance Checklist": "nothing",
-      _DESC_: "TESTING ONLIE",
+      _DESC_: "Submit your completed MRP workbook, validate through oral questioning, and accomplish the self-check quiz here.",
       "Assessment Form":
         "https://docs.google.com/forms/d/e/1FAIpQLSeIsO_7TlYWT8i6hXBVmTw6-3UFH8kYQ3ipll0lC9KxvOwOFg/viewform",
     },
@@ -330,9 +330,7 @@ const faqs = [
 /* dito mo e ccustomize if may babagohin or e dadagdag na template questions */
 const offlineResponses = {
   // random templated questions //
-  picture:
-    "TESTING IMAGE https://drive.google.com/file/d/18TLwYfyQ7ODgG3cb7nvFYiK_li54ibMs/view",
-  Hi: "Hellow kuys! I'm AILA. Here is a test video to see if it works:  https://drive.google.com/file/d/1NcZ5BYRyabR3HtbeQrcvKkq8jRoehmQ9/view",
+  Hi: "Hellow kuys! I'm AILA. How can I help you?",
   "Orientation to data processing": `Hi kuys!👋
   \n**Orientation to Data Processing**
   \n\n- Ngayon, magbibigay muna ako ng overview tungkol sa process flow ng ating data processing activity. Mayroon na ba sa inyo ang may karanasan sa manufacturing? Pamilyar ba kayo sa role ng isang material planner?
