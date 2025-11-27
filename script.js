@@ -4,7 +4,7 @@
 // =================================================================
 const modalQuestions = {
   Modules: {
-    "Module 1: Understanding the MRP System": {
+    "Spreadsheet Navigation & Data Familiarization": {
       _DESC_3_: "➡ wala muna",
       "Information Sheet": "nothing",
       "Activity Sheet": "nothing",
@@ -14,7 +14,7 @@ const modalQuestions = {
       "Assessment Form":
         "https://docs.google.com/forms/d/e/1FAIpQLSeIsO_7TlYWT8i6hXBVmTw6-3UFH8kYQ3ipll0lC9KxvOwOFg/viewform",
     },
-    "Module 2: Spreadsheet-Based MRP Simulation": {
+    "Data Processing Using Spreadsheet Formulas and Tools": {
       _DESC_3_: "➡ wala muna",
       "Information Sheet": "nothing",
       "Activity Sheet": "nothing",
@@ -24,7 +24,7 @@ const modalQuestions = {
       "Assessment Form":
         "https://docs.google.com/forms/d/e/1FAIpQLScMn2q_BgZrUmJdSQyRqhiHcKNmDY7uxbWg07CZ1G7zajyC8w/viewform?usp=header",
     },
-    "Module 3: Data Analysis and Visualization": {
+    "Spreadsheet Data Analysis Using Pivot Tables and Charts": {
       _DESC_3_: "➡ wala muna",
       "Information Sheet": "nothing",
       "Activity Sheet": "nothing",
