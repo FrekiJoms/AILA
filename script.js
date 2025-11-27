@@ -1,4 +1,29 @@
 // =================================================================
+// ============== ICON HELPER FUNCTIONS ============================
+// =================================================================
+const iconMap = {
+    "docs.google.com/document": "icons/docs.png",
+    "docs.google.com/spreadsheets": "icons/sheets.png",
+    "drive.google.com": "icons/drive.png",
+    "forms.gle": "icons/forms.png",
+    "docs.google.com/forms": "icons/forms.png",
+    "classroom.google.com": "icons/classroom.png",
+    "sites.google.com": "icons/sites.png"
+};
+const defaultIcon = "icons/external.png";
+
+function getIconForUrl(url) {
+    if (typeof url !== 'string') return defaultIcon;
+    for (const key in iconMap) {
+        if (url.includes(key)) {
+            return iconMap[key];
+        }
+    }
+    return defaultIcon;
+}
+// =================================================================
+
+// =================================================================
 // ============== CENTRALIZED MODAL QUESTIONS ======================
 // == To edit questions/links, just edit them here. ==============
 // =================================================================
@@ -48,7 +73,7 @@ const modalQuestions = {
     "Where is the registration form?",
   ],
   "Learning Materials": [
-    "Where can I find the MRP spreadsheet template?",
+    "Google Sheets Get Started", "https://www.w3schools.com/googlesheets/google_sheets_get_started.php",
     "Show me the performance checklist.",
     "Is there a manual for the workflow procedure?",
   ],

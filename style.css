@@ -1,3 +1,42 @@
+/* --- Custom Icon Link Styles --- */
+.msg .icon-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  /* Appearance */
+  background-color: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px; /* Pill shape */
+  padding: 4px 10px 4px 6px; /* T, R, B, L */
+  margin: 0 2px;
+  /* Text & Font */
+  text-decoration: none !important; /* Overrides default */
+  color: #cdd9e3;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+  /* Animation */
+  transition: all 0.2s ease;
+}
+
+.msg .icon-link:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #e6fbff;
+  transform: translateY(-1px);
+}
+
+.msg .icon-link img {
+  width: 16px;
+  height: 16px;
+}
+
+/* Remove default underline on all message links */
+.msg a {
+  text-decoration: none;
+}
+
+
+
 .dropdown-item {
   display: block;
   width: 100%;
