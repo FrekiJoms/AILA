@@ -4,15 +4,18 @@
 // =================================================================
 const modalQuestions = {
   Modules: {
+//  "module title here"{
+//    "navigation title here": "output here", << put a ( , ) every end 
+//  },
     "Spreadsheet Navigation & Data Familiarization": {
       _DESC_3_: "➡ wala muna",
-      "Information Sheet": "nothing",
-      "Activity Sheet": "nothing",
+      "Information Sheet": "Information Sheet",
+      "Activity Sheet": "Activity Sheet",
       _DESC_1_: "➡ This is the tool for the LA's",
-      "Performance Checklist": "nothing",
+      "Performance Checklist": "Performance Checklist",
       _DESC_2_: "➡ Submit your completed MRP workbook, validate through oral questioning, and accomplish the self-check quiz here.",
       "Assessment Form":
-        "https://docs.google.com/forms/d/e/1FAIpQLSeIsO_7TlYWT8i6hXBVmTw6-3UFH8kYQ3ipll0lC9KxvOwOFg/viewform",
+        "https://docs.google.com/forms/d/e/1FAIpQLSeIsO_7TlYWT8i6hXBVmTw6-3UFH8kYQ3ipll0lC9KxvOwOFg/viewform"
     },
     "Data Processing Using Spreadsheet Formulas and Tools": {
       _DESC_3_: "➡ wala muna",
