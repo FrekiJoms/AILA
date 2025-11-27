@@ -1329,6 +1329,9 @@ textarea#input {
 /* --- Mobile View Enhancements --- */
 /* --- FORCED UNIFIED MOBILE & TABLET VIEW --- */
 @media (max-width: 900px) {
+  .module-dropdown-content {
+    box-sizing: border-box;
+  }
   .module-dropdown-content .description {
     padding-top: 20px;
     z-index: hidden;
