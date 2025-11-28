@@ -1,14 +1,11 @@
-// =================================================================
-// ============== ICON HELPER FUNCTIONS ============================
-// =================================================================
 const iconMap = {
-    "docs.google.com/document": "icon/docs.png",
-    "docs.google.com/spreadsheets": "icon/sheets.png",
-    "drive.google.com": "icon/drive.png",
-    "forms.gle": "icon/forms.png",
-    "docs.google.com/forms": "icon/forms.png",
-    "classroom.google.com": "icon/classroom.png",
-    "sites.google.com": "icon/sites.png"
+    "docs.google.com/document": "icons/docs.png",
+    "docs.google.com/spreadsheets": "icons/sheets.png",
+    "drive.google.com": "icons/drive.png",
+    "forms.gle": "icons/forms.png",
+    "docs.google.com/forms": "icons/forms.png",
+    "classroom.google.com": "icons/classroom.png",
+    "sites.google.com": "icons/sites.png"
 };
 const defaultIcon = "icons/external.png";
 
