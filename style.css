@@ -1981,60 +1981,65 @@ textarea#input {
   display: none !important;
 }
 
-/* --- Checkmark Animation --- */
-.checkmark {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
+/* --- /* --- Checkmark Animation & Completion Layout (Corrected) --- */
+.completion-line {
+  display: flex;
+  align-items: center; /* This is the key to vertically centering the text and icon */
+  justify-content: center;
+  gap: 10px; /* Adds space between text and checkmark */
+}
+
+#loading-complete p {
+  margin: 0;
+  font-size: 16px;
+  color: #e8fbff;
+}
+
+.checkmark { 
+  width: 28px; /* Slightly larger for better balance */
+  height: 28px; 
   display: block;
-  stroke-width: 2;
-  stroke: #fff;
-  stroke-miterlimit: 10;
-  margin: 0 auto 10px;
-  box-shadow: inset 0px 0px 0px var(--success);
-  animation: fill 0.4s ease-in-out 0.4s forwards,
-    scale 0.3s ease-in-out 0.9s both;
+  border-radius: 50%;
+  stroke-width: 3; 
+  stroke: #fff; 
+  /* ... rest of the animation properties ... */
+  stroke-miterlimit: 10; animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both; 
 }
-.checkmark-circle {
-  stroke-dasharray: 166;
-  stroke-dashoffset: 166;
-  stroke-width: 2;
-  stroke-miterlimit: 10;
-  stroke: var(--success);
-  fill: none;
-  animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+.checkmark-circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 3; stroke-miterlimit: 10; stroke: var(--success); fill: none; animation: stroke .6s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
+.checkmark-check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; animation: stroke .3s cubic-bezier(0.65, 0, 0.45, 1) .8s forwards; }
+@keyframes stroke { 100% { stroke-dashoffset: 0; } }
+@keyframes scale { 0%, 100% { transform: none; } 50% { transform: scale3d(1.1, 1.1, 1); } }
+@keyframes fill { 100% { box-shadow: inset 0px 0px 0px 30px var(--success); } }
+
+
+/* --- New Glass-like Enter Button Style --- */
+#enter-app-btn {
+  background: rgba(255, 255, 255, 0.05); /* Semi-transparent background */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
+  color: #e6fbff; /* Bright text color */
+  
+  /* All other properties remain the same */
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 20px;
+  transform: scale(0.9);
+  opacity: 0;
+  animation: button-appear 0.5s ease 0.5s forwards;
 }
-.checkmark-check {
-  transform-origin: 50% 50%;
-  stroke-dasharray: 48;
-  stroke-dashoffset: 48;
-  animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+
+#enter-app-btn:hover {
+  background: rgba(255, 255, 255, 0.1); /* Brighter on hover */
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px) scale(1); /* Keep the satisfying lift effect */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
-@keyframes stroke {
-  100% {
-    stroke-dashoffset: 0;
-  }
-}
-@keyframes scale {
-  0%,
-  100% {
-    transform: none;
-  }
-  50% {
-    transform: scale3d(1.1, 1.1, 1);
-  }
-}
-@keyframes fill {
-  100% {
-    box-shadow: inset 0px 0px 0px 30px var(--success);
-  }
-}
-@keyframes button-appear {
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
+
+@keyframes button-appear { to { transform: scale(1); opacity: 1; } }
+
 /* --- Lively Loading Screen Text & Completion --- */
 #loading-in-progress {
   text-align: center;
@@ -2208,5 +2213,26 @@ textarea#input {
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+/* --- "Click Me" Floating Text --- */
+.click-me-text {
+  position: absolute;
+  top: -70px; /* Position it above the logo */
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent1);
+  border-radius: 6px;
+  pointer-events: none; /* Make sure it doesn't block clicks on the logo */
+  animation: float-up-down 2s ease-in-out infinite;
+  transition: opacity 0.3s ease;
+}
+
+@keyframes float-up-down {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
   }
 }

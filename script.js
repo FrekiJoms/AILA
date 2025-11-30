@@ -319,6 +319,8 @@ document.addEventListener("keydown", (event) => {
 // --- Sound Effects ---
 // --- Sound Effects ---
 let typingSound = null; // To control the looping typing sound
+let ambientSound = null; // To control the looping ambient sound
+
 
 /**
  * A more robust function to play sound effects with volume control.
@@ -969,9 +971,11 @@ async function initializeApp() {
   const statusText = document.getElementById("loading-status-text");
   const tipText = document.getElementById("loading-tip");
   const enterBtn = document.getElementById("enter-app-btn");
+  const clickMetext = document.getElementById("click-me-text");
+
 
   // --- 2. Set up and attempt to play ambient sound ---
-  const ambientSound = new Audio(SFX.loadingAmbient);
+  ambientSound = new Audio(SFX.loadingAmbient);
   ambientSound.loop = true;
   ambientSound.volume = 0.3;
   let ambientNeedsInteraction = false;
@@ -995,6 +999,7 @@ async function initializeApp() {
       }
 
       if (isShattered) return;
+      if (clickMetext) clickMetext.style.opacity = "0";
       playSound(SFX.glassBreak);
       isShattered = true;
       mainLogo.style.opacity = "0";
@@ -1049,6 +1054,7 @@ async function initializeApp() {
 
   // --- 6. Handle the completion state ---
   clearInterval(tipInterval);
+  if (clickMetext) clickMetext.style.opacity = "o";
   mainLogo.style.animation = "none";
   statusText.classList.add("hidden");
   completeDiv.classList.remove("hidden");
@@ -1089,3 +1095,17 @@ ro.observe(messagesEl, { childList: true, subtree: true });
 window.addEventListener("load", () => setTimeout(() => input.focus(), 250));
 // Start the application by calling our new initializer function.
 initializeApp();
+// --- Cleanup sounds on page exit (Reliable Method) ---
+// The 'pagehide' event is the correct and most reliable way to stop audio when a tab is closed.
+window.addEventListener('pagehide', () => {
+    // Stop the ambient sound if it's playing
+    if (ambientSound) {
+        ambientSound.pause();
+        ambientSound.currentTime = 0;
+    }
+    // Also stop the typing sound, just in case
+    if (typingSound) {
+        typingSound.pause();
+        typingSound.currentTime = 0;
+    }
+});
