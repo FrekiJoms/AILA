@@ -57,7 +57,7 @@ const modalQuestions = {
       "Information Sheet": "Module 2 Information Sheet",
       "Activity Sheet": "Module 2 Activity Sheet",
       _DESC_1_: "➡ This is the tool for the LA's",
-      "Performance Checklist": "nothing",
+      "Performance Checklist": "Module 2 Performance Checklist",
       _DESC_2_:
         "➡ Submit your completed MRP workbook, validate through oral questioning, and accomplish the self-check quiz here.",
       "Module 2 Assessment Form":
@@ -502,11 +502,19 @@ function showWelcomeScreen() {
 }
 
 function useSuggestion(text) {
-  messagesEl.innerHTML = "";
+  // Check if the welcome screen is currently being displayed.
+  const welcomeScreen = messagesEl.querySelector(".welcome-screen");
+
+  // THIS IS THE FIX: Only clear the chat if the welcome screen is active.
+  // This prevents the chat history from being deleted during a conversation.
+  if (welcomeScreen) {
+    messagesEl.innerHTML = "";
+  }
+
+  // The rest of the function remains the same: append the new message and send it.
   appendMessage(text, "user");
   sendToBackend(text, true);
 }
-
 function appendMessage(
   text,
   who = "bot",
