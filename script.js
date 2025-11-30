@@ -886,45 +886,80 @@ async function loadOfflineData() {
 
 /**
  * Initializes the app: shows a loading screen with a random tip,
- * loads data, then shows the main UI.
+ * loads data, then shows the main UI. Includes an interactive shatter effect.
  */
 async function initializeApp() {
-    // --- 1. Define our loading tips ---
     const loadingTips = [
-        "Tip: You can ask AILA about specific modules like MRP, BOM, or MPS.",
+        "Tip: Ask about specific modules like MRP, BOM, or MPS.",
         "Did you know? AILA can understand and display formatted tables.",
-        "Tip: Use the 'Quick Actions' button for common questions and modules.",
-        "You can find learning materials and orientation guides in the 'Tools & Resources' menu.",
-        "AILA is designed to work offline with pre-set answers if the AI is unavailable."
+        "Tip: Use 'Quick Actions' for common questions and modules.",
+        "You can find learning materials in the 'Tools & Resources' menu.",
+        "AILA is designed to work offline with pre-set answers."
     ];
 
-    // --- 2. Get references to the loading screen elements ---
     const loadingOverlay = document.getElementById('loading-overlay');
     const loadingTipElement = document.getElementById('loading-tip');
+    const logoContainer = document.getElementById('loading-logo-container');
+    const mainLogo = document.getElementById('loading-logo');
 
-    // --- 3. Pick a random tip and display the loading screen ---
+    // --- 1. Set the loading tip ---
     const randomTip = loadingTips[Math.floor(Math.random() * loadingTips.length)];
     if (loadingTipElement) {
-        loadingTipElement.textContent = randomTip;
-    }
-    if (loadingOverlay) {
-        loadingOverlay.classList.add('visible');
+        loadingTipElement.textContent = "Tip: " + randomTip;
     }
 
-    // --- 4. Load the offline data from your Google Sheet ---
+    // --- 2. Create the shatter effect on click ---
+    if (logoContainer && mainLogo) {
+        let isShattered = false;
+
+        logoContainer.addEventListener('click', () => {
+            if (isShattered) return;
+            isShattered = true;
+            mainLogo.style.opacity = '0'; // Hide the main logo
+
+            // Create and animate the pieces
+            for (let i = 0; i < 16; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'shatter-piece';
+                
+                const row = Math.floor(i / 4);
+                const col = i % 4;
+
+                piece.style.left = `${col * 25}%`;
+                piece.style.top = `${row * 25}%`;
+                piece.style.backgroundPosition = `-${col * 20}px -${row * 20}px`;
+                
+                logoContainer.appendChild(piece);
+
+                // Animate outwards
+                setTimeout(() => {
+                    const randomX = (Math.random() - 0.5) * 300;
+                    const randomY = (Math.random() - 0.5) * 300;
+                    const randomRot = (Math.random() - 0.5) * 720;
+                    piece.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRot}deg)`;
+                    piece.style.opacity = '0';
+                }, 10);
+            }
+
+            // Restore after animation
+            setTimeout(() => {
+                mainLogo.style.opacity = '1';
+                logoContainer.innerHTML = ''; // Remove all pieces
+                logoContainer.appendChild(mainLogo); // Put the main logo back
+                isShattered = false;
+            }, 900); // Must be longer than the CSS transition
+        });
+    }
+
+    // --- 3. Load the offline data and start the app ---
     await loadOfflineData();
-
-    // --- 5. Hide the loader and start the main app ---
-    // We add a small delay to ensure the animation is smooth.
+    
     setTimeout(() => {
-        if (loadingOverlay) {
-            loadingOverlay.classList.remove('visible');
-        }
+        if (loadingOverlay) loadingOverlay.classList.remove('visible');
         updateStatus("pending");
         showWelcomeScreen();
-    }, 500); // A brief half-second delay for a smooth transition
+    }, 500);
 }
-
 const ro = new MutationObserver(
   () => (messagesEl.scrollTop = messagesEl.scrollHeight)
 );

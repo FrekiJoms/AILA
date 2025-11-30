@@ -39,8 +39,14 @@
 <body>
 <!-- START: Loading Overlay -->
 <div id="loading-overlay" class="status-overlay visible">
-    <img src="ailalogo.png" id="loading-logo" alt="AILA Logo">
-    <p id="loading-tip">Loading AILA...</p>
+    <!-- This new div will act as a container for the logo and its shatter effect -->
+    <div id="loading-logo-container">
+        <img src="ailalogo.png" id="loading-logo" alt="AILA Logo">
+    </div>
+    <div class="loading-text-container">
+        <p>Loading AILA...</p>
+        <p id="loading-tip"></p> <!-- Tip text will go here -->
+    </div>
 </div>
 <!-- END: Loading Overlay -->
   <div class="app">

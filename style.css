@@ -1,17 +1,8 @@
-/* --- Loading Screen Logo --- */
-#loading-logo {
-  width: 80px;
-  height: 80px;
-  border-radius: 16px;
-  margin-bottom: 15px;
-  box-shadow: 0 10px 40px rgba(0, 210, 255, 0.2);
-  cursor: pointer;
-  
-  /* Use the existing floating animation */
-  animation: logoFloat 3s ease-in-out infinite;
-  
-  /* Add a smooth transition for the break/restore effect */
-  transition: transform 0.3s ease, opacity 0.3s ease;
+/* Prevent logos from being right-clicked, long-pressed, or dragged */
+#loading-logo,
+.logo-area img,
+.welcome-logo img {
+  pointer-events: none;
 }
 
 /* This class triggers the "break" animation */
@@ -26,6 +17,101 @@
   transform: scale(1) rotate(0deg) !important;
   opacity: 1;
 }
+.loading-text-container {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.loading-text-container p {
+  margin: 0;
+  color: #e8fbff; /* Bright main text color */
+  font-size: 16px;
+}
+
+#loading-tip {
+  color: var(--muted); /* Dimmer color for the tip */
+  font-size: 14px;
+  margin-top: 8px;
+  max-width: 300px;
+}
+/* --- Glowing, Floating Logo with Particle Aura --- */
+
+/* The container sets up the space for the particles */
+#loading-logo-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The main logo with its glow and smooth float */
+#loading-logo {
+  width: 130px;
+  height: 130px;
+  /* A powerful glow that respects the logo's transparent areas */
+  filter: drop-shadow(0 0 10px var(--accent1)) drop-shadow(0 0 25px var(--accent1));
+  /* A new, smoother up-and-down floating animation */
+  animation: smoothFloat 4s ease-in-out infinite;
+  transition: opacity 0.2s ease;
+}
+
+/* These are the two main orbiting particles */
+#loading-logo-container::before,
+#loading-logo-container::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background-color: var(--accent2);
+  /* Make the particles soft and blurry */
+  filter: blur(4px);
+  /* Use the orbit animation */
+  animation: orbit 8s linear infinite;
+}
+
+/* Style the first particle */
+#loading-logo-container::before {
+  width: 8px;
+  height: 8px;
+  box-shadow: 0 0 10px var(--accent2);
+}
+
+/* Style the second particle and give it a different speed and starting position */
+#loading-logo-container::after {
+  width: 5px;
+  height: 5px;
+  box-shadow: 0 0 8px var(--accent2);
+  animation-delay: -4s; /* Start it halfway through the animation */
+}
+
+
+/* --- Keyframe Animations --- */
+
+/* A smooth up-and-down floating motion */
+@keyframes smoothFloat {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+/* An elliptical orbit for the particles */
+@keyframes orbit {
+  0% { transform: rotate(0deg) translateX(55px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(55px) rotate(-360deg); }
+}
+
+/* --- Logo Shatter Effect --- */
+.shatter-piece {
+  position: absolute;
+  width: calc(100% / 4); /* We will use a 4x4 grid */
+  height: calc(100% / 4);
+  background-image: url('ailalogo.png');
+  background-size: 80px 80px; /* Match the logo size */
+  transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.8s ease-out;
+  border-radius: 2px;
+}
 
 
 /* --- Loading Screen Tip --- */
@@ -35,6 +121,26 @@
   margin-top: 10px;
   max-width: 300px; /* Prevents the text from being too wide on large screens */
   text-align: center;
+}
+/* --- Mobile Adjustments for Loading Logo --- */
+@media (max-width: 900px) {
+  /* Make the logo container smaller on mobile */
+  #loading-logo-container {
+    width: 100px;
+    height: 100px;
+  }
+
+  /* Adjust the particle animation to use a smaller orbit */
+  #loading-logo-container::before,
+  #loading-logo-container::after {
+    animation-name: orbit-mobile; /* Use the new mobile-specific animation */
+  }
+
+  /* A new keyframe rule for the smaller mobile orbit */
+  @keyframes orbit-mobile {
+    0% { transform: rotate(0deg) translateX(65px) rotate(0deg); }
+    100% { transform: rotate(360deg) translateX(65px) rotate(-360deg); }
+  }
 }
 
 /* --- Status Overlay and Loader --- */
