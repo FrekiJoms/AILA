@@ -307,7 +307,7 @@ document.addEventListener("keydown", (event) => {
 
 // N8N chat webhook link constant
 const CHAT_WEBHOOK = "https://levercrafter.app.n8n.cloud/webhook/aila-chat";
-
+const OFFLINE_DATA_URL = "https://script.google.com/macros/s/AKfycbxyBAMvcSxdV_Gbc8JIKB1yJRPw0ocQKpczfZ8KLp4Gln2LgWTTbFar3ugjODGrqjiE/exec";
 document.addEventListener("click", (e) => {
   if (!e.target.closest(".dropdown")) {
     const allDropdowns = document.querySelectorAll(".dropdown");
@@ -370,811 +370,7 @@ const faqs = [
 ];
 /* response area */
 /* dito mo e ccustomize if may babagohin or e dadagdag na template questions */
-const offlineResponses = {
-  // random templated questions //
-  testing:
-    "[TESTING](https://docs.google.com/forms/d/e/1FAIpQLSeIsO_7TlYWT8i6hXBVmTw6-3UFH8kYQ3ipll0lC9KxvOwOFg/viewform)",
-  Hi: "Hellow kuys! I'm AILA. How can I help you?",
-  "Orientation to data processing": `Hi kuys!👋
-  \n**Orientation to Data Processing**
-  \n\n- Ngayon, magbibigay muna ako ng overview tungkol sa process flow ng ating data processing activity. Mayroon na ba sa inyo ang may karanasan sa manufacturing? Pamilyar ba kayo sa role ng isang material planner?
-  \n- Ang material planner ay may mahalagang papel: tiyakin na lahat ng raw materials at components ay available sa tamang oras, tamang bilang, at tamang specification upang maiwasan ang delay sa production. Ang kanilang trabaho ay nakabatay sa Bills of Materials (BOM), kasama ang pag-check ng inventory at pag-request ng supply batay sa pangangailangan ng production.
-  \n- Sa activity natin, gagayahin natin ang prinsipyong ito. Upang mabuo ang mini conveyor system, gagawa tayo ng structured Material Requirement Planning (MRP). Dito natin ililista at iko-compute ang lahat ng raw materials at components na kailangan. Pagkatapos, makikita natin kung sapat ang inventory o kung kailangan pa ng additional supply para maging tuloy-tuloy ang production flow.
-`,
-  Hello:
-    "Hi kuys👋! I'm AILA, your AI learning assistant. How can I help you today?",
-  xlookup: `Hi kuys!👋 **What is XLOOKUP Formula?**
-  \n\n- Sa example na ito, gagamit tayo ng XLOOKUP para awtomatikong hanapin ang data sa ibang sheet, na ang pangalan ay **BOM**.
-  \n- Formula:
-    =XLOOKUP(A2, BOM!$B$2:$B, BOM!$F$2:$F)
-  \n- Paano ito gumagana?
-      • Ang A2 ay ang hinahanap mong value (hal. item name o code).
-      • Sa BOM sheet, hahanapin niya ang value na nasa B2 sa column A.
-      • Kapag nahanap iyon, kukunin niya ang katumbas na data sa column F (hal. quantity o price).
-  \n- Para itong “search engine” sa Excel: magta-type ka lang ng item, tapos automatic ilalabas ni XLOOKUP ang tamang sagot mula sa ibang sheet — hindi mo na kailangang mag-scroll o mag-manual hanap.
-`,
-  // templated questions based on buttons //
-  // templated  response FAQS //
-  Origin: `Hi kuys!👋, here's a little history! 👥
-\n
-AILA, **Artificial Intelligent Learning Assistant**, developed in the Kaizenset ICT Data Processing Department.
-\n
-Envisioned on the **9th of October**, accepted as an official project six days later, and fully launched to the public by the end of the month **(October 31, 2025)**.
-\n
-**Kaiser** envisions **AILA**, and together with other, began pioneering its creation, thankfuly **Josh** came and with his skills he took the lead as AILA’s head developer turning AILA to a powerful tool that solves long term challenges designed to improve efficiency and learning outcomes, making it a reliable support system for both trainees and facilitators.
-`,
-  Overview: `Hi kuys!👋 AILA, which stands for **Artificial Intelligent Learning Assistant**, is an AI chatbot designed to assist ICT trainees and learning assistants.
-\n
-It provides guidance by answering questions related to Material Requirement Planning (MRP), spreadsheet concepts, ICT modules, and internal school documents. AILA is capable of understanding natural language, recalling previous conversations, and delivering instant responses, similar to interacting with a tutor.  
-\n
-It operates under a hybrid framework, offering both offline templated responses and online AI-driven interactivity through automation, ensuring functionality even in limited connectivity environments.
-\n
-**Purpose:**
-- Enhance independent learning
-- Improve operational efficiency
-- Reduce repetitive inquiries
-- Allow facilitators and learning assistants to focus on mentoring and project development
-\n
-AILA is designed to make learning easier, faster, and more efficient for everyone involved. 💡
-`,
-  ICT: `Hi kuys!👋 The **ICT (Information and Communication Technology) program** in the Kaizenset ICT Data Processing Department includes various modules and topics aimed at enhancing technical skills and knowledge.  
-- **Material Requirement Planning (MRP):** Topics like "What is MRP?" and "Explain the MPS module" are included.
-- **Spreadsheet Concepts:** Queries like "How do I use XLOOKUP?" and "What's the Data connection between sheets" are supported.
-- **ICT Modules:** Topics such as "How to do dashboard" and "What are the three types of data in MRP" are covered.
-\n
-**Program Emphasis:**
-The ICT program emphasizes vocational training, focusing on hands-on learning, procedural accuracy, safety, and tool use.  
-AILA supports this by providing structured, task-based templates and guided flows to deliver procedural clarity in both offline and online modes.  
-This approach fosters independent problem-solving and knowledge transfer.
-`,
-  MRP: `Hi kuys!👋 Material Requirements Planning (MRP) is a systematic approach used in manufacturing to manage inventory and optimize production timelines. It calculates and determines the materials and components needed to manufacture a product, ensuring that they are available at the right time and in the right quantities.
-
-Kuys, MRP helps determine:
-- What materials are needed
-- How much to order
-- When to order them
-
-Inside MRP Sheet, there are several key components:
-1. MPS (Master Production Schedule)
-2. BOM (Bill of Materials)
-3. Inventory
-4. PO (Purchase Orders)
-5. Dashboard
-\n
-[MATERIAL_REQUIREMENTS_PLANNING_20251023](https://docs.google.com/spreadsheets/d/1y-9QnNwmhOlyjKYf9uaHA5Q4IAy2ANOs/edit?gid=506882268#gid=506882268)
-you can also refer to the given template found in modules for a more detailed understanding of MRP components and their functions.`,
-  MPS: `Hi kuys!👋 **MPS (Master Production Schedule)** is a detailed plan in the MRP system that specifies:
-\n
-  - what products need to be produced,  
-  - when they should be produced,  
-  - and in what quantities. 
-\n
-It serves as the starting point for MRP, defines the production schedule, drives material requirement calculations, and ensures production aligns with customer demand and delivery timelines. It also feeds data into other MRP components like the BOM and inventory sheets to calculate material needs and manage stock levels effectively.  
-\n
-TABLE BASED ON **[MATERIAL_REQUIREMENTS_PLANNING_20251023](https://docs.google.com/spreadsheets/d/1y-9QnNwmhOlyjKYf9uaHA5Q4IAy2ANOs/edit?gid=506882268#gid=506882268)**
-<table border="1">
-  <thead>
-    <tr>
-      <th>Batch Code</th>
-      <th>Product Description</th>
-      <th>Planned Qty</th>
-      <th>Actual Qty</th>
-      <th>Schedule Week</th>
-      <th>Status</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>PROD BATCH 1</td>
-      <td>Mechatronics Trainer Board</td>
-      <td>3</td>
-      <td>3</td>
-      <td>Week 1</td>
-      <td>On Time</td>
-    </tr>
-    <tr>
-      <td>PROD BATCH 2</td>
-      <td>Mechatronics Trainer Board</td>
-      <td>3</td>
-      <td>3</td>
-      <td>Week 2</td>
-      <td>On-Time</td>
-    </tr>
-    <tr>
-      <td>PROD BATCH 3</td>
-      <td>Mechatronics Trainer Board</td>
-      <td>3</td>
-      <td>1</td>
-      <td>Week 3</td>
-      <td>Delayed</td>
-    </tr>
-    <tr>
-      <td>PROD BATCH 4</td>
-      <td>Mechatronics Trainer Board</td>
-      <td>3</td>
-      <td>5</td>
-      <td>Week 4</td>
-      <td>Compensated</td>
-    </tr>
-  </tbody>
-</table>
-\n
-1️⃣ **Status Formula:** 
-=IF(C2=D2, "On Time", IF(D2<C2, "Delayed", "Compensated"))
-\n
-**Note:**
-- Ito ay para sa **mga produkto mismo**, hindi para sa parts or components.
-- **Planned Qty** - ang target na dami na kailangang gawin sa isang batch.
-- **Actual Qty** - ang totoong dami na nagawa sa batch na iyon.
-- **Schedule Week** - ang linggo kung kailan naka-schedule ang production ng batch
-- **Status** - nagpapakita kung ang batch ay "On Time", "Delayed", o "Compensated" base sa pagkakaiba ng Planned at Actual Qty.
-`,
-  BOM: `Hi kuys!👋 **What is BOM?**\n BOM (Bill of Materials) is a product’s recipe, it lists all the materials and quantities needed to build the product.\n
-\nTABLE BASED ON **[MATERIAL_REQUIREMENTS_PLANNING_20251023](https://docs.google.com/spreadsheets/d/1y-9QnNwmhOlyjKYf9uaHA5Q4IAy2ANOs/edit?gid=2038808217#gid=2038808217)**  
-<table border="1">
- <thead>
-    <tr>
-      <th>Product</th>
-      <th>Item Code</th>
-      <th>Item Description</th>
-      <th>Specification</th>
-      <th>Unit Price (₱)</th>
-      <th>Qty</th>
-      <th>UOM</th>
-      <th>Safety Stock</th>
-      <th>Lead Time (days)</th>
-      <th>Approved Supplier</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Mechatronics Training Board</td>
-      <td>TB-01</td>
-      <td>Terminal Blocks</td>
-      <td>12 pairs, 15A</td>
-      <td>₱140</td>
-      <td>4</td>
-      <td>pcs</td>
-      <td>15</td>
-      <td>3</td>
-      <td>RS Philippines</td>
-    </tr>
-    <tr>
-      <td>Mechatronics Training Board</td>
-      <td>LS-02</td>
-      <td>Limit Switch</td>
-      <td>SPDT, 10A</td>
-      <td>₱250</td>
-      <td>2</td>
-      <td>pcs</td>
-      <td>10</td>
-      <td>5</td>
-      <td>Mouser Electronics</td>
-    </tr>
-    <tr>
-      <td>Mechatronics Training Board</td>
-      <td>SV-03</td>
-      <td>Solenoid Valve</td>
-      <td>12V DC, 1/4"</td>
-      <td>₱2,500</td>
-      <td>1</td>
-      <td>pcs</td>
-      <td>5</td>
-      <td>7</td>
-      <td>Automation Direct</td>
-    </tr>
-    <tr>
-      <td>more</td>
-      <td>more</td>
-      <td>more</td>
-      <td>more</td>
-      <td>more</td>
-      <td>more</td>
-      <td>more</td>
-      <td>more</td>
-      <td>more</td>
-      <td>more</td>
-    </tr>
-  </tbody>
-</table>
-\n**🟩Important Note:**
-- **Safety Stock** - indicates the minimum quantity to keep on hand to avoid stockouts.
-- **Lead Time** - is the number of days it takes to receive the item after placing an order.
-- **Item code** - unique item code specific to a material
-- **Description** - name of the material
-- **Unit Price** - is the cost per unit of each item.
-- **Qty indicates** - how many units are needed for one Mechatronics Training Board.
-- **UOM (Unit of Measure)** - specifies the measurement unit for the quantity (e.g., pieces, set).
-- **Approved Supplier** - lists the preferred supplier for each item.
-\n**Item code** must be consistent across all sheets for accurate data connection using =XLOOKUP formula.
-`,
-  Inventory: `Hi kuys!👋 **What is Inventory**?
-\n**Inventory** monitors stock levels:  
-- Opening balance  
-- Purchases received  
-- Issued to production  
-- Ending balance 
-- Reoder status
-\n
-Inventory refers to the record of all materials or products currently available in stock. It tracks important details such as opening balances, purchases, issues, and ending balances to ensure there are enough materials for production.
-\n
-TABLE BASED ON **[MATERIAL_REQUIREMENTS_PLANNING_20251023](https://docs.google.com/spreadsheets/d/1y-9QnNwmhOlyjKYf9uaHA5Q4IAy2ANOs/edit?gid=89080024#gid=89080024)**
-\n\n
-<table border="1">
-  <thead>
-    <tr>
-      <th>Item Code</th>
-      <th>Description</th>
-      <th>Opening Stock</th>
-      <th>Purchases Received</th>
-      <th>Issued to Production</th>
-      <th>Ending Balance</th>
-      <th>Safety Stock Level</th>
-      <th>Reorder Status</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>TB-01</td>
-      <td>Terminal Blocks</td>
-      <td>60</td>
-      <td>0</td>
-      <td>20</td>
-      <td>40</td>
-      <td>50</td>
-      <td>Reorder</td>
-    </tr>
-    <tr>
-      <td>LS-02</td>
-      <td>Limit Switch</td>
-      <td>30</td>
-      <td>10</td>
-      <td>5</td>
-      <td>35</td>
-      <td>20</td>
-      <td>Available</td>
-    </tr>
-    <tr>
-      <td>SV-03</td>
-      <td>Solenoid Valve</td>
-      <td>15</td>
-      <td>5</td>
-      <td>10</td>
-      <td>10</td>
-      <td>8</td>
-      <td>Available</td>
-  </tbody>
-</table>
-\n\n
-Kuys! here are the formulas that we will use:
-\n
-1️⃣ **Ending Balance Formula:**  
-Opening Stock + Purchases Received – Issued to Production
-=C2 + D2 - E2
-\n
-2️⃣ **Safety Stock Lookup (from BOM sheet):**  
-=XLOOKUP(A2, BOM!$B$2:$B, BOM!$H$2:$H)
-\n
-• Finds the Safety Stock Level of each item using **Item Code**  
-• Returns Safety Stock value from **BOM sheet column H**
-\n
-3️⃣ **Reorder Status Formula**  
-=IF(F2<G2, "Reorder", "Available")
-\n
-4️⃣ **Issued to Production Formula** (*Optional*)
-=MPS!$D4 * XLOOKUP(A2, BOM! $B$2:$B,BOM!$F$2:$F)
-\n
-5️⃣ **Unit Cost Formula**
-=XLOOKUP(B2, BOM!$B$2:$B, BOM!$E$2:$E)
-\n
-🟩Important Note:
-- **Opening Stock** - the quantity of items available at the ending balance of the previous week in inventory records.
-- **Purchases Received** - the quantity of items added to inventory from purchase orders from previous week.
-- **Issued to Production** - the quantity of items used in production based on the current week actual quantity in **MPS** and **multiplied by** the targetted material found in **BOM**.
-- **Ending Balance** - the remaining quantity after accounting for purchases and production usage.
-- **Safety Stock Level** - the minimum quantity to keep on hand to avoid stockouts, looked up from BOM sheet.
-- **Reorder Status** - indicates if more items need to be ordered based on whether the ending balance is below the safety stock level.
-\n
-All materials with **reorder** will be processed in the PO (Purchase Order) sheet.
-`,
-  PO: `Hi kuys!👋 **PO (Purchase Order)** is used when an item needs to be re-ordered to replenish component stocks.  
-It acts as a **formal request sent to the supplier** to restock needed materials.
-Role in MRP:  
-• Manages the procurement process  
-• Tracks delivery status and updates inventory records once materials are received  
-\n
-It ensures timely replenishment of stock to avoid production delays and maintains accurate records of procurement costs and supplier performanc
-\n
-TABLE BASED ON **[MATERIAL_REQUIREMENTS_PLANNING_20251023](https://docs.google.com/spreadsheets/d/1y-9QnNwmhOlyjKYf9uaHA5Q4IAy2ANOs/edit?gid=601851345#gid=601851345)**
-\n
-<table border="1">
-  <thead>
-    <tr>
-      <th>PO Number</th>
-      <th>Item Code</th>
-      <th>Description</th>
-      <th>Qty Ordered</th>
-      <th>Unit Price</th>
-      <th>Total Cost</th>
-      <th>Order Date</th>
-      <th>Lead Time (days)</th>
-      <th>Expected Delivery Date</th>
-      <th>Supplier</th>
-      <th>Actual Delivery Date</th>
-      <th>Delivery Status</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>PO-1001</td>
-      <td>TB-01</td>
-      <td>Terminal Blocks</td>
-      <td>20</td>
-      <td>₱140</td>
-      <td>₱2,800</td>
-      <td>2024-10-01</td>
-      <td>3</td>
-      <td>2024-10-04</td>
-      <td>RS Philippines</td>
-      <td>2024-10-03</td>
-      <td>Delivered</td>
-    </tr>
-    <tr>
-      <td>PO-1002</td>
-      <td>LS-02</td>
-      <td>Limit Switch</td>
-      <td>10</td>
-      <td>₱250</td>
-      <td>₱2,500</td>
-      <td>2024-10-02</td>
-      <td>5</td>
-      <td>2024-10-07</td>
-      <td>Mouser Electronics</td>
-      <td></td>
-      <td>Pending</td>
-    </tr>
-    <tr>
-      <td>PO-1003</td>
-      <td>SV-03</td>
-      <td>Solenoid Valve</td>
-      <td>5</td>
-      <td>₱2,500</td>
-      <td>₱12,500</td>
-      <td>2024-10-01</td>
-      <td>7</td>
-      <td>2024-10-08</td>
-      <td>Automation Direct</td>
-      <td>2024-10-10</td>
-      <td>Delayed</td>
-    </tr>
-  </tbody>
-</table>
-\n\n
-Kuys! here are the formulas that we will use:
-\n
-1️⃣ **Unit Price Formula:**
-=XLOOKUP(B2, BOM!$B$2:$B, BOM!$E$2:$E)
-\n
-• Finds the Unit Price of each item using **Item Code**
-• Returns Unit Price value from **BOM sheet column E**
-\n
-2️ **Total Cost Formula:**  
-=D2 * E2
-\n
-3️⃣ **Lead Time (days):**
-=XLOOKUP(B2, BOM!$B$2:$B, BOM!$I$2:$I)
-\n
-• Finds the Lead Time of each item using **Item Code**
-• Returns Lead Time value from **BOM sheet column I**
-\n
-4️⃣ **Expected Delivery Date:**  
-=G2 + H2
-\n
-5️⃣ **Delivery Status Formula:**  
-=IF(J2="","Pending",IF(J2<=I2,"Delivered","Delayed"))
-\n
-6️⃣ **QTY ordered formula** (*optional*)
-=MPS!$C4*XLOOKUP(B2,BOM!$B$2:$B,BOM!$F$2:$F)
-\n
-**🟩Important Note:**
-\n
-1. **Qty Ordered** - the quantity of items being requested from the supplier based on <U style="color:skyblue;">**INVENTORY**</u> (**ending bal** - **safety stock**) + **planned qty** found in next week you are working on in <u style="color:skyblue;">**MPS**</u> **Multiplied By** targetted **material qty** found in <u style="color:skyblue;">**BOM**.</u>
-2. **Unit Price** - the cost per unit of each item, looked up from BOM sheet.
-3. **Total Cost** - the total expense for the order line, calculated by multiplying Qty Ordered.
-4. **Order Date** - the date when the purchase order is created.
-5. **Lead Time (days)** - the number of days it takes to receive the item after placing an order, looked up from BOM sheet.
-6. **Expected Delivery Date** - the date when the items are expected to arrive, calculated by adding Lead Time to Order Date.
-7. **Actual Delivery Date** - the date when the items are actually received.
-8. **Delivery Status** - indicates whether the order is **"Pending"**, **"Delivered"**, or **"Delayed"** based on Actual Delivery Date vs Expected Delivery Date.
-`,
-  dashboard: `Hi kuys!👋 **Data Visualization(Dashboard)** makes data easier to see and understand.
-It uses charts and graphs so information becomes clearer and faster to analyze.
-
-*Ang Data Visualization ay ginagamit para mas madali makita at maintindihan ang data.
-Gumagamit ito ng charts at graphs para mas malinaw ipakita ang impormasyon at mas madali itong maipresenta sa oral validation.*
-\n\n
-**Purpose of Data Visualization:**
-• Converts raw data into visual insights
-• Helps identify patterns and trends
-• Makes reports easier to explain and understand
-\n
-DASHBOARD BASED ON **[MATERIAL_REQUIREMENTS_PLANNING_20251023](https://docs.google.com/spreadsheets/d/1y-9QnNwmhOlyjKYf9uaHA5Q4IAy2ANOs/edit?gid=677970753#gid=677970753)**
-\n
-**Steps to Create a Dashboard:**
-1. **Pivot MPS Summary**
-    - Select all data in mps sheet
-    - Insert → Pivot Table → New Sheet → Create
-    - In Rows, add Product Description
-    - In Values, add Planned Qty and Actual Qty (set to SUM)
-    **Creating a chart from Pivot Table:**
-      - Select the pivot table data
-      - Insert → Chart → Choose chart type (Column Chart)
-      - Set the required titles and labels in customization based on the template
-2. **Pivot Inventory Status**
-    - Select all data in inventory sheet
-    - Insert → Pivot Table → New Sheet → Create
-    - In Rows, add description
-    - In Values, add ending balance and safety stock (set to SUM)
-    **Creating a chart from Pivot Table:**
-      - Select the pivot table data
-      - Insert → Chart → Choose chart type (Column Chart)
-      - Set the required titles and labels in customization based on the template
-      \n
-3. **Pivot Supplier Performance**
-    - Select all data in po sheet
-    - Insert → Pivot Table → New Sheet → Create
-    - In Rows, add Supplier
-    - In Values, add lead time (set to AVERAGE)
-    - In Values, add Total Cost (set to SUM)
-    - In filter, only select the specific supplier depending on supplier's delivery status found in PO sheet
-\n
-*(Copy the pivot table 2 more times in the same sheet and change the filter to the other suppliers depending on their delivery status):*
-- First pivot table name it (delivered)
-- Second pivot table name it (pending)
-- Third pivot table name it (delayed)
-\n
-*after doing all that make this table inside the sheet ***below*** the pivot tables:*
-**DELIVERY STATUS PERFORMANCE**
-<table border="1">
-  <thead>
-    <tr>
-      <th>supplier</th>
-      <th> Avg LT (Delivered)</th>
-      <th> Cost (Delivered)</th>
-      <th> Avg LT (Delayed)</th>
-      <th> Cost (Delayed)</th>
-      <th> Avg LT (Pending)</th>
-      <th> Cost (Pending)</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>RS Philippines</td>
-      <td>3</td>
-      <td>₱2,800</td>
-      <td>  </td>
-      <td>  </td>
-      <td>  </td>
-      <td>  </td>
-    </tr>
-    <tr>
-      <td>Automation Direct</td>
-      <td>  </td>
-      <td>  </td>
-      <td>7</td>
-      <td>₱12,500</td>
-      <td>  </td>
-      <td>  </td>
-    </tr>
-    <tr>
-      <td>Mouser Electronics</td>
-      <td>  </td>
-      <td>  </td>
-      <td>  </td>
-      <td>  </td>
-      <td>5</td>
-      <td>₱2,500</td>
-    </tr>
-  </tbody>
-</table>
-\n
-\n*after making this table yo can now proceed to create the chart:*
-  - Select the table data
-  - Insert → Chart → Choose chart type (combo chart)
-  - scroll down to the setup
-    - Click use row as headers
-    - Click Use column as labels
-\n
-**customization settings:**
-- go to customize tab
-- go to series
-  - For Cost (Delivered), set to line chart, put to the right axis.
-  - For Cost (Delayed), set to line chart, put to the right axis.
-  - For Cost (Pending), set to line chart, put to the right axis.
-  - For Avg LT (Delivered), set to column chart
-  - For Avg LT (Delayed), set to column chart
-  - For Avg LT (Pending), set to column chart
-- go to legend
-  - click positions
-  - select bottom
-- Set the required titles and labels in customization based on the template
-
-4. **Dashboard**
-    - Add a new sheet
-    - Name it Dashboard
-    - Select all the chart that you created
-    - copy it one by one
-    - paste it in the Dashboard sheet
-\n
-Congrats kuys! tapos kana sa lahat ng modules lalo na sa dashboard!
-`,
-  pivot: `Hi kuys!👋 A Pivot Table streamlines **data analysis** by summarizing and organizing large amounts of information **quickly and efficiently**. This is helpful to create CHARTS later
-  Paano gawin: \n\n\n\n
-  1. I-click yung buong sheet na **may mga sulat lang**.
-  2. Pumunta sa **Insert**.
-  3. Piliin ang **Pivot Table**, tapos **New Worksheet**. 
-  5. Click **Create**
-  6. Double click to edit
-  \n Aral well kuys!`,
-  "How can I prepare for oral validation": `Hi kuys!👋, here's how to prepare for oral validation in MRP (Material Requirements Planning):  
-\n
-1. **Master the MRP Process Flow**: Understand how data moves from **MPS → BOM → Inventory → PO → Dashboard**. Be ready to explain each step.  
-\n
-2. **Practice Spreadsheet Skills**:  
-   - Use formulas correctly (e.g., IFERROR) to calculate requirements.  
-   - Link sheets (MPS, BOM, Inventory, PO) without errors.  
-   - Format sheets neatly for readability.  
-\n
-3. **Create Reports**:  
-   - Learn to make pivot tables, charts, and dashboards.  
-   - Practice explaining insights from these visuals.  
-\n
-4. **Simulate the Full Workflow**: Integrate all sheets and validate data accuracy.  
-\n
-5. **Practice Oral Explanation**:  
-   - Clearly explain your logic and steps in updating the workbook.  
-   - Be ready to answer questions about formulas, formatting, and results.  
-\n
-Kuys, focus on understanding the *why* and *how* of each step! 📊✨  
-Kuys, need more help? Just ask! 😊`,
-  "Data connection between sheets": `Hi kuys!👋 **How data flows between MPS, BOM, Inventory, and Purchase Orders**  
-In the Material Requirements Planning (MRP) system, the data connection between sheets ensures seamless communication and integration across different stages of production and inventory management. Here’s a detailed breakdown of how the sheets are connected:
-
-\n
-📌 **STEP 1 — MPS (Master Production Schedule)**  
-\n
-In MPS you should base on the last week, there are two types of quantity:  
-- **Planned Qty** → the target production (what you plan to make)  
-- **Actual Qty** → the quantity actually produced or approved for production  
-\n
-→ The **Actual Qty** is the basis that will be passed on to the BOM.  
-\n
-Example in MPS:  
-Product: Trainer Board  
-Planned Qty: 100  
-Actual Qty: 90 (this is what will be used)  
-\n
-→ The **Actual Qty** is used by BOM to compute required materials.  
-\n
-📌 **STEP 2 — BOM (Bill of Materials)**  
-\n
-BOM lists all parts/components needed per product.  
-\n
-Example in BOM:  
-Component: Resistor  
-Qty per item (based on the specification): 5 pcs  
-\n
-MPS Actual Qty = 90 units  
-Qty = 90 × 5 = **450 pcs**  
-\n
-→ BOM uses the **Actual Qty from MPS** to calculate total component requirements.  
-\n
-📌 **STEP 3 — Inventory**  
-\n
-Inventory compares the required quantity (from BOM) vs. stock on hand.  
-\n
-Example in Inventory:  
-Beginning Balance = 300 pcs  
-Required from BOM = 450 pcs 
-\n
-→ Inventory detects the shortage using formulas
-\n
-📌 **STEP 4 — PO (Purchase Order)**  
-\n
-If there is a shortage in Inventory, a PO is generated.  
-\n
-Example in PO:  
-Item: Resistor  
-Qty Ordered: **150 pcs**  
-Supplier: Kaizenset Electronics  
-\n
-When the items arrive:  
-→ They are entered in **Qty IN** in Inventory  
-→ **Ending Balance** is recalculated automatically.  
-
-\n
-🟦 **SUMMARY (to avoid confusion):**  
-\n
-<table border="1">
-  <thead>
-    <tr>
-      <th>Sheet</th>
-      <th>Input from Previous Sheet</th>
-      <th>Output Sent to Next Sheet</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>MPS</td>
-      <td>Planned / Actual Qty</td>
-      <td>Actual Qty → BOM</td>
-    </tr>
-    <tr>
-      <td>BOM</td>
-      <td>Actual Qty (from MPS)</td>
-      <td>Component Requirements → Inventory</td>
-    </tr>
-    <tr>
-      <td>Inventory</td>
-      <td>Required Qty (from BOM)</td>
-      <td>Shortage Qty → PO</td>
-    </tr>
-    <tr>
-      <td>PO</td>
-      <td>Shortage Qty (from Inventory)</td>
-      <td>Qty IN → Inventory update</td>
-    </tr>
-  </tbody>
-</table>
-\n
-🎯 **Main Concept:**  
-\n
-> **Whatever quantity is finalized in MPS becomes the basis of computation in BOM.  
-> Whatever material requirement is computed in BOM becomes the basis for checking stock in Inventory.  
-> Whatever shortage is detected in Inventory becomes the basis for the Purchase Order.**  
-\n`,
-  "Three types of data": `Hi kuys!👋In the Material Requirements Planning (MRP) system, the three types of data processes; data visualization, data manipulation, and data analysis plays crucial roles in creating the MRP as it is the basis on how each sheet connects
-\n
- **Types of Data:**
-\n
-1. **Data Manipulation** - Involves organizing and modifying data using spreadsheet functions and formulas to ensure accuracy and consistency across the MRP system.
-2. **Data Analyzation** - Focuses on interpreting and summarizing data to extract meaningful insights for decision-making, by using pivot table.
-3. **Data Visualization** - Helps present data in a visual format, such as charts and dashboards, to make trends, comparisons, and insights easier to understand.
-`,
-  References: `Hi kuys!👋, to find the resources, click the **program** > **google classroom**
-\n*Kuys, tignan mo yung header natin, tapos sa header, hanapin mo yung **Program**. Pag nakita mo na, i-click mo yung **Google Classroom**.*
-\n
-**If not found please click here according to your need:**
-1. **[MATERIAL_REQUIREMENTS_PLANNING_20251023](https://docs.google.com/spreadsheets/d/1y-9QnNwmhOlyjKYf9uaHA5Q4IAy2ANOs/edit?gid=506882268#gid=506882268)**
-2. **[ICTDP_PerformanceChecklist](https://docs.google.com/document/d/1mT_NOVLIrPwj0j-V15a1efY-lLXr5Axe/edit)**
-3. **[ICTDP_Module_Structure_v2](https://docs.google.com/document/d/1qSm3xFtBFx-AjqxMeWa5ezkMbM7eLQqf/edit)**
-4. **[ICTDP_CBLM_Material_Requirement_Plan](https://docs.google.com/document/d/1MVgh48bu-ZktfSaGXjjlR3YdmR8Po6cp/edit)**
-5. **[HOUSE R.U.L.E.S](https://docs.google.com/document/d/1TZz8CO69iAF-9vPXgA3spmm-BtpEnnQZ3m_9Z3DFmtM/edit?usp=drive_link)**
-6. **[Story: The Flow of Data Through the MRP System](https://docs.google.com/document/d/1ULRv2mg6SUS5LoIe7TLq9VhSenhcA2wPAAmIx6KFP-E/edit?tab=t.0#heading=h.cbftajuzahgw)**
-7. **[ICTDP_Orientation_Flow_and_Script](https://docs.google.com/document/d/1HHZM2zfb98M6LV6x_EjpIMr7aUTEdG2gJ-zrEaq5J-Q/edit?tab=t.0)**
-8. **[ICTDP_ManualWorkflowProcedure](https://docs.google.com/document/d/1fujX8feo6hE_XFAfuTD0GUVsF44eIPJPI5-LLdWyePg/edit?tab=t.0)**
-9. **[MRP_CBLM_Module1_v5a](https://docs.google.com/document/d/1X3f4ADqU1PH8zAFyu-8uKYGElBp4Pv6a/edit?rtpof=true&tab=t.0)**
-10. **[MRP_CBLM_Module2_v7a](https://docs.google.com/document/d/167El0U3ZzflufO5kzhORlX8QSDPDolWJ/edit?rtpof=true&tab=t.0)**
-11. **[MRP_CBLM_Module3_v1a](https://docs.google.com/document/d/11GaW0TpsAvPxIweMPLmmm3sjFVKN4Hnn/edit#heading=h.stdfr3j453vw)**
-12. **[ICTDP_Summary_Rubrics_v3](https://docs.google.com/document/d/1lIIc5dBTBvm33_sG_4dpz0UFXSZ5BSOiSZ_rDff4TFA/edit?tab=t.0#heading=h.560mphxggfmp)**
-13. **[ICTDP_MRP_Thesis](https://docs.google.com/document/d/1UDgB-Em5vdru6pNax_fag0Rs528clRn7lt7BgVxfL3Q/edit?tab=t.0)**
-14. **[Downloadble EDITABLE SPREEDSHEET(FREE!!! CLICK ME!!! NOW!!!](https://docs.google.com/spreadsheets/d/1HRQK3lJD_GUDZT2ExWX5W_QboVbHsU2X/edit?gid=677970753#gid=677970753)**
-\n
-**Form submision & quiz Links:**
-1. **[Registration](https://docs.google.com/forms/d/e/1FAIpQLScqElds2odcKxVAb4h4-qnC7JxK2UWocsjHYOHu5Ob2J5Yv5A/viewform)**
-2. **[Module 1](https://docs.google.com/forms/d/e/1FAIpQLSeIsO_7TlYWT8i6hXBVmTw6-3UFH8kYQ3ipll0lC9KxvOwOFg/viewform)**
-3. **[Module 2](https://docs.google.com/forms/d/e/1FAIpQLScMn2q_BgZrUmJdSQyRqhiHcKNmDY7uxbWg07CZ1G7zajyC8w/viewform?usp=header)**
-4. **[Module 3](https://docs.google.com/forms/d/e/1FAIpQLSexDGWOZ6CLnjh7WbItGeeShHdwzLGgUBa8m0B81_AeNSLOmw/viewform)**
-5. **[Completion Assessment Form](https://docs.google.com/forms/d/1S3P8vaLIJ4qsgMCI9x2TEGsW2enUFgthzEY3H51eEM8/viewform?edit_requested=true)**
-`,
-  "Main developer of AILA?": `Hi kuys!👋, The main programmer, Full stack dev of AILA is **[Joshua M. Narvasa](https://web.facebook.com/Jomong.things)**
-\n**Made this User Interface:**
-- As a Full stack developer
-*Tools used:*
-  - Front End:
-    - HTML
-    - CSS
-    - JS
-  - Back End:
-    - N8N workflow
-    - Pinecone "LLM Assistant"
-    - Supabase "database"
-  `,
-  // module questions area //
-  "module 1": `Hi kuys!👋 here's:
-**[MRP_CBLM_Module1_v5a](https://docs.google.com/document/d/1X3f4ADqU1PH8zAFyu-8uKYGElBp4Pv6a/edit?rtpof=true&tab=t.0)**
-Module 1: Understanding the MRP System is your foundation for learning Material Requirement Planning! Here's what it covers:
-\n
-**Duration:** 1 hour
-**Competency:** Data Manipulation and Analyzation
-**Level:** 3 (controlled educational/demonstration)
-\n
-**Learning Objectives:**
-- Identify data relationships and flow in MRP spreadsheets
-- Demonstrate interaction between MPS, BOM, Inventory, and Purchase Orders
-- Explain how spreadsheet formulas support MRP decisions
-- Interpret KPIs from the Dashboard
-\n
-**Key Terms You'll Learn:**
-- **MRP:** System for calculating materials needed for production
-- **MPS:** Master Production Schedule - what to make and when
-- **BOM:** Bill of Materials - list of components needed
-- **Inventory:** Materials on hand and available
-- **Lead Time:** Time between ordering and receiving materials
-- **Safety Stock:** Extra inventory to prevent shortages
-- **Reorder Point:** When to order new stock
-- **Purchase Order:** Formal request to suppliers
-- **Dashboard:** Visual summary of performance indicators
-\n
-**The MRP Data Cycle:**
-You'll work through a real example - like a client ordering 12 Mechatronics Trainer Boards. The order drives the MPS, which feeds into BOM calculations. Inventory checks material availability, and if needed, Purchase Orders are created. The Dashboard tracks everything and provides insights for better planning.
-\n
-**Activity:**
-You'll analyze the MRP workbook by identifying the purpose of each tab (MPS, BOM, Inventory, Purchase Orders, Dashboard) and how data flows between them.
-\n
-This module prepares you for deeper MRP applications in the next modules! 📊
-\n**[Module 1 Assesment form](https://docs.google.com/forms/d/e/1FAIpQLSeIsO_7TlYWT8i6hXBVmTw6-3UFH8kYQ3ipll0lC9KxvOwOFg/viewform)**
-`,
-  "How to transfer between modules": `Hi kuys!👋 To transfer between MRP modules, you need to complete the current module first through:
-\n
-1. **Finish all activities** - Complete all required tasks, quizzes, and outputs for your current module
-2. **Pass oral validation** - Learning Assistants will assess your understanding through questioning
-3. **Submit outputs** - Hand in your activity sheets and required deliverables  
-4. **Get approval** - Once validated, you can proceed to the next module
-\n
-The modules build on each other:
-- Module 1 → Module 2: Focus moves from theory to hands-on spreadsheet work
-- Module 2 → Module 3: Advanced analysis and dashboard creation
-- Module 3 → Final Presentation: Last and final step after you've finished all modules
-\n
-Make sure to master each module before moving forward! 📚`,
-  "module 2": `Hi kuys!👋 here's:
-**[MRP_CBLM_Module2_v7a](https://docs.google.com/document/d/167El0U3ZzflufO5kzhORlX8QSDPDolWJ/edit?rtpof=true&tab=t.0)**
-Module 2 is all about working with Material Requirement Planning (MRP) data using spreadsheets! 📊
-\n
-**Key points:**
-- **Duration:** 1 hour (Level 3)
-- **Focus:** Spreadsheet-based MRP simulation
-- **Main competency:** Data manipulation across different sheets
-\n
-**What you'll learn:**
-- Working with Master Production Schedule (MPS), Bill of Materials (BOM), Inventory, and Purchase Orders
-- Applying spreadsheet formulas and formatting for consistency
-- Maintaining an audit-ready workbook
-\n
-**Main activity:**
-You'll get a case scenario where a client orders 12 Mechatronics Trainer Boards for delivery in 4 weeks. You need to:
-- Set weekly production plans in **MPS**
-- Compute material requirements in **BOM**
-- Update stock movement in **Inventory**
-- Record supplier details and costs in **Purchase Orders**
-\n
-**Skills covered:**
-- Excel tools: Freeze Panes, Filters, Wrap Text, Conditional Formatting
-- Lookup functions (XLOOKUP/VLOOKUP)
-- Logical formulas (IF statements)
-- Summation formulas (SUMIF)
-- Basic arithmetic for stock balance calculations
-\n
-The module prepares you for handling real MRP data used in planning, production, and procurement! 🛠️
-**[Free editable workbook here](https://docs.google.com/spreadsheets/d/1HRQK3lJD_GUDZT2ExWX5W_QboVbHsU2X/edit?gid=677970753#gid=677970753)**
-\n**[Module 2 Assesment Form](https://docs.google.com/forms/d/e/1FAIpQLScMn2q_BgZrUmJdSQyRqhiHcKNmDY7uxbWg07CZ1G7zajyC8w/viewform?usp=header)**
-`,
-  "module 3": `Hi kuys!👋 here's:
-  **[MRP_CBLM_Module3_v1a](https://docs.google.com/document/d/11GaW0TpsAvPxIweMPLmmm3sjFVKN4Hnn/edit#heading=h.stdfr3j453vw)**
-  \nModule 3 is all about **Data Analysis and Visualization** in MRP! 
-  📊\n**Key points:** 
-  \n- **Duration:**: 1-2hours 
-  \n- **Focus:** Data sheets and tables 
-  \n- **Main competency:** Data Visualization and Data Analyzation
-  \n\nHere's what you'll learn:
-  \n\n**Main Focus:** Analyzing and visualizing MRP data to help production and procurement decisions.
-  \n\n**Key Topics:**\n- Creating pivot tables from MRP data (Inventory, Purchase Orders, Master Production Schedule)
-  \n- Building charts and dashboards to show supplier performance, production progress, and material costs\n- Interpreting reports to find trends and areas for improvement\n\n**Activities You'll Do:**\n- Summarize MRP workbook data with pivot tables\n- Create charts showing supplier performance (lead time vs cost, etc.)\n- Build dashboards that visualize production output vs plan and inventory status\n\n**Assessment Criteria:**\n- Pivot table accuracy\n- Chart design and data representation\n- Dashboard integration and presentation\n- Analytical interpretation of results\n\nThis module helps management monitor important data like lead time, costs, and fulfillment rates to make better decisions for continuous improvement! 😊",
-\n**[Module 3 Assesment Form](https://docs.google.com/forms/d/e/1FAIpQLSexDGWOZ6CLnjh7WbItGeeShHdwzLGgUBa8m0B81_AeNSLOmw/viewform)**
-`,
-  "add more": "addmore",
-};
+let offlineResponses = {}; // This will be filled with data from our Google Sheet.
 
 const messagesEl = document.getElementById("messages");
 const input = document.getElementById("input");
@@ -1190,24 +386,22 @@ marked.setOptions({
 function renderSafeMarkdown(mdText) {
   if (typeof mdText !== "string") mdText = String(mdText || "");
 
-  // 1. Let marked.js create the basic HTML from the markdown text.
-  const rawHtml = marked.parse(mdText);
+  // THIS IS THE NEW LINE: It finds all "\\n" text and replaces it with a real newline.
+  const correctedText = mdText.replace(/\\n/g, '\n');
+
+  // 1. Let marked.js create the basic HTML from the corrected markdown text.
+  const rawHtml = marked.parse(correctedText);
 
   // 2. Use a regular expression to find every link and add the icon.
-  // This is the most reliable method. It finds every <a> tag and rebuilds it with our icon inside.
-  const processedHtml = rawHtml.replace(
-    /<a href="([^"]+)">(.+?)<\/a>/gs,
-    (match, href, text) => {
+  const processedHtml = rawHtml.replace(/<a href="([^"]+)">(.+?)<\/a>/gs, (match, href, text) => {
       const iconSrc = getIconForUrl(href);
-      // We return a new link that includes the original text plus our new icon image.
       return `<a href="${href}" target="_blank" rel="noopener noreferrer"><img src="${iconSrc}" class="link-icon" alt="">${text}</a>`;
-    }
-  );
+  });
 
   // 3. Sanitize the final HTML to ensure it's safe to display.
   return DOMPurify.sanitize(processedHtml, {
-    ADD_TAGS: ["img"],
-    ADD_ATTR: ["target", "rel", "style", "src", "alt", "class"],
+      ADD_TAGS: ['img'],
+      ADD_ATTR: ['target', 'rel', 'style', 'src', 'alt', 'class'],
   });
 }
 
@@ -1671,12 +865,65 @@ function updateStatus(status) {
         statusIndicator.dataset.tooltip = "AILA is Offline";
     }
 }
+/**
+ * Loads the offline responses from our Google Sheet API.
+ */
+async function loadOfflineData() {
+  try {
+    const response = await fetch(OFFLINE_DATA_URL);
+    if (!response.ok) {
+      throw new Error('Failed to load offline data');
+    }
+    const data = await response.json();
+    offlineResponses = data; // Populate our variable with the fetched data
+    console.log("Offline responses loaded successfully from Google Sheet.");
+  } catch (error) {
+    console.error("Could not load offline data:", error);
+    // Optional: You could have a hardcoded fallback here if the sheet fails to load
+    offlineResponses = { "Error": "Offline responses could not be loaded. Please check the connection." };
+  }
+}
 
-// Start the application immediately.
-updateStatus("pending"); // Start in a neutral, pending state.
-showWelcomeScreen(); // Load the welcome screen right away.
+/**
+ * Initializes the app: shows a loading screen with a random tip,
+ * loads data, then shows the main UI.
+ */
+async function initializeApp() {
+    // --- 1. Define our loading tips ---
+    const loadingTips = [
+        "Tip: You can ask AILA about specific modules like MRP, BOM, or MPS.",
+        "Did you know? AILA can understand and display formatted tables.",
+        "Tip: Use the 'Quick Actions' button for common questions and modules.",
+        "You can find learning materials and orientation guides in the 'Tools & Resources' menu.",
+        "AILA is designed to work offline with pre-set answers if the AI is unavailable."
+    ];
 
-// --- END: Final App Initialization ---
+    // --- 2. Get references to the loading screen elements ---
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const loadingTipElement = document.getElementById('loading-tip');
+
+    // --- 3. Pick a random tip and display the loading screen ---
+    const randomTip = loadingTips[Math.floor(Math.random() * loadingTips.length)];
+    if (loadingTipElement) {
+        loadingTipElement.textContent = randomTip;
+    }
+    if (loadingOverlay) {
+        loadingOverlay.classList.add('visible');
+    }
+
+    // --- 4. Load the offline data from your Google Sheet ---
+    await loadOfflineData();
+
+    // --- 5. Hide the loader and start the main app ---
+    // We add a small delay to ensure the animation is smooth.
+    setTimeout(() => {
+        if (loadingOverlay) {
+            loadingOverlay.classList.remove('visible');
+        }
+        updateStatus("pending");
+        showWelcomeScreen();
+    }, 500); // A brief half-second delay for a smooth transition
+}
 
 const ro = new MutationObserver(
   () => (messagesEl.scrollTop = messagesEl.scrollHeight)
@@ -1684,3 +931,5 @@ const ro = new MutationObserver(
 ro.observe(messagesEl, { childList: true, subtree: true });
 
 window.addEventListener("load", () => setTimeout(() => input.focus(), 250));
+// Start the application by calling our new initializer function.
+initializeApp();

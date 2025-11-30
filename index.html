@@ -37,15 +37,12 @@
   <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
 </head>
 <body>
-  <!-- START: Passive Loading Overlay -->
-<div id="status-overlay" class="status-overlay visible">
-  <!-- START: Offline Modal -->
-<div id="offline-modal" class="status-overlay">
-    <div class="status-loader"></div>
-    <p>Loading AILA...</p>
+<!-- START: Loading Overlay -->
+<div id="loading-overlay" class="status-overlay visible">
+    <img src="ailalogo.png" id="loading-logo" alt="AILA Logo">
+    <p id="loading-tip">Loading AILA...</p>
 </div>
-<!-- END: Passive Loading Overlay -->
-
+<!-- END: Loading Overlay -->
   <div class="app">
     <div class="chat" role="application" aria-label="AILA chat">
       <div class="header">
