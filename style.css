@@ -52,7 +52,8 @@
   width: 130px;
   height: 130px;
   /* A powerful glow that respects the logo's transparent areas */
-  filter: drop-shadow(0 0 10px var(--accent1)) drop-shadow(0 0 25px var(--accent1));
+  filter: drop-shadow(0 0 10px var(--accent1))
+    drop-shadow(0 0 25px var(--accent1));
   /* A new, smoother up-and-down floating animation */
   animation: smoothFloat 4s ease-in-out infinite;
   transition: opacity 0.2s ease;
@@ -61,7 +62,7 @@
 /* These are the two main orbiting particles */
 #loading-logo-container::before,
 #loading-logo-container::after {
-  content: '';
+  content: "";
   position: absolute;
   border-radius: 50%;
   background-color: var(--accent2);
@@ -86,20 +87,29 @@
   animation-delay: -4s; /* Start it halfway through the animation */
 }
 
-
 /* --- Keyframe Animations --- */
 
 /* A smooth up-and-down floating motion */
 @keyframes smoothFloat {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
 }
 
 /* An elliptical orbit for the particles */
 @keyframes orbit {
-  0% { transform: rotate(0deg) translateX(55px) rotate(0deg); }
-  100% { transform: rotate(360deg) translateX(55px) rotate(-360deg); }
+  0% {
+    transform: rotate(0deg) translateX(55px) rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg) translateX(55px) rotate(-360deg);
+  }
 }
 
 /* --- Logo Shatter Effect --- */
@@ -107,12 +117,12 @@
   position: absolute;
   width: calc(100% / 4); /* We will use a 4x4 grid */
   height: calc(100% / 4);
-  background-image: url('ailalogo.png');
+  background-image: url("ailalogo.png");
   background-size: 80px 80px; /* Match the logo size */
-  transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.8s ease-out;
+  transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1),
+    opacity 0.8s ease-out;
   border-radius: 2px;
 }
-
 
 /* --- Loading Screen Tip --- */
 #loading-tip {
@@ -138,8 +148,12 @@
 
   /* A new keyframe rule for the smaller mobile orbit */
   @keyframes orbit-mobile {
-    0% { transform: rotate(0deg) translateX(65px) rotate(0deg); }
-    100% { transform: rotate(360deg) translateX(65px) rotate(-360deg); }
+    0% {
+      transform: rotate(0deg) translateX(65px) rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg) translateX(65px) rotate(-360deg);
+    }
   }
 }
 
@@ -178,8 +192,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .status-overlay p {
@@ -206,7 +224,7 @@
   bottom: 150%; /* Position it above the dot */
   left: 50%;
   transform: translateX(-50%);
-  
+
   /* Appearance */
   background-color: #0b2130;
   color: #e6fbff;
@@ -215,7 +233,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 12px;
   white-space: nowrap; /* Prevent text from wrapping */
-  
+
   /* Hide by default */
   opacity: 0;
   visibility: hidden;
@@ -230,7 +248,6 @@
   opacity: 1;
   visibility: visible;
 }
-
 
 /* --- Status Indicator Colors --- */
 .status-indicator.online {
@@ -247,7 +264,6 @@
   background-color: #ffc107;
   box-shadow: 0 0 8px #ffc107;
 }
-  
 
 /* --- Custom Icon Link Styles --- */
 /* --- NEW: Bot Message Link Pill Styles --- */
@@ -255,14 +271,14 @@
 /* This styles the link itself into a bordered box or "pill" */
 .msg a {
   display: inline-flex; /* This is key: it makes the link a container for the text and icon */
-  align-items: center;  /* This vertically centers the text and the icon inside the box */
-  
+  align-items: center; /* This vertically centers the text and the icon inside the box */
+
   /* Appearance */
   scale: 0.95;
   background-color: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;   /* Makes the corners fully rounded for a pill shape */
-  margin: 0 2px;         /* Adds a tiny bit of space around the outside of the pill */
+  border-radius: 10px; /* Makes the corners fully rounded for a pill shape */
+  margin: 0 2px; /* Adds a tiny bit of space around the outside of the pill */
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -272,14 +288,19 @@
   color: #cdd9e3;
   font-size: 14px;
   font-weight: 500;
-  
+
   /* Animation */
   transition: all 0.2s ease; /* Makes the hover effect smooth */
 }
 
 /* This adds a hover effect when the mouse is over the link */
 .msg a:hover {
-  background-color: rgba(0, 209, 255, 0.1); /* Uses your site's accent color for the glow */
+  background-color: rgba(
+    0,
+    209,
+    255,
+    0.1
+  ); /* Uses your site's accent color for the glow */
   border-color: rgba(0, 209, 255, 0.2);
   color: #e6fbff;
   transform: translateY(-1px); /* Adds a subtle "lift" effect */
@@ -293,7 +314,6 @@
   height: 100%;
   margin-left: 8px; /* This creates the space between the text and the icon */
 }
-
 
 .icon-link {
   display: inline-flex;
@@ -841,15 +861,15 @@ textarea#input {
   margin-top: 1px;
   padding-bottom: 1px;
   padding-left: 15px;
-  padding-right: 15px;  /* More balanced vertical and horizontal padding */
+  padding-right: 15px; /* More balanced vertical and horizontal padding */
   max-width: 78%;
   overflow-wrap: break-word;
-  line-height: 0.25;    /* Reduced line height to make the pill more compact */
+  line-height: 0.25; /* Reduced line height to make the pill more compact */
 }
 /* This ensures that paragraphs inside a bot message are not faint or transparent */
 .msg.bot p {
   color: #e8fbff; /* Uses the main bright text color of your app */
-  margin-top: 0;   /* Optional: Removes extra space above paragraphs for a cleaner look */
+  margin-top: 0; /* Optional: Removes extra space above paragraphs for a cleaner look */
   margin-bottom: 1em; /* Optional: Ensures consistent spacing between paragraphs */
 }
 
@@ -1687,40 +1707,40 @@ textarea#input {
   }
 
   .msg a {
-      display: flex;
-      align-items: center;
-      position: flex-start;
-      background-color: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      width: fit-content;
-      border-radius: 8px;
-      padding-right: 20px;
-      margin-top: 8px;
-      text-decoration: none !important;
-      color: #cdd9e3;
-      font-size: 11px;
-      font-weight: 500;      /* Animation */
-      transition: all 0.2s ease;
-    }
-  
-    /* This adds a hover effect when the mouse is over the link */
-    .msg a:hover {
-      background-color: rgba(0, 209, 255, 0.1);
-      /* Uses your site's accent color for the glow */
-      border-color: rgba(0, 209, 255, 0.2);
-      color: #e6fbff;
-      transform: translateY(-1px);
-      /* Adds a subtle "lift" effect */
-    }
-  
-    /* This styles the icon image that is INSIDE the link */
-    .msg a .link-icon {
-      width: 16px;
-      padding-right: 5px;
-      height: 100%;
-      margin-left: 8px;
-      /* This creates the space between the text and the icon */
-    }
+    display: flex;
+    align-items: center;
+    position: flex-start;
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: fit-content;
+    border-radius: 8px;
+    padding-right: 20px;
+    margin-top: 8px;
+    text-decoration: none !important;
+    color: #cdd9e3;
+    font-size: 11px;
+    font-weight: 500; /* Animation */
+    transition: all 0.2s ease;
+  }
+
+  /* This adds a hover effect when the mouse is over the link */
+  .msg a:hover {
+    background-color: rgba(0, 209, 255, 0.1);
+    /* Uses your site's accent color for the glow */
+    border-color: rgba(0, 209, 255, 0.2);
+    color: #e6fbff;
+    transform: translateY(-1px);
+    /* Adds a subtle "lift" effect */
+  }
+
+  /* This styles the icon image that is INSIDE the link */
+  .msg a .link-icon {
+    width: 16px;
+    padding-right: 5px;
+    height: 100%;
+    margin-left: 8px;
+    /* This creates the space between the text and the icon */
+  }
   .tools-nav .module-dropdown-content {
     box-sizing: border-box;
   }
@@ -1917,5 +1937,276 @@ textarea#input {
   .welcome-subtitle {
     font-size: 14px;
     width: 100%;
+  }
+}
+/* --- Lively Loading Screen --- */
+#loading-status-text {
+  color: #e8fbff;
+  font-size: 16px;
+  margin-top: 20px;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+#loading-tip {
+  color: var(--muted);
+  font-size: 14px;
+  max-width: 300px;
+  text-align: center;
+  transition: opacity 0.3s ease;
+}
+
+#enter-app-btn {
+  background: rgba(117, 113, 113, 0.062);
+  color: #0420222c;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 20px;
+  transform: scale(0.9);
+  opacity: 0;
+  animation: button-appear 0.5s ease 0.5s forwards;
+}
+
+#enter-app-btn:hover {
+  transform: translateY(-2px) scale(1);
+  box-shadow: 0 8px 25px rgba(0, 210, 255, 0.2);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* --- Checkmark Animation --- */
+.checkmark {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: block;
+  stroke-width: 2;
+  stroke: #fff;
+  stroke-miterlimit: 10;
+  margin: 0 auto 10px;
+  box-shadow: inset 0px 0px 0px var(--success);
+  animation: fill 0.4s ease-in-out 0.4s forwards,
+    scale 0.3s ease-in-out 0.9s both;
+}
+.checkmark-circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  stroke-width: 2;
+  stroke-miterlimit: 10;
+  stroke: var(--success);
+  fill: none;
+  animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+.checkmark-check {
+  transform-origin: 50% 50%;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+}
+@keyframes stroke {
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes scale {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: scale3d(1.1, 1.1, 1);
+  }
+}
+@keyframes fill {
+  100% {
+    box-shadow: inset 0px 0px 0px 30px var(--success);
+  }
+}
+@keyframes button-appear {
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+/* --- Lively Loading Screen Text & Completion --- */
+#loading-in-progress {
+  text-align: center;
+  margin-top: 20px;
+}
+
+#loading-status-text {
+  color: #e8fbff;
+  font-size: 16px;
+  margin: 0 0 8px 0;
+  font-weight: 500;
+}
+
+#loading-tip {
+  color: var(--muted);
+  font-size: 14px;
+  max-width: 300px;
+  text-align: center;
+  transition: opacity 0.3s ease;
+  margin: 0;
+}
+
+#loading-complete {
+  text-align: center;
+}
+
+#enter-app-btn {
+  background: rgba(95, 95, 95, 0.103);
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  border-color: rgba(146, 100, 255, 0.11);
+  border-width: 1px;
+  border-style: solid;
+  stroke: 20px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 10px;
+  transform: scale(0.9);
+  opacity: 0;
+  scale: 0.8;
+  animation: button-appear 0.5s ease 0.5s forwards;
+}
+
+#enter-app-btn:hover {
+  transform: translateY(-2px) scale(1);
+  box-shadow: 0 8px 25px rgba(0, 210, 255, 0.2);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* --- Checkmark Animation --- */
+.completion-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px; /* Adds space between text and checkmark */
+}
+
+#loading-complete p {
+  margin: 0;
+  font-size: 16px;
+  color: #e8fbff;
+}
+
+.checkmark {
+  width: 24px;
+  height: 24px; /* Make the checkmark small */
+  display: block;
+  stroke-width: 3;
+  stroke: #fff;
+  stroke-miterlimit: 10;
+  animation: fill 0.4s ease-in-out 0.4s forwards,
+    scale 0.3s ease-in-out 0.9s both;
+}
+.checkmark-circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  stroke-width: 3;
+  stroke-miterlimit: 10;
+  stroke: var(--success);
+  fill: none;
+  animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+.checkmark-check {
+  transform-origin: 50% 50%;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+}
+@keyframes stroke {
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes scale {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: scale3d(1.1, 1.1, 1);
+  }
+}
+@keyframes fill {
+  100% {
+    box-shadow: inset 0px 0px 0px 30px var(--success);
+  }
+}
+/* --- New Message Animations --- */
+.msg.new-message {
+  /* This defines the speed and feel of the animation */
+  animation-duration: 0.3s;
+  animation-timing-function: cubic-bezier(
+    0.25,
+    0.46,
+    0.45,
+    0.94
+  ); /* A smooth "ease-out" curve */
+  animation-fill-mode: forwards;
+}
+
+/* Apply the correct animation based on who sent the message */
+.msg.user.new-message {
+  animation-name: slideInFromRight;
+}
+
+.msg.bot.new-message {
+  animation-name: slideInFromLeft;
+}
+
+/* The animation for the user's message */
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* The animation for the bot's message */
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+/* --- Chat Window "Enter" Animation --- */
+.chat.entering {
+  /* This animation will be triggered by adding the 'entering' class */
+  animation: chatEnter 0.4s cubic-bezier(0.39, 0.575, 0.565, 1) forwards;
+}
+
+@keyframes chatEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }

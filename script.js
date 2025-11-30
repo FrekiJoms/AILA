@@ -1,3 +1,15 @@
+const SFX = {
+  loadingAmbient: "sfx/loading-ambient.mp3",
+  glassBreak: "sfx/glass-break.mp3",
+  success: "sfx/success.mp3",
+  whoosh: "sfx/whoosh.mp3",
+  typing: "sfx/typing.mp3",
+  send: "sfx/send.mp3",
+  receive: "sfx/receive.mp3",
+  micOn: "sfx/mic-on.mp3",
+  micOff: "sfx/mic-off.mp3",
+};
+
 const iconMap = {
   "docs.google.com/document": "icons/docs.png",
   "docs.google.com/spreadsheets": "icons/sheets.png",
@@ -394,6 +406,7 @@ const messagesEl = document.getElementById("messages");
 const input = document.getElementById("input");
 const sendBtn = document.getElementById("sendBtn");
 const logoArea = document.getElementById("logo");
+const chatEl = document.querySelector(".chat"); // <-- ADD THIS LINE
 
 /* Marked + DOMPurify */
 marked.setOptions({
@@ -487,7 +500,7 @@ function appendMessage(
 ) {
   const wrap = document.createElement("div");
   wrap.className = "msg " + who;
-
+  wrap.classList.add("new-message");
   wrap.innerHTML = renderSafeMarkdown(text);
 
   // Make all links open in a new tab for security
@@ -671,7 +684,7 @@ function sendToBackend(text, askSuggestions = false) {
       const reply = data.reply;
       //... inside the .then() block
       if (reply) {
-        playSound("sfx/receive.mp3", 0.7); // 70% volume, slightly quieter
+        playSound(SFX.receive, 0.7); // 70% volume, slightly quieter
         appendMessage(reply, "bot");
       }
       //...
@@ -685,6 +698,10 @@ function sendToBackend(text, askSuggestions = false) {
       hideTyping();
       console.warn("Offline mode triggered:", err);
       const offlineReply = getOfflineAnswer(text);
+
+      // THIS IS THE FIX: Play the receive sound for offline messages too.
+      playSound(SFX.receive, 0.7);
+
       appendMessage(offlineReply, "bot", true);
       updateStatus(false); // <-- ADD THIS LINE
     });
@@ -693,7 +710,7 @@ function sendToBackend(text, askSuggestions = false) {
 function sendMessage() {
   const t = input.value.trim();
   if (!t) return;
-  playSound("sfx/send.mp3", 0.8); // 80% volume
+  playSound(SFX.send, 0.8); // 80% volume
   const welcomeScreen = messagesEl.querySelector(".welcome-screen");
   if (welcomeScreen) {
     messagesEl.innerHTML = "";
@@ -701,11 +718,16 @@ function sendMessage() {
 
   appendMessage(t, "user");
   input.value = "";
-  // Manually trigger the input event to swap the send button back to the voice button
-  input.dispatchEvent(new Event("input", { bubbles: true }));
+
+  // THIS IS THE FIX: Use a small delay to prevent the click from falling through.
+  // This ensures the mic-on sound doesn't play right after the send sound.
+  setTimeout(() => {
+    // Manually trigger the input event to swap the send button back to the voice button
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  }, 50); // A 50ms delay is imperceptible to the user but fixes the bug.
+
   sendToBackend(t, true);
 }
-
 function pulseLogoOnce() {
   logoArea.classList.add("logo-glow");
   setTimeout(() => logoArea.classList.remove("logo-glow"), 1250);
@@ -752,10 +774,10 @@ if (SpeechRecognition) {
 
   voiceBtn.addEventListener("click", () => {
     if (isListening) {
-      playSound("sfx/mic-off.mp3", 0.9);
+      playSound(SFX.micOff, 0.9);
       stopListening();
     } else {
-      playSound("sfx/mic-on.mp3", 0.9);
+      playSound(SFX.micOn, 0.9);
       input.value = "";
       try {
         recognition.start();
@@ -923,66 +945,141 @@ async function loadOfflineData() {
 }
 
 /**
- * Initializes the app with a dynamic, multi-stage loading screen.
+ * Initializes the app with a dynamic loading process and robust sound handling.
  */
 async function initializeApp() {
-    // --- 1. Define loading screen content ---
-    const loadingStatuses = [ "Initializing session...", "Loading resources...", "Connecting to modules...", "Finalizing setup..." ];
-    const loadingTips = [ "Ask about specific modules like MRP, BOM, or MPS.", "AILA can understand and display formatted tables.", "Use 'Quick Actions' for common questions.", "Find learning materials in 'Tools & Resources'." ];
-    
-    // --- 2. Get references to all loading elements ---
-    const loadingOverlay = document.getElementById('loading-overlay');
-    const inProgressDiv = document.getElementById('loading-in-progress');
-    const completeDiv = document.getElementById('loading-complete');
-    const statusText = document.getElementById('loading-status-text');
-    const tipText = document.getElementById('loading-tip');
-    const enterBtn = document.getElementById('enter-app-btn');
-    
-    let statusInterval, tipInterval;
+  // --- 1. Define loading content & get elements ---
+  const loadingStatuses = [
+    "Initializing...",
+    "Loading resources...",
+    "Connecting modules...",
+    "Finalizing setup...",
+  ];
+  const loadingTips = [
+    "Ask about specific modules like MRP, BOM, or MPS.",
+    "AILA can understand and display formatted tables.",
+    "Use 'Quick Actions' for common questions.",
+    "You can find learning materials in 'Tools & Resources'.",
+  ];
+  const loadingOverlay = document.getElementById("loading-overlay");
+  const logoContainer = document.getElementById("loading-logo-container");
+  const mainLogo = document.getElementById("loading-logo");
+  const inProgressDiv = document.getElementById("loading-in-progress");
+  const completeDiv = document.getElementById("loading-complete");
+  const statusText = document.getElementById("loading-status-text");
+  const tipText = document.getElementById("loading-tip");
+  const enterBtn = document.getElementById("enter-app-btn");
 
-    // --- 3. Start the dynamic text animations ---
-    // Function to cycle through tips every 3 seconds
-    let tipIndex = 0;
-    tipText.textContent = "Tip: " + loadingTips[tipIndex];
-    tipInterval = setInterval(() => {
-        tipIndex = (tipIndex + 1) % loadingTips.length;
-        tipText.style.opacity = '0';
+  // --- 2. Set up and attempt to play ambient sound ---
+  const ambientSound = new Audio(SFX.loadingAmbient);
+  ambientSound.loop = true;
+  ambientSound.volume = 0.3;
+  let ambientNeedsInteraction = false;
+
+  // Try to play. If it fails (due to autoplay policy), flag it.
+  ambientSound.play().catch((e) => {
+    console.warn(
+      "Ambient sound autoplay was blocked. It will start on the first click."
+    );
+    ambientNeedsInteraction = true;
+  });
+
+  // --- 3. Set up interactive logo with sound fix ---
+  if (logoContainer && mainLogo) {
+    let isShattered = false;
+    logoContainer.addEventListener("click", () => {
+      // If the sound was blocked, this first click will start it.
+      if (ambientNeedsInteraction) {
+        ambientSound.play();
+        ambientNeedsInteraction = false; // Unset the flag so it doesn't try again.
+      }
+
+      if (isShattered) return;
+      playSound(SFX.glassBreak);
+      isShattered = true;
+      mainLogo.style.opacity = "0";
+      for (let i = 0; i < 16; i++) {
+        const piece = document.createElement("div");
+        piece.className = "shatter-piece";
+        const row = Math.floor(i / 4);
+        const col = i % 4;
+        piece.style.left = `${col * 25}%`;
+        piece.style.top = `${row * 25}%`;
+        piece.style.backgroundPosition = `-${col * 20}px -${row * 20}px`;
+        logoContainer.appendChild(piece);
         setTimeout(() => {
-            tipText.textContent = "Tip: " + loadingTips[tipIndex];
-            tipText.style.opacity = '1';
-        }, 300);
-    }, 3000);
-
-    // Function to cycle through loading statuses
-    let statusIndex = 0;
-    const cycleStatus = () => {
-        if (statusIndex < loadingStatuses.length) {
-            statusText.textContent = loadingStatuses[statusIndex++];
-            setTimeout(cycleStatus, 750); // Change status text every 750ms
-        }
-    };
-    cycleStatus();
-
-    // --- 4. Start the actual data loading ---
-    await loadOfflineData();
-
-    // --- 5. Handle the completion state ---
-    clearInterval(tipInterval); // Stop the tips from changing
-    
-    // Show the "Complete" UI
-    inProgressDiv.classList.add('hidden');
-    completeDiv.classList.remove('hidden');
-    playSound('sfx/success.mp3', 0.8);
-
-    // --- 6. Set up the "Enter" button ---
-    enterBtn.addEventListener('click', () => {
-        playSound('sfx/whoosh.mp3', 0.8);
-        loadingOverlay.classList.remove('visible');
-        setTimeout(() => {
-            updateStatus("pending");
-            showWelcomeScreen();
-        }, 500); // Wait for fade-out animation
+          const randomX = (Math.random() - 0.5) * 300;
+          const randomY = (Math.random() - 0.5) * 300;
+          const randomRot = (Math.random() - 0.5) * 720;
+          piece.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRot}deg)`;
+          piece.style.opacity = "0";
+        }, 10);
+      }
+      setTimeout(() => {
+        mainLogo.style.opacity = "1";
+        logoContainer.innerHTML = "";
+        logoContainer.appendChild(mainLogo);
+        isShattered = false;
+      }, 900);
     });
+  }
+
+  // --- 4. Start the dynamic text animations ---
+  let tipIndex = 0;
+  tipText.textContent = "Tip: " + loadingTips[tipIndex];
+  const tipInterval = setInterval(() => {
+    tipIndex = (tipIndex + 1) % loadingTips.length;
+    tipText.style.opacity = "0";
+    setTimeout(() => {
+      tipText.textContent = "Tip: " + loadingTips[tipIndex];
+      tipText.style.opacity = "1";
+    }, 300);
+  }, 3000);
+  let statusIndex = 0;
+  const cycleStatus = () => {
+    if (statusIndex < loadingStatuses.length) {
+      statusText.textContent = loadingStatuses[statusIndex++];
+      setTimeout(cycleStatus, 900);
+    }
+  };
+  cycleStatus();
+
+  // --- 5. Start the actual data loading ---
+  await loadOfflineData();
+
+  // --- 6. Handle the completion state ---
+  clearInterval(tipInterval);
+  mainLogo.style.animation = "none";
+  statusText.classList.add("hidden");
+  completeDiv.classList.remove("hidden");
+  playSound(SFX.success, 0.8);
+
+  // --- 7. Set up the "Enter" button ---
+  // --- 8. Set up the "Enter" button ---
+  enterBtn.addEventListener("click", () => {
+    // Stop the ambient sound if it's playing
+    if (ambientSound) {
+      ambientSound.pause();
+      ambientSound.currentTime = 0;
+    }
+
+    // --- THIS IS THE NEW SYNCHRONIZED SEQUENCE ---
+
+    // 1. Play the sound effect instantly.
+    playSound(SFX.whoosh, 0.8);
+
+    // 2. Start the fade-out of the loading overlay.
+    loadingOverlay.classList.remove("visible");
+
+    // 3. Prepare the chat content immediately (but it's still invisible).
+    updateStatus("pending");
+    showWelcomeScreen();
+
+    // 4. Trigger the new "enter" animation on the chat window.
+    if (chatEl) {
+      chatEl.classList.add("entering");
+    }
+  });
 }
 const ro = new MutationObserver(
   () => (messagesEl.scrollTop = messagesEl.scrollHeight)

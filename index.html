@@ -26,118 +26,220 @@
 #
 ################################################################################################################-->
 <html lang="en">
+  <head>
+    <link rel="icon" href="icon.png" />
+    <link rel="stylesheet" href="style.css" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>AILA — Interface</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
+  </head>
+  <body>
+    <!-- START: Combined Loading Overlay -->
+    <div id="loading-overlay" class="status-overlay visible">
+      <!-- This is your interactive logo -->
+      <div id="loading-logo-container">
+        <img src="ailalogo.png" id="loading-logo" alt="AILA Logo" />
+      </div>
 
-<head>
-  <link rel="icon" href="icon.png">
-  <link rel="stylesheet" href="style.css">
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AILA — Interface</title>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
-</head>
-<body>
-<!-- START: Loading Overlay -->
-<div id="loading-overlay" class="status-overlay visible">
-    <!-- This new div will act as a container for the logo and its shatter effect -->
-    <div id="loading-logo-container">
-        <img src="ailalogo.png" id="loading-logo" alt="AILA Logo">
-    </div>
-    <div class="loading-text-container">
-        <p>Loading AILA...</p>
-        <p id="loading-tip"></p> <!-- Tip text will go here -->
-    </div>
-</div>
-<!-- END: Loading Overlay -->
-  <div class="app">
-    <div class="chat" role="application" aria-label="AILA chat">
-      <div class="header">
+      <!-- This container holds the text that shows DURING loading -->
+      <div id="loading-in-progress">
+        <p id="loading-status-text">Initializing...</p>
+        <p id="loading-tip">Loading tips will appear here.</p>
+      </div>
 
-        <div class="brand">
-          
-          <!--Header Logo-->
-          <div id="logo" class="logo-area" title="AILA logo">
-            <img src="ailalogo.png" alt="AILA Logo" style="width:100%;height:100%;border-radius:12px;"/>
+      <!-- This container holds the elements that show AFTER loading is complete -->
+      <div id="loading-complete" class="hidden">
+        <div class="completion-line">
+          <p>Loading Complete!</p>
+          <svg
+            class="checkmark"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 52 52"
+          >
+            <circle
+              class="checkmark-circle"
+              cx="26"
+              cy="26"
+              r="25"
+              fill="none"
+            />
+            <path
+              class="checkmark-check"
+              fill="none"
+              d="M14.1 27.2l7.1 7.2 16.7-16.8"
+            />
+          </svg>
+        </div>
+        <button id="enter-app-btn">Enter AILA</button>
+      </div>
+    </div>
+    <!-- END: Combined Loading Overlay -->
+    <div class="app">
+      <div class="chat" role="application" aria-label="AILA chat">
+        <div class="header">
+          <div class="brand">
+            <!--Header Logo-->
+            <div id="logo" class="logo-area" title="AILA logo">
+              <img
+                src="ailalogo.png"
+                alt="AILA Logo"
+                style="width: 100%; height: 100%; border-radius: 12px"
+              />
+            </div>
+            <!--HEADER AREA-->
+            <div>
+              <div class="title">AILA</div>
+              <div class="subtitle">
+                Artificial Intelligent Learning Assistant
+              </div>
+              <span class="ver">Ver-0.10</span>
+            </div>
           </div>
-          <!--HEADER AREA-->
-          <div>
-            <div class="title">AILA</div>
-            <div class="subtitle">Artificial Intelligent Learning Assistant</div>
-            <span class="ver">Ver-0.10</span>
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              padding-right: 8px;
+            "
+          >
+            <div id="status-indicator" class="status-indicator"></div>
+            <button
+              id="toolsHeaderBtn"
+              class="header-feedback-btn"
+              title="Tools"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
+                ></path>
+              </svg>
+            </button>
+            <button
+              id="feedbackBtn"
+              class="header-feedback-btn"
+              title="Feedback"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                ></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+            </button>
           </div>
         </div>
-        <div style="display:flex; align-items:center; gap: 8px; padding-right: 8px;">
-          <div id="status-indicator" class="status-indicator"></div>
-          <button id="toolsHeaderBtn" class="header-feedback-btn" title="Tools">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path
-                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
-              </path>
-            </svg>
-          </button>
-          <button id="feedbackBtn" class="header-feedback-btn" title="Feedback">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-            </svg>
-          </button>
+        <!-- text box -->
+        <div class="main">
+          <div
+            class="messages"
+            id="messages"
+            aria-live="polite"
+            role="log"
+          ></div>
         </div>
-      </div>
-      <!-- text box -->
-      <div class="main">
-        <div class="messages" id="messages" aria-live="polite" role="log">
-        </div>
-      </div>
-      <div class="composer">
-        <div id="soundWave" class="sound-wave">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-        <textarea id="input" placeholder="Ask anything..." aria-label="Message input"></textarea>
-        <div class="composer-actions">
-          <button id="voiceBtn" class="composer-btn" title="Use voice">
-            <svg class="mic-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-              <line x1="12" y1="19" x2="12" y2="22"></line>
-            </svg>
-            <svg class="stop-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-              fill="currentColor">
-              <rect x="7" y="7" width="10" height="10" rx="1.5"></rect>
-            </svg>
-          </button>
-          <button id="sendBtn" class="send">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M7 11L12 6L17 11M12 18V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round"></path>
-            </svg>
-          </button>
-        </div>
-        <div class="footer-disclaimer">
-          AILA can make mistakes. Always ask the LA in charge.
+        <div class="composer">
+          <div id="soundWave" class="sound-wave">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <textarea
+            id="input"
+            placeholder="Ask anything..."
+            aria-label="Message input"
+          ></textarea>
+          <div class="composer-actions">
+            <button id="voiceBtn" class="composer-btn" title="Use voice">
+              <svg
+                class="mic-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"
+                ></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="22"></line>
+              </svg>
+              <svg
+                class="stop-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <rect x="7" y="7" width="10" height="10" rx="1.5"></rect>
+              </svg>
+            </button>
+            <button id="sendBtn" class="send">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M7 11L12 6L17 11M12 18V7"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>
+              </svg>
+            </button>
+          </div>
+          <div class="footer-disclaimer">
+            AILA can make mistakes. Always ask the LA in charge.
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  <div id="universalModal" class="modal-backdrop">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 id="modalTitle" class="modal-title"></h2>
-        <button id="modalCloseBtn" class="modal-close-btn">&times;</button>
-      </div>
-      <div id="modalBody" class="modal-body">
-        <!-- Modal content will be injected here by JavaScript -->
+    <div id="universalModal" class="modal-backdrop">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modalTitle" class="modal-title"></h2>
+          <button id="modalCloseBtn" class="modal-close-btn">&times;</button>
+        </div>
+        <div id="modalBody" class="modal-body">
+          <!-- Modal content will be injected here by JavaScript -->
+        </div>
       </div>
     </div>
-  </div>
-  <script src="script.js"></script>
-</body>
-
+    <script src="script.js"></script>
+  </body>
 </html>
