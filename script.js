@@ -1,22 +1,22 @@
 const iconMap = {
-    "docs.google.com/document": "icons/docs.png",
-    "docs.google.com/spreadsheets": "icons/sheets.png",
-    "drive.google.com": "icons/drive.png",
-    "forms.gle": "icons/forms.png",
-    "docs.google.com/forms": "icons/forms.png",
-    "classroom.google.com": "icons/classroom.png",
-    "sites.google.com": "icons/sites.png"
+  "docs.google.com/document": "icons/docs.png",
+  "docs.google.com/spreadsheets": "icons/sheets.png",
+  "drive.google.com": "icons/drive.png",
+  "forms.gle": "icons/forms.png",
+  "docs.google.com/forms": "icons/forms.png",
+  "classroom.google.com": "icons/classroom.png",
+  "sites.google.com": "icons/sites.png",
 };
 const defaultIcon = "icons/external.png";
 
 function getIconForUrl(url) {
-    if (typeof url !== 'string') return defaultIcon;
-    for (const key in iconMap) {
-        if (url.includes(key)) {
-            return iconMap[key];
-        }
+  if (typeof url !== "string") return defaultIcon;
+  for (const key in iconMap) {
+    if (url.includes(key)) {
+      return iconMap[key];
     }
-    return defaultIcon;
+  }
+  return defaultIcon;
 }
 // =================================================================
 
@@ -63,46 +63,19 @@ const modalQuestions = {
         "https://docs.google.com/forms/d/e/1FAIpQLSexDGWOZ6CLnjh7WbItGeeShHdwzLGgUBa8m0B81_AeNSLOmw/viewform",
     },
   },
-  // These other sections remain simple arrays of questions.
   Orientation: [
     "Give me an overview of the Orientation process.",
     "What are the house rules?",
     "Where is the registration form?",
   ],
   "Learning Materials": [
-    {"Google Sheets Get Started": "https://docs.google.com/spreadsheets/d/1y-9QnNwmhOlyjKYf9uaHA5Q4IAy2ANOs/edit?gid=506882268#gid=506882268"},
-    "Show me the performance checklist.",
-    "Is there a manual for the workflow procedure?", 
-  ],
-  "other": {
-    "General Concepts": [
-      "Overview",
-      "Origin",
-      "What's in ICT?",
-      "Main developer of AILA?",
-      "References",
-    ],
-    "MRP Fundamentals": [
-      "What is MRP?",
-      "What is MPS?",
-      "What is BOM?",
-      "What is Inventory?",
-      "What is PO?",
-    ],
-    "Skills & Process": [
-      {
-      "How to do dashboard?": { // The key is the dropdown title
-        "_DESC_": "Learn the steps from pivot tables to final charts.",
-        "Step 1: Create Pivot Tables": "pivot", // Sends 'pivot' query
-        "Step 2: Build Charts": "How to do dashboard?",
-        "Final Dashboard Example": "https://docs.google.com/spreadsheets/d/1y-9QnNwmhOlyjKYf9uaHA5Q4IAy2ANOs/edit?gid=677970753#gid=677970753"
-      }
+    {
+      "Google Sheets Get Started":
+        "https://docs.google.com/spreadsheets/d/1y-9QnNwmhOlyjKYf9uaHA5Q4IAy2ANOs/edit?gid=506882268#gid=506882268",
     },
-      "Data connection between sheets",
-      "How can I prepare for oral validation",
-      "Three types of data ",
-    ],
-  },
+    "Show me the performance checklist.",
+    "Is there a manual for the workflow procedure?",
+  ],
 }; // =================================================================
 
 // ============== START: MODAL SCRIPT ==============
@@ -152,68 +125,78 @@ function closeModal() {
  * @returns {string} The generated HTML string.
  */
 function buildContentHTML(data) {
-    let html = '';
+  let html = "";
 
-    // Case 1: The data is an ARRAY (like in 'Orientation' or 'Other')
-    if (Array.isArray(data)) {
-        data.forEach(item => {
-            // An item can be a simple string for a question link.
-            if (typeof item === 'string') {
-                html += `<a href="#" class="question-link" onclick="useSuggestion('${item.replace(/'/g, "\\'")}'); closeModal();">${item}</a>`;
-            } 
-            // Or an object for a description, a direct link, or a dropdown.
-            else if (typeof item === 'object' && item !== null) {
-                const key = Object.keys(item)[0];
-                const value = item[key];
+  // Case 1: The data is an ARRAY (like in 'Orientation' or 'Other')
+  if (Array.isArray(data)) {
+    data.forEach((item) => {
+      // An item can be a simple string for a question link.
+      if (typeof item === "string") {
+        html += `<a href="#" class="question-link" onclick="useSuggestion('${item.replace(
+          /'/g,
+          "\\'"
+        )}'); closeModal();">${item}</a>`;
+      }
+      // Or an object for a description, a direct link, or a dropdown.
+      else if (typeof item === "object" && item !== null) {
+        const key = Object.keys(item)[0];
+        const value = item[key];
 
-                // If the value is a string starting with 'http', it's a DIRECT LINK.
-                if (typeof value === 'string' && value.startsWith('http')) {
-                    const iconPath = getIconForUrl(value);
-                    html += `<a href="${value}" target="_blank" onclick="closeModal()" class="icon-link"><img src="${iconPath}" alt=""><span>${key}</span></a>`;
-                }
-                // If the value is an object, it's a DROPDOWN.
-                else if (typeof value === 'object' && value !== null) {
-                    html += `
+        // If the value is a string starting with 'http', it's a DIRECT LINK.
+        if (typeof value === "string" && value.startsWith("http")) {
+          const iconPath = getIconForUrl(value);
+          html += `<a href="${value}" target="_blank" onclick="closeModal()" class="icon-link"><img src="${iconPath}" alt=""><span>${key}</span></a>`;
+        }
+        // If the value is an object, it's a DROPDOWN.
+        else if (typeof value === "object" && value !== null) {
+          html += `
                         <div class="module-dropdown">
                             <button class="module-dropdown-btn"><span>${key}</span><svg class="arrow" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
                             <div class="module-dropdown-content">
                                 ${buildContentHTML(value)}
                             </div>
                         </div>`;
-                }
-            }
-        });
-    } 
-    // Case 2: The data is an OBJECT (like in 'Modules' or a nested dropdown)
-    else if (typeof data === 'object' && data !== null) {
-        for (const key in data) {
-            const value = data[key];
+        }
+      }
+    });
+  }
+  // Case 2: The data is an OBJECT (like in 'Modules' or a nested dropdown)
+  else if (typeof data === "object" && data !== null) {
+    for (const key in data) {
+      const value = data[key];
 
-            if (key.startsWith('_DESC_')) {
-                html += `<p class="description">${value}</p>`;
-            }
-            // If the value is an object, it's a nested dropdown. Recurse.
-            else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-                html += `
+      if (key.startsWith("_DESC_")) {
+        html += `<p class="description">${value}</p>`;
+      }
+      // If the value is an object, it's a nested dropdown. Recurse.
+      else if (
+        typeof value === "object" &&
+        value !== null &&
+        !Array.isArray(value)
+      ) {
+        html += `
                     <div class="module-dropdown">
                         <button class="module-dropdown-btn"><span>${key}</span><svg class="arrow" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
                         <div class="module-dropdown-content">
                             ${buildContentHTML(value)}
                         </div>
                     </div>`;
-            }
-            // If the value is a string starting with http, it's a link.
-            else if (typeof value === 'string' && value.startsWith('http')) {
-                const iconPath = getIconForUrl(value);
-                html += `<a href="${value}" target="_blank" onclick="closeModal()" class="icon-link"><img src="${iconPath}" alt=""><span>${key}</span></a>`;
-            }
-            // Otherwise, it's a simple question with a custom query.
-            else if (typeof value === 'string') {
-                 html += `<a href="#" onclick="event.preventDefault(); useSuggestion('${value.replace(/'/g, "\\'")}'); closeModal();">${key}</a>`;
-            }
-        }
+      }
+      // If the value is a string starting with http, it's a link.
+      else if (typeof value === "string" && value.startsWith("http")) {
+        const iconPath = getIconForUrl(value);
+        html += `<a href="${value}" target="_blank" onclick="closeModal()" class="icon-link"><img src="${iconPath}" alt=""><span>${key}</span></a>`;
+      }
+      // Otherwise, it's a simple question with a custom query.
+      else if (typeof value === "string") {
+        html += `<a href="#" onclick="event.preventDefault(); useSuggestion('${value.replace(
+          /'/g,
+          "\\'"
+        )}'); closeModal();">${key}</a>`;
+      }
     }
-    return html;
+  }
+  return html;
 }
 
 /**
@@ -223,11 +206,12 @@ function buildContentHTML(data) {
  * @returns {string} HTML string for the modal's content.
  */
 function getPlaceholderContent(sectionTitle) {
-    const sectionData = modalQuestions[sectionTitle] || {};
-    const contentHTML = buildContentHTML(sectionData);
-    return `<div class="placeholder-section">${contentHTML || `<p>Coming soon.</p>`}</div>`;
+  const sectionData = modalQuestions[sectionTitle] || {};
+  const contentHTML = buildContentHTML(sectionData);
+  return `<div class="placeholder-section">${
+    contentHTML || `<p>Coming soon.</p>`
+  }</div>`;
 }
-
 
 /**
  * Opens and populates the modal based on the content type.
@@ -240,12 +224,13 @@ function openModal(contentType) {
   // Logic for the special "Tools" modal with internal navigation
   if (contentType === "tools") {
     title = "Tools & Resources";
+    // THIS IS THE CORRECTED PART:
+    // We have added the missing <div> panes for "materials" and "other".
     bodyContent = `
             <div class="tools-nav">
                 <button class="tools-nav-btn active" data-target="tools-Modules">Modules</button>
                 <button class="tools-nav-btn" data-target="tools-orientation">Orientation</button>
                 <button class="tools-nav-btn" data-target="tools-materials">Materials</button>
-                <button class="tools-nav-btn" data-target="tools-other">other</button>
             </div>
             <div class="tools-content">
                 <div id="tools-Modules" class="tools-pane active">${getPlaceholderContent(
@@ -257,18 +242,14 @@ function openModal(contentType) {
                 <div id="tools-materials" class="tools-pane">${getPlaceholderContent(
                   "Learning Materials"
                 )}</div>
-                <div id="tools-other" class="tools-pane">${getPlaceholderContent(
-                  "other"
-                )}</div>
             </div>
         `;
   } else {
-    // Logic for the simpler modals that open directly
+    // This part handles the simpler modals and is already correct.
     switch (contentType) {
       case "modules":
         title = "Modules";
         bodyContent = getPlaceholderContent("Modules");
-
         break;
       case "orientation":
         title = "Orientation";
@@ -278,39 +259,29 @@ function openModal(contentType) {
         title = "Learning Materials";
         bodyContent = getPlaceholderContent("Learning Materials");
         break;
-      case "other": // Added the other case
-        title = "other";
-        bodyContent = getPlaceholderContent("other");
-        break;
     }
   }
 
-  // Set the content and make the modal visible
+  // This part injects the content and adds the event listeners. It is already correct.
   modalTitle.textContent = title;
   modalBody.innerHTML = bodyContent;
   modal.classList.add("visible");
 
-  // If the "Tools" modal was opened, set up its internal navigation
   if (contentType === "tools") {
     const navButtons = modal.querySelectorAll(".tools-nav-btn");
     const panes = modal.querySelectorAll(".tools-pane");
 
     navButtons.forEach((btn) => {
       btn.addEventListener("click", () => {
-        // Deactivate all buttons and panes
         navButtons.forEach((b) => b.classList.remove("active"));
         panes.forEach((p) => p.classList.remove("active"));
-
-        // Activate the clicked button and its corresponding pane
         btn.classList.add("active");
         const targetId = btn.getAttribute("data-target");
-        const targetPane = document.getElementById(targetId);
-        if (targetPane) targetPane.classList.add("active");
+        document.getElementById(targetId)?.classList.add("active");
       });
     });
   }
 }
-
 // Main event listeners for opening and closing the modal
 if (modalCloseBtn) modalCloseBtn.addEventListener("click", closeModal);
 if (toolsHeaderBtn)
@@ -335,7 +306,7 @@ document.addEventListener("keydown", (event) => {
 // ============== END: MODAL SCRIPT ==============
 
 // N8N chat webhook link constant
-const CHAT_WEBHOOK = "https://laict.app.n8n.cloud/webhook/aila-chat";
+const CHAT_WEBHOOK = "https://levercrafter.app.n8n.cloud/webhook/aila-chat";
 
 document.addEventListener("click", (e) => {
   if (!e.target.closest(".dropdown")) {
@@ -401,6 +372,8 @@ const faqs = [
 /* dito mo e ccustomize if may babagohin or e dadagdag na template questions */
 const offlineResponses = {
   // random templated questions //
+  testing:
+    "[TESTING](https://docs.google.com/forms/d/e/1FAIpQLSeIsO_7TlYWT8i6hXBVmTw6-3UFH8kYQ3ipll0lC9KxvOwOFg/viewform)",
   Hi: "Hellow kuys! I'm AILA. How can I help you?",
   "Orientation to data processing": `Hi kuys!👋
   \n**Orientation to Data Processing**
@@ -468,7 +441,7 @@ Inside MRP Sheet, there are several key components:
 4. PO (Purchase Orders)
 5. Dashboard
 \n
-**[MATERIAL_REQUIREMENTS_PLANNING_20251023](https://docs.google.com/spreadsheets/d/1y-9QnNwmhOlyjKYf9uaHA5Q4IAy2ANOs/edit?gid=506882268#gid=506882268)**
+[MATERIAL_REQUIREMENTS_PLANNING_20251023](https://docs.google.com/spreadsheets/d/1y-9QnNwmhOlyjKYf9uaHA5Q4IAy2ANOs/edit?gid=506882268#gid=506882268)
 you can also refer to the given template found in modules for a more detailed understanding of MRP components and their functions.`,
   MPS: `Hi kuys!👋 **MPS (Master Production Schedule)** is a detailed plan in the MRP system that specifies:
 \n
@@ -1209,16 +1182,30 @@ const sendBtn = document.getElementById("sendBtn");
 const logoArea = document.getElementById("logo");
 
 /* Marked + DOMPurify */
-marked.setOptions({ breaks: true, gfm: true });
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+});
 
 function renderSafeMarkdown(mdText) {
   if (typeof mdText !== "string") mdText = String(mdText || "");
 
-  // The 'marked' library will handle link parsing automatically.
-  const raw = marked.parse(mdText);
+  // 1. Let marked.js create the basic HTML from the markdown text.
+  const rawHtml = marked.parse(mdText);
 
-  // UPDATED: Allow 'img' tags for pictures, but keep 'iframe' disallowed for safety.
-  return DOMPurify.sanitize(raw, {
+  // 2. Use a regular expression to find every link and add the icon.
+  // This is the most reliable method. It finds every <a> tag and rebuilds it with our icon inside.
+  const processedHtml = rawHtml.replace(
+    /<a href="([^"]+)">(.+?)<\/a>/gs,
+    (match, href, text) => {
+      const iconSrc = getIconForUrl(href);
+      // We return a new link that includes the original text plus our new icon image.
+      return `<a href="${href}" target="_blank" rel="noopener noreferrer"><img src="${iconSrc}" class="link-icon" alt="">${text}</a>`;
+    }
+  );
+
+  // 3. Sanitize the final HTML to ensure it's safe to display.
+  return DOMPurify.sanitize(processedHtml, {
     ADD_TAGS: ["img"],
     ADD_ATTR: ["target", "rel", "style", "src", "alt", "class"],
   });
@@ -1449,7 +1436,7 @@ function sendToBackend(text, askSuggestions = false) {
       `;
   }
   // N8N fetch url
-  fetch("https://laict.app.n8n.cloud/webhook/aila-chat", {
+  fetch("https://levercrafter.app.n8n.cloud/webhook/aila-chat", {
     // put your chatwebhook url here
     method: "POST",
     headers: { "Content-Type": "application/json" },

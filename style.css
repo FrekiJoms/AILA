@@ -1,22 +1,76 @@
 /* --- Custom Icon Link Styles --- */
-.icon-link {
-  display: flex;
-  align-items: center;
-  flex-direction: column;
+/* --- NEW: Bot Message Link Pill Styles --- */
+
+/* This styles the link itself into a bordered box or "pill" */
+.msg a {
+  display: inline-flex; /* This is key: it makes the link a container for the text and icon */
+  align-items: center;  /* This vertically centers the text and the icon inside the box */
+  
   /* Appearance */
-  background-color: rgba(255, 255, 255, 0.034);
-  border: 1px solid rgba(255, 255, 255, 0.068);
-  border-radius: 8px; /* Pill shape */
-  padding: 4px 15px 4px 6px; /* T, R, B, L */
-  margin: 0 2px;
+  scale: 0.95;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;   /* Makes the corners fully rounded for a pill shape */
+  margin: 0 2px;         /* Adds a tiny bit of space around the outside of the pill */
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 10px;
   /* Text & Font */
-  text-decoration: none !important; /* Overrides default */
+  text-decoration: none !important; /* This is crucial for removing the underline */
   color: #cdd9e3;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
-  line-height: 1.2;
+  
+  /* Animation */
+  transition: all 0.2s ease; /* Makes the hover effect smooth */
+}
+
+/* This adds a hover effect when the mouse is over the link */
+.msg a:hover {
+  background-color: rgba(0, 209, 255, 0.1); /* Uses your site's accent color for the glow */
+  border-color: rgba(0, 209, 255, 0.2);
+  color: #e6fbff;
+  transform: translateY(-1px); /* Adds a subtle "lift" effect */
+}
+
+/* This styles the icon image that is INSIDE the link */
+.msg a .link-icon {
+  padding-left: 0;
+  width: 16px;
+  padding-right: 10px;
+  height: 100%;
+  margin-left: 8px; /* This creates the space between the text and the icon */
+}
+
+
+.icon-link {
+  display: inline-flex;
+  /* This is key: it makes the link a container for the text and icon */
+  align-items: center;
+  /* This vertically centers the text and the icon inside the box */
+
+  /* Appearance */
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  /* Makes the corners fully rounded for a pill shape */
+  margin: 0 2px;
+  /* Adds a tiny bit of space around the outside of the pill */
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 8px;
+  /* Text & Font */
+  text-decoration: none !important;
+  /* This is crucial for removing the underline */
+  color: #cdd9e3;
+  font-size: 14px;
+  font-weight: 500;
+
   /* Animation */
   transition: all 0.2s ease;
+  /* Makes the hover effect smooth */
 }
 
 .icon-link:hover {
@@ -37,8 +91,6 @@
 .msg a {
   text-decoration: none;
 }
-
-
 
 .dropdown-item {
   display: block;
@@ -1371,6 +1423,41 @@ textarea#input {
 /* --- Mobile View Enhancements --- */
 /* --- FORCED UNIFIED MOBILE & TABLET VIEW --- */
 @media (max-width: 900px) {
+  .msg a {
+      display: flex;
+      align-items: center;
+      position: flex-start;
+      background-color: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      width: fit-content;
+      border-radius: 8px;
+      padding-right: 20px;
+      margin-top: 8px;
+      text-decoration: none !important;
+      color: #cdd9e3;
+      font-size: 11px;
+      font-weight: 500;      /* Animation */
+      transition: all 0.2s ease;
+    }
+  
+    /* This adds a hover effect when the mouse is over the link */
+    .msg a:hover {
+      background-color: rgba(0, 209, 255, 0.1);
+      /* Uses your site's accent color for the glow */
+      border-color: rgba(0, 209, 255, 0.2);
+      color: #e6fbff;
+      transform: translateY(-1px);
+      /* Adds a subtle "lift" effect */
+    }
+  
+    /* This styles the icon image that is INSIDE the link */
+    .msg a .link-icon {
+      width: 16px;
+      padding-right: 5px;
+      height: 100%;
+      margin-left: 8px;
+      /* This creates the space between the text and the icon */
+    }
   .tools-nav .module-dropdown-content {
     box-sizing: border-box;
   }
