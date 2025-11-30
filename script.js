@@ -76,9 +76,6 @@ const modalQuestions = {
     },
   },
   Orientation: [
-    "Give me an overview of the Orientation process.",
-    "What are the house rules?",
-    "Where is the registration form?",
   ],
   "Learning Materials": [
     {
@@ -232,7 +229,8 @@ function getPlaceholderContent(sectionTitle) {
   const sectionData = modalQuestions[sectionTitle] || {};
   const contentHTML = buildContentHTML(sectionData);
   return `<div class="placeholder-section">${
-    contentHTML || `<p>Coming soon.</p>`
+    contentHTML || `<p>Coming soon...</p>
+    <i style="opacity: 70%"; "font-size: 9px">This section is not configured yet</i>`
   }</div>`;
 }
 
