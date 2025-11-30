@@ -36,8 +36,22 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
 </head>
-
 <body>
+  <!-- START: Status Check Overlay and Modal -->
+<div id="status-overlay" class="status-overlay visible">
+    <div class="status-loader"></div>
+    <p>Checking AILA's connection...</p>
+</div>
+
+<div id="offline-modal" class="status-overlay">
+    <div class="offline-content">
+        <h2>🔴 AILA is Offline</h2>
+        <p>The connection to the live AI assistant failed. You can still use AILA in offline mode with pre-set answers and resources.</p>
+        <button id="proceed-offline-btn">Proceed in Offline Mode</button>
+    </div>
+</div>
+<!-- END: Status Check Overlay and Modal -->
+
   <div class="app">
     <div class="chat" role="application" aria-label="AILA chat">
       <div class="header">

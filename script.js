@@ -1,3 +1,7 @@
+const statusOverlay = document.getElementById("status-overlay");
+const offlineModal = document.getElementById("offline-modal");
+const proceedOfflineBtn = document.getElementById("proceed-offline-btn");
+
 const iconMap = {
   "docs.google.com/document": "icons/docs.png",
   "docs.google.com/spreadsheets": "icons/sheets.png",
@@ -1642,7 +1646,59 @@ input.addEventListener("keydown", (e) => {
     sendMessage();
   }
 });
-showWelcomeScreen();
+// --- START: App Initialization and Status Check ---
+
+/**
+ * Checks if the N8N webhook is reachable.
+ */
+async function checkN8nStatus() {
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000); // 2-second timeout
+
+        const response = await fetch(CHAT_WEBHOOK, {
+            method: 'HEAD', // Use HEAD for a lightweight check
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        return true; // If we get any response, the server is online
+    } catch (error) {
+        console.warn("N8N status check failed. Entering offline mode.", error);
+        return false;
+    }
+}
+
+/**
+ * Initializes the application by checking server status.
+ */
+async function initializeApp() {
+    const isOnline = await checkN8nStatus();
+    
+    // Hide the "Checking..." loading screen
+    if(statusOverlay) statusOverlay.classList.remove("visible");
+
+    if (isOnline) {
+        // If online, show the welcome screen immediately.
+        showWelcomeScreen();
+    } else {
+        // If offline, show the offline modal first.
+        if(offlineModal) offlineModal.classList.add("visible");
+    }
+}
+
+// This button lets the user continue to the app in offline mode.
+if(proceedOfflineBtn) {
+    proceedOfflineBtn.addEventListener("click", () => {
+        if(offlineModal) offlineModal.classList.remove("visible");
+        showWelcomeScreen(); // Now we show the welcome screen.
+    });
+}
+
+// This is the new starting point for the entire app.
+initializeApp();
+
+// --- END: App Initialization and Status Check ---
 
 const ro = new MutationObserver(
   () => (messagesEl.scrollTop = messagesEl.scrollHeight)
