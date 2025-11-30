@@ -546,7 +546,7 @@ body {
 .msg table {
   display: block;
   /* Allows overflow properties to work */
-  max-width: 100%;
+  max-width: fit-content;
   /* Prevents table from breaking the message bubble layout */
   overflow-x: auto;
   /* Enables horizontal scrolling ONLY when needed */
