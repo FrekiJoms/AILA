@@ -132,31 +132,6 @@
   max-width: 300px; /* Prevents the text from being too wide on large screens */
   text-align: center;
 }
-/* --- Mobile Adjustments for Loading Logo --- */
-@media (max-width: 900px) {
-  /* Make the logo container smaller on mobile */
-  #loading-logo-container {
-    width: 100px;
-    height: 100px;
-  }
-
-  /* Adjust the particle animation to use a smaller orbit */
-  #loading-logo-container::before,
-  #loading-logo-container::after {
-    animation-name: orbit-mobile; /* Use the new mobile-specific animation */
-  }
-
-  /* A new keyframe rule for the smaller mobile orbit */
-  @keyframes orbit-mobile {
-    0% {
-      transform: rotate(0deg) translateX(65px) rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg) translateX(65px) rotate(-360deg);
-    }
-  }
-}
-
 /* --- Status Overlay and Loader --- */
 .status-overlay {
   position: fixed;
@@ -859,7 +834,8 @@ textarea#input {
   border-radius: 100px; /* A very large value ensures a perfect pill shape */
   padding-top: 1px;
   margin-top: 1px;
-  padding-bottom: 1px;
+  padding-bottom: 3px;
+  margin-bottom:2px;
   padding-left: 15px;
   padding-right: 15px; /* More balanced vertical and horizontal padding */
   max-width: 78%;
@@ -1039,23 +1015,25 @@ textarea#input {
 }
 
 textarea#input {
-  flex: 1;
-  min-height: 48px;
-  max-height: 120px;
-  height: auto;
-  resize: none;
-  background: rgba(255, 255, 255, 0.068);
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #e6fbff;
-  font-size: 14px;
-  font-family: inherit;
-  outline: none;
-  transition: all 0.2s ease;
+  /* --- Core Sizing & Layout --- */
+  flex: 1; /* Allow it to grow and shrink */
+  box-sizing: border-box; /* Ensures padding is included in the size */
+  resize: none !important; /* Disable manual resizing */
+  
+  /* --- Dynamic Height --- */
+  min-height: 55px !important; /* The starting height */
+  max-height: 150px !important; /* The maximum height it can grow to */
+  height: auto; /* Let JavaScript control the height */
+  overflow-y: auto !important; /* Show a scrollbar ONLY when max-height is reached */
+
+  /* --- Visual Styling (from your original design) --- */
+  border-radius: 24px !important;
+  padding: 18px 48px 18px 20px !important; /* Adjusted padding for better text alignment */
   line-height: 1.4;
-  overflow-y: auto;
-  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: #1c2532ee !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.445) !important;
+  transition: height 0.2s ease; /* Add a smooth transition for the height change */
 }
 
 textarea#input:focus {
@@ -1367,24 +1345,26 @@ textarea#input {
   box-shadow: 0 0 0 4px rgba(0, 210, 255, 0.06);
 }
 
+/* --- Enhanced Custom Scrollbar for Messages --- */
 .messages::-webkit-scrollbar {
-  width: 10px;
+  width: 12px; /* A bit wider for easier grabbing */
 }
 
 .messages::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(0, 0, 0, 0.15); /* A subtle, visible track color */
 }
 
 .messages::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, var(--accent2), var(--accent1));
-  border-radius: 999px;
-  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  border: 3px solid transparent; /* Creates padding around the thumb */
+  background-clip: content-box;  /* Ensures the border doesn't have the background */
+  transition: background 0.2s ease-in-out;
 }
 
-.messages {
-  scrollbar-width: thin;
-  scrollbar-color: linear-gradient(180deg, var(--accent2), var(--accent1))
-    transparent;
+.messages::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--accent1), var(--accent2)); /* Invert gradient on hover */
+  background-clip: content-box;
 }
 
 /* --- Final Composer & Pill Text Area Style --- */
@@ -1701,6 +1681,40 @@ textarea#input {
 /* --- Mobile View Enhancements --- */
 /* --- FORCED UNIFIED MOBILE & TABLET VIEW --- */
 @media (max-width: 900px) {
+  /* Make the logo container smaller on mobile */
+    .msg pre {
+      border-radius: 8px;
+      padding: 12px;
+      margin: 10px 0;
+      width: 100%;
+      max-width: 100%;
+      position: relative;
+      box-sizing: border-box;
+      overflow-wrap: break-word;
+    }
+  
+    #loading-logo-container {
+      width: 100px;
+      height: 100px;
+    }
+  
+    /* Adjust the particle animation to use a smaller orbit */
+    #loading-logo-container::before,
+    #loading-logo-container::after {
+      animation-name: orbit-mobile;
+      /* Use the new mobile-specific animation */
+    }
+  
+    /* A new keyframe rule for the smaller mobile orbit */
+    @keyframes orbit-mobile {
+      0% {
+        transform: rotate(0deg) translateX(65px) rotate(0deg);
+      }
+  
+      100% {
+        transform: rotate(360deg) translateX(65px) rotate(-360deg);
+      }
+    }
   .status-indicator::before {
     bottom: auto;
     top: 150%;
@@ -1851,12 +1865,6 @@ textarea#input {
     border-radius: 0 !important;
     border: none !important;
   }
-
-  /* 4. Hide internal scrollbars for a cleaner look. */
-  .messages::-webkit-scrollbar {
-    display: none;
-  }
-
   .messages {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -2235,4 +2243,43 @@ textarea#input {
   50% {
     transform: translateY(-8px);
   }
+}
+/* --- Code Block and Formula Visualizer (Corrected) --- */
+.msg pre {
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 10px 0;
+  width: fit-content;
+  position: relative;
+}
+.msg code {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  color: #e6fbff;
+  white-space: pre-wrap;
+}
+.copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+.msg pre:hover .copy-btn {
+  opacity: 1;
+  visibility: visible;
+}
+.copy-btn:hover {
+  background: var(--accent1);
+  color: #042022;
 }

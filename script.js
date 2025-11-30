@@ -413,31 +413,31 @@ const chatEl = document.querySelector(".chat"); // <-- ADD THIS LINE
 /* Marked + DOMPurify */
 marked.setOptions({
   breaks: true,
-  gfm: true,
+  gfm: true, 
 });
 
 function renderSafeMarkdown(mdText) {
   if (typeof mdText !== "string") mdText = String(mdText || "");
-
-  // THIS IS THE NEW LINE: It finds all "\\n" text and replaces it with a real newline.
-  const correctedText = mdText.replace(/\\n/g, "\n");
-
-  // 1. Let marked.js create the basic HTML from the corrected markdown text.
+  const correctedText = mdText.replace(/\\n/g, '\n');
   const rawHtml = marked.parse(correctedText);
-
-  // 2. Use a regular expression to find every link and add the icon.
-  const processedHtml = rawHtml.replace(
-    /<a href="([^"]+)">(.+?)<\/a>/gs,
-    (match, href, text) => {
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = rawHtml;
+  tempDiv.querySelectorAll('pre').forEach(pre => {
+    const code = pre.querySelector('code');
+    if (code) {
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'copy-btn';
+      copyBtn.textContent = 'Copy';
+      pre.appendChild(copyBtn);
+    }
+  });
+  const processedHtml = tempDiv.innerHTML.replace(/<a href="([^"]+)">(.+?)<\/a>/gs, (match, href, text) => {
       const iconSrc = getIconForUrl(href);
       return `<a href="${href}" target="_blank" rel="noopener noreferrer"><img src="${iconSrc}" class="link-icon" alt="">${text}</a>`;
-    }
-  );
-
-  // 3. Sanitize the final HTML to ensure it's safe to display.
+  });
   return DOMPurify.sanitize(processedHtml, {
-    ADD_TAGS: ["img"],
-    ADD_ATTR: ["target", "rel", "style", "src", "alt", "class"],
+      ADD_TAGS: ['img', 'pre', 'code', 'button'],
+      ADD_ATTR: ['target', 'rel', 'style', 'src', 'alt', 'class'],
   });
 }
 
@@ -715,6 +715,7 @@ function sendMessage() {
   playSound(SFX.send, 0.8); // 80% volume
   const welcomeScreen = messagesEl.querySelector(".welcome-screen");
   if (welcomeScreen) {
+    if (chatEl) chatEl.classList.remove("chat-welcome-mode"); // <-- ADD THIS LINE
     messagesEl.innerHTML = "";
   }
 
