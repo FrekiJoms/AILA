@@ -10,7 +10,6 @@
   transform: scale(1.5) rotate(20deg) !important; /* Use !important to override the float */
   opacity: 0;
 }
-
 /* This class triggers the "restore" animation */
 #loading-logo.restoring {
   transition-duration: 0.5s; /* Make the restore a bit slower and more satisfying */
@@ -1648,10 +1647,9 @@ textarea#input {
 
 /* --- Modal Module Dropdown Styles --- */
 .module-dropdown {
-  margin-bottom: 8px;
+  margin-bottom: 1px;
   /* Adds space between each module button */
 }
-
 .module-dropdown-btn {
   display: flex;
   justify-content: space-between;
@@ -1704,14 +1702,15 @@ textarea#input {
   display: flex;
   flex-direction: row;
   color: var(--muted);
-  padding-top: 5px;
+  margin-top: 5px !important;
+  height: flex;
   width: flex;
   text-decoration: none;
   border-radius: 6px;
   transition: all 0.2s ease;
-  font-size: 12px;
+  font-size: 14px;
   align-items: center;
-  margin-top: 10px;
+  padding: 5px;
   word-wrap: break-word;
 }
 
@@ -1735,9 +1734,17 @@ textarea#input {
 /* --- FORCED UNIFIED MOBILE & TABLET VIEW --- */
 @media (max-width: 900px) {
   .module-dropdown-content a {
-    font-size: 10px;
+    display: wrap;
+    font-size: 12px;
     margin-left: 2px;
+    align-self: flex-end;
     height: auto;
+    z-index: calc();
+    width: fit-content;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    line-height: 1;
+
   }
   .msg.user {
     align-self: flex-end;
@@ -1842,9 +1849,8 @@ textarea#input {
     z-index: hidden;
     display: flex;
     flex-wrap: wrap;
-    font-size: 12px;
     margin-top: 0;
-    font-size: 11.5px;
+    font-size: 14px;
     color: white;
     font-style: bold;
     line-height: 1.4;

@@ -21,6 +21,7 @@ const iconMap = {
   "classroom.google.com": "icons/classroom.png",
   "sites.google.com": "icons/sites.png",
   "www.excelcampus.com":"icons/excel-campus-logo-optimized.png",
+  "www.benlcollins.com":"icons/colins.png",
 };
 const defaultIcon = "icons/external.png";
 
@@ -83,8 +84,8 @@ const modalQuestions = {
   ],
   "Learning Materials": [
     {
-      "ICTD/DP Site":
-        "https://sites.google.com/dualtech.edu.ph/ict/home",
+      "ICT/Data Proccessing Classroom":
+      "https://classroom.google.com/c/Nzk0ODMxMDI1Mzgx?cjc=xxlb4l3e"
     },
     {
       "Google Sheets Get Started":
@@ -498,7 +499,7 @@ function showWelcomeScreen() {
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
           <span>Modules</span>
       </button>
-      <button class="welcome-btn" onclick="openModal('orientation')">
+      <button class="welcome-btn" onclick="useSuggestion('orientation')">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
           <span>Orientation</span> 
       </button>
@@ -701,19 +702,31 @@ function sendToBackend(text, askSuggestions = false) {
   };
 
   // This helper function will now ONLY be used when the connection completely fails.
-  function getOfflineAnswer(q) {
-    const foundKey = Object.keys(offlineResponses).find((k) =>
-      q.toLowerCase().includes(k.toLowerCase())
-    );
-    // This is the full offline message.
-    return foundKey
-      ? offlineResponses[foundKey]
-      : `🔴OFFLINE: 
+function getOfflineAnswer(q) {
+    // Find all keywords from the offline responses that are present in the user's query as whole words.
+    const matchingKeys = Object.keys(offlineResponses).filter(k => {
+        // We create a regular expression to match the keyword as a whole word, ignoring case.
+        const escapedKey = k.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+        const regex = new RegExp(`\\b${escapedKey}\\b`, 'i');
+        return regex.test(q);
+    });
+
+    // If any keywords were found, select the one with the most characters.
+    if (matchingKeys.length > 0) {
+        const bestMatch = matchingKeys.reduce((a, b) =>
+            a.length > b.length ? a : b
+        );
+        // Return the response for the best-matching (longest) keyword.
+        return offlineResponses[bestMatch];
+    }
+
+    // If no keywords were found, return the default offline message.
+    return `🔴OFFLINE: 
       Kuys! tulog pa si AILA, click mo nalang yung button for more common questions.
       \n<h5>We're still looking forward to the day that the already-prepared online version (GISING NA SI AILA), gets approved, even if it comes with a small fee, because it will allow us to help more LA and incoming trainees in the future.</h5>
       \n- *AILA can still response in templated answers given below, CLICK THE BUTTON*
       `;
-  }
+}
 
   // N8N fetch url
   fetch("https://levercrafter.app.n8n.cloud/webhook/aila-chat", {
