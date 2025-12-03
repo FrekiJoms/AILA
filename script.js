@@ -1,6 +1,6 @@
 // --- START: Supabase Client Initialization ---
-const SUPABASE_URL = 'https://zpprfjrbtpmfroksoqrj.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpwcHJmanJidHBtZnJva3NvcXJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzMDQwMjEsImV4cCI6MjA3Njg4MDAyMX0._j9f3lISZ4jZa-A3HnhXZEz1L_t5uZMiF21Cc2veqjw';
+const SUPABASE_URL = 'https://woqlvcgryahmcejdlcqz.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvcWx2Y2dyeWFobWNlamRsY3F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3NDg5NTMsImV4cCI6MjA4MDMyNDk1M30.PXL0hJ-8Hv7BP21Fly3tHXonJoxfVL0GNCY7oWXDKRA';
 
 const { createClient } = supabase;
 const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1206,13 +1206,14 @@ messagesEl.addEventListener("click", (e) => {
 
 // 1. Get all the elements we need from the DOM first.
 // Add this line with the other constants
+const forgotPasswordLink = document.getElementById('forgotPasswordLink');
 const customAlert = document.getElementById("customAlert");
 const authModal = document.getElementById("authModal");
 const authCloseBtn = document.getElementById("authCloseBtn");
 const authTitle = document.getElementById("authTitle");
 const authActionBtn = document.getElementById("authActionBtn");
 const pinContainer = document.getElementById("pinContainer");
-const pinConfirmContainer = document.getElementById("pinConfirmContainer");
+const pinConfirmGroup = document.getElementById('pinConfirmGroup');
 const registerLink = document.getElementById("registerLink");
 const authForm = document.getElementById("authForm");
 const enterAppBtn = document.getElementById("enter-app-btn");
@@ -1274,17 +1275,24 @@ function updateUserInfo() {
   }
 }
 
-function showCustomAlert(message) {
-  clearTimeout(alertTimeout); // Clear any existing timer
-  customAlert.textContent = message;
-  customAlert.classList.remove("hidden");
+function showCustomAlert(message, type = 'error') {
+    clearTimeout(alertTimeout); 
+    customAlert.textContent = message;
 
-  // Automatically hide the alert after 3 seconds
-  alertTimeout = setTimeout(() => {
-    customAlert.classList.add("hidden");
-  }, 3000);
+    // Add or remove the 'success' class based on the type
+    if (type === 'success') {
+        customAlert.classList.add('success');
+    } else {
+        customAlert.classList.remove('success');
+    }
+
+    customAlert.classList.remove('hidden');
+
+    // Automatically hide the alert after 4 seconds
+    alertTimeout = setTimeout(() => {
+        customAlert.classList.add('hidden');
+    }, 4000);
 }
-
 // Function to open the modal
 function showAuthModal() {
   authModal.classList.remove("hidden");
@@ -1303,12 +1311,12 @@ function setAuthMode(isRegister) {
   if (isRegister) {
     authTitle.textContent = "Create an Account";
     btnText.textContent = "Register";
-    pinConfirmContainer.classList.remove("hidden");
+    pinConfirmGroup.classList.remove("hidden");
     registerLink.innerHTML = "Already have an account? Login";
   } else {
     authTitle.textContent = "Login to AILA";
     btnText.textContent = "Login";
-    pinConfirmContainer.classList.add("hidden");
+    pinConfirmGroup.classList.add("hidden");
     registerLink.innerHTML = "Don't have an account? Register";
   }
 }
@@ -1369,7 +1377,6 @@ if (registerLink) {
 if (authForm) {
     authForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-
         authActionBtn.classList.add('loading');
         authActionBtn.disabled = true;
 
@@ -1383,8 +1390,8 @@ if (authForm) {
             showCustomAlert("Please enter a valid @gmail.com address.");
             authActionBtn.classList.remove('loading'); authActionBtn.disabled = false; return;
         }
-        if (pin.length !== 4) {
-            showCustomAlert("PIN must be exactly 4 digits.");
+        if (pin.length !== 6) {
+            showCustomAlert("PIN must be exactly 6 digits.");
             authActionBtn.classList.remove('loading'); authActionBtn.disabled = false; return;
         }
         if (isRegisterMode && pin !== pinConfirm) {
@@ -1394,63 +1401,57 @@ if (authForm) {
 
         try {
             if (isRegisterMode) {
-                // --- REAL REGISTRATION WITH SUPABASE ---
-                const { data, error } = await _supabase.auth.signUp({
-                    email: email,
-                    password: pin,
-                });
+                // --- REAL REGISTRATION ---
+                const { error } = await _supabase.auth.signUp({ email: email, password: pin });
                 if (error) throw error;
                 
-                // On success, proceed with UI changes
-                localStorage.setItem('loggedInUser', email);
-                closeAuthModal();
-                enterAppBtn.classList.add("hidden");
-                const username = email.split('@')[0];
-                welcomeMessageText.textContent = `Welcome to AILA, ${username}!`;
-                welcomeMessageContainer.classList.remove("hidden");
-                updateUserInfo();
+                showCustomAlert("Registered successfully! Logging you in...", 'success');
+                // Short delay to let the user read the success message
+                setTimeout(() => {
+                    localStorage.setItem('loggedInUser', email);
+                    closeAuthModal();
+                    enterAppBtn.classList.add("hidden");
+                    welcomeMessageText.textContent = `Welcome to AILA, ${email.split('@')[0]}!`;
+                    welcomeMessageContainer.classList.remove("hidden");
+                    updateUserInfo();
+                }, 1500);
 
             } else {
-                // --- REAL LOGIN WITH SUPABASE ---
-                const { data, error } = await _supabase.auth.signInWithPassword({
-                    email: email,
-                    password: pin,
-                });
+                // --- REAL LOGIN ---
+                const { data, error } = await _supabase.auth.signInWithPassword({ email: email, password: pin });
                 if (error) throw error;
 
-                // --- Trial Check from Supabase profiles table ---
-                const { data: profile, error: profileError } = await _supabase
-                    .from('profiles')
-                    .select('trial_start_date')
-                    .eq('id', data.user.id)
-                    .single();
-
+                // Trial Check from Supabase
+                const { data: profile, error: profileError } = await _supabase.from('profiles').select('trial_start_date').eq('id', data.user.id).single();
                 if (profileError) throw profileError;
 
                 const startDate = new Date(profile.trial_start_date);
-                const today = new Date();
-                const diffTime = today - startDate;
-                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                const diffDays = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
                 
                 if (diffDays > 30) {
                     showCustomAlert("Your 30-day trial has expired.");
-                    _supabase.auth.signOut(); // Log them out immediately
-                    return; // Stop the process
+                    _supabase.auth.signOut();
+                    return;
                 }
                 
                 // --- Proceed with successful login ---
                 localStorage.setItem('loggedInUser', email);
                 closeAuthModal();
                 enterAppBtn.classList.add("hidden");
-                const username = email.split('@')[0];
-                welcomeMessageText.textContent = `Welcome back, ${username}!`;
+                welcomeMessageText.textContent = `Welcome back, ${email.split('@')[0]}!`;
                 welcomeMessageContainer.classList.remove("hidden");
                 updateUserInfo();
             }
         } catch (error) {
-            showCustomAlert(error.message);
+            // --- CUSTOM ERROR HANDLING ---
+            if (error.message.includes("User already registered")) {
+                showCustomAlert("User already registered. Please log in.");
+            } else if (error.message.includes("Invalid login credentials")) {
+                showCustomAlert("Email not registered or incorrect PIN.");
+            } else {
+                showCustomAlert(error.message);
+            }
         } finally {
-            // Always remove loading state
             authActionBtn.classList.remove('loading');
             authActionBtn.disabled = false;
         }
@@ -1477,7 +1478,28 @@ if (finalEnterBtn) {
     showWelcomeScreen();
   });
 }
+if (forgotPasswordLink) {
+    forgotPasswordLink.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const email = prompt("Please enter your email to receive a password reset link:");
+        
+        if (email) {
+            showCustomAlert("Sending reset instructions...", 'success');
+            const { error } = await _supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.href, // Redirects back to your app after reset
+            });
+
+            if (error) {
+                showCustomAlert(error.message);
+            } else {
+                showCustomAlert("Password reset instructions have been sent to your email.");
+            }
+        }
+    });
+}
+
 // --- END: Authentication Modal Logic ---
+
 // --- START: Navigation Sidebar Logic ---
 
 // Get elements from the DOM

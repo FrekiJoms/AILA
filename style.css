@@ -2807,3 +2807,7 @@ input:-webkit-autofill:active {
     margin-bottom: 15px;
     height: 14px; /* Reserve space to prevent layout shift */
 }
+.custom-alert.success {
+    background-color: rgba(47, 226, 122, 0.2); /* Greenish background */
+    border-color: var(--success);
+}
