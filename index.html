@@ -103,6 +103,8 @@
 
               <!-- START: 4-Digit PIN Input -->
               <div id="pinContainer" class="pin-digit-container">
+                <!-- END: 4-Digit PIN Input -->
+                <p class="pin-description">Enter your 4-digit PIN</p>
                 <input type="tel" class="pin-digit" maxlength="1" />
                 <input type="tel" class="pin-digit" maxlength="1" />
                 <input type="tel" class="pin-digit" maxlength="1" />
@@ -112,16 +114,18 @@
 
               <!-- START: 4-Digit PIN Confirm Input -->
               <div id="pinConfirmContainer" class="pin-digit-container hidden">
+                <!-- END: 4-Digit PIN Confirm Input -->
+                <p class="pin-description">Confirm your PIN</p>
                 <input type="tel" class="pin-digit" maxlength="1" />
                 <input type="tel" class="pin-digit" maxlength="1" />
                 <input type="tel" class="pin-digit" maxlength="1" />
                 <input type="tel" class="pin-digit" maxlength="1" />
               </div>
               <!-- END: 4-Digit PIN Confirm Input -->
-
-              <button type="submit" id="authActionBtn" class="auth-action-btn">
-                Login
-              </button>
+          <button type="submit" id="authActionBtn" class="auth-action-btn">
+              <span class="btn-text">Login</span>
+              <div class="spinner hidden"></div>
+          </button>
             </form>
 
             <!-- CORRECT PLACEMENT for the alert -->

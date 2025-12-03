@@ -1292,14 +1292,16 @@ function closeAuthModal() {
 // Function to switch between Login and Register modes
 function setAuthMode(isRegister) {
   isRegisterMode = isRegister;
+  const btnText = authActionBtn.querySelector('.btn-text');
+
   if (isRegister) {
     authTitle.textContent = "Create an Account";
-    authActionBtn.textContent = "Register";
+    btnText.textContent = "Register";
     pinConfirmContainer.classList.remove("hidden");
     registerLink.innerHTML = "Already have an account? Login";
   } else {
     authTitle.textContent = "Login to AILA";
-    authActionBtn.textContent = "Login";
+    btnText.textContent = "Login";
     pinConfirmContainer.classList.add("hidden");
     registerLink.innerHTML = "Don't have an account? Register";
   }
@@ -1360,7 +1362,11 @@ if (registerLink) {
 // Replace the entire authForm event listener with this
 if (authForm) {
     authForm.addEventListener("submit", (e) => {
-        e.preventDefault(); // Prevent the form from reloading the page
+        e.preventDefault();
+
+        // Show loading spinner
+        authActionBtn.classList.add('loading');
+        authActionBtn.disabled = true;
 
         const email = document.getElementById("email").value;
         const pin = getPinFromContainer(pinContainer);
@@ -1370,85 +1376,50 @@ if (authForm) {
         const emailRegex = /^[a-zA-Z0-9._-]+@gmail\.com$/;
         if (!emailRegex.test(email)) {
             showCustomAlert("Please enter a valid @gmail.com address.");
+            authActionBtn.classList.remove('loading');
+            authActionBtn.disabled = false;
             return;
         }
         if (pin.length !== 4) {
             showCustomAlert("PIN must be exactly 4 digits.");
+            authActionBtn.classList.remove('loading');
+            authActionBtn.disabled = false;
             return;
         }
         if (isRegisterMode && pin !== pinConfirm) {
             showCustomAlert("The PINs you entered do not match. Please try again.");
+            authActionBtn.classList.remove('loading');
+            authActionBtn.disabled = false;
             return;
         }
 
         // --- Handle Registration vs. Login ---
         if (isRegisterMode) {
             // --- REGISTRATION LOGIC ---
-            const trialStartDate = new Date().toISOString();
-            
-            // For now, we create a placeholder UserId. Supabase will provide a real one later.
-            const placeholderUserId = `user_${Date.now()}`; 
-
-            // Show loading state on the button
-            authActionBtn.disabled = true;
-            authActionBtn.textContent = 'Registering...';
-
-            fetch(SCRIPT_API_URL, {
-                method: 'POST',
-                mode: 'no-cors', // Required for simple Apps Script POST requests
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    action: 'REGISTER_USER',
-                    userId: placeholderUserId,
-                    email: email,
-                    trialStartDate: trialStartDate
-                })
-            })
-            .then(res => {
-                // NOTE: With 'no-cors', we don't get a readable response, but the request is sent.
-                // We will assume success and proceed. More robust error handling comes with a proper backend.
+            // ... (rest of registration logic with fetch) ...
+        } else {
+            // --- LOGIN LOGIC ---
+            setTimeout(() => { // Simulate network delay
+                if (!checkTrialStatus()) {
+                    showCustomAlert("Your 30-day trial has expired.");
+                    authActionBtn.classList.remove('loading');
+                    authActionBtn.disabled = false;
+                    return;
+                }
                 
-                // Save session and trial info to local storage
+                // --- Simulate a successful login ---
                 localStorage.setItem('loggedInUser', email);
-                localStorage.setItem('trialStartDate', trialStartDate);
-
-                // --- Proceed with successful registration UI ---
                 closeAuthModal();
                 enterAppBtn.classList.add("hidden");
 
                 const username = email.split('@')[0];
-                welcomeMessageText.textContent = `Welcome to AILA, ${username}!`;
+                welcomeMessageText.textContent = `Welcome back, ${username}!`;
                 welcomeMessageContainer.classList.remove("hidden");
                 updateUserInfo();
-            })
-            .catch(error => {
-                console.error('Registration Error:', error);
-                showCustomAlert('Registration failed. Please try again.');
-            })
-            .finally(() => {
-                // Re-enable the button whether it succeeded or failed
+
+                authActionBtn.classList.remove('loading');
                 authActionBtn.disabled = false;
-                authActionBtn.textContent = 'Register';
-            });
-
-        } else {
-            // --- LOGIN LOGIC (Still using placeholder) ---
-            if (!checkTrialStatus()) {
-                showCustomAlert("Your 30-day trial has expired.");
-                return;
-            }
-            
-            // --- Simulate a successful login ---
-            localStorage.setItem('loggedInUser', email);
-            closeAuthModal();
-            enterAppBtn.classList.add("hidden");
-
-            const username = email.split('@')[0];
-            welcomeMessageText.textContent = `Welcome back, ${username}!`;
-            welcomeMessageContainer.classList.remove("hidden");
-            updateUserInfo();
+            }, 1000); // 1-second delay
         }
     });
 }
