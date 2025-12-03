@@ -1195,21 +1195,54 @@ messagesEl.addEventListener("click", (e) => {
 });
 // --- START: Authentication Modal Logic ---
 
-// Get all the elements we need from the DOM
+// 1. Get all the elements we need from the DOM first.
 const authModal = document.getElementById("authModal");
 const authCloseBtn = document.getElementById("authCloseBtn");
 const authTitle = document.getElementById("authTitle");
 const authActionBtn = document.getElementById("authActionBtn");
+const pinInput = document.getElementById('pin');
 const pinConfirmInput = document.getElementById("pinConfirm");
+const pinConfirmContainer = document.getElementById('pinConfirmContainer');
+const pinRevealIcon = document.getElementById('pin-reveal-icon');
+const pinConfirmRevealIcon = document.getElementById('pin-confirm-reveal-icon');
 const registerLink = document.getElementById("registerLink");
 const authForm = document.getElementById("authForm");
 const enterAppBtn = document.getElementById("enter-app-btn");
 const welcomeMessageContainer = document.getElementById("welcome-message-container");
 const welcomeMessageText = document.getElementById("welcome-message-text");
 const finalEnterBtn = document.getElementById("final-enter-btn");
-const pinConfirmContainer = document.getElementById('pinConfirmContainer');
-const pinRevealIcon = document.getElementById('pin-reveal-icon');
-const pinConfirmRevealIcon = document.getElementById('pin-confirm-reveal-icon');
+
+let isRegisterMode = false;
+
+// 2. Define all the functions the modal will use.
+
+// Function to open the modal
+function showAuthModal() {
+  authModal.classList.remove("hidden");
+}
+
+// Function to close the modal
+function closeAuthModal() {
+  authModal.classList.add("hidden");
+}
+
+// Function to switch between Login and Register modes
+function setAuthMode(isRegister) {
+  isRegisterMode = isRegister;
+  if (isRegister) {
+    authTitle.textContent = "Create an Account";
+    authActionBtn.textContent = "Register";
+    pinConfirmContainer.classList.remove("hidden");
+    pinConfirmInput.required = true;
+    registerLink.innerHTML = 'Already have an account? Login';
+  } else {
+    authTitle.textContent = "Login to AILA";
+    authActionBtn.textContent = "Login";
+    pinConfirmContainer.classList.add("hidden");
+    pinConfirmInput.required = false;
+    registerLink.innerHTML = 'Don\'t have an account? Register';
+  }
+}
 
 // This function filters the input to allow only numbers
 function enforceNumeric(event) {
@@ -1233,6 +1266,78 @@ function togglePinVisibility(inputElement, iconElement) {
     }
 }
 
+// 3. Attach all the event listeners last.
+
+// Show the modal when the initial "Login / Register" button is clicked
+if (enterAppBtn) {
+    enterAppBtn.addEventListener("click", showAuthModal);
+}
+
+// Close the modal with the 'X' button
+if (authCloseBtn) {
+    authCloseBtn.addEventListener("click", closeAuthModal);
+}
+
+// Toggle between Login and Register modes
+if (registerLink) {
+    registerLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        setAuthMode(!isRegisterMode);
+    });
+}
+
+// Handle the form submission (Login or Register)
+if (authForm) {
+    authForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById("email").value;
+        const pin = pinInput.value;
+        const pinConfirm = pinConfirmInput.value;
+
+        // PIN Validation
+        if (pin.length !== 4) {
+            alert("PIN must be exactly 4 digits.");
+            return;
+        }
+        if (isRegisterMode && pin !== pinConfirm) {
+            alert("The PINs you entered do not match. Please try again.");
+            return;
+        }
+
+        // --- Simulate a successful login/registration ---
+        localStorage.setItem('loggedInUser', email);
+        closeAuthModal();
+        enterAppBtn.classList.add("hidden");
+
+        const username = email.split('@')[0];
+        welcomeMessageText.textContent = isRegisterMode 
+            ? `Welcome to AILA, ${username}!`
+            : `Welcome back, ${username}!`;
+        welcomeMessageContainer.classList.remove("hidden");
+    });
+}
+
+// Handle the final "Enter AILA" button click
+if (finalEnterBtn) {
+    finalEnterBtn.addEventListener("click", () => {
+        const loadingOverlay = document.getElementById("loading-overlay");
+        if (ambientSound) {
+            ambientSound.pause();
+            ambientSound.currentTime = 0;
+        }
+        
+        playSound(SFX.whoosh, 0.8);
+        loadingOverlay.classList.remove("visible");
+        if (chatEl) {
+            chatEl.classList.add("entering");
+        }
+
+        updateStatus("pending");
+        showWelcomeScreen();
+    });
+}
+
 // Add event listeners to the reveal icons
 if (pinRevealIcon) {
     pinRevealIcon.addEventListener('click', () => togglePinVisibility(pinInput, pinRevealIcon));
@@ -1248,122 +1353,6 @@ if (pinInput) {
 if (pinConfirmInput) {
     pinConfirmInput.addEventListener('input', enforceNumeric);
 }
-
-let isRegisterMode = false;
-
-// Function to open the modal
-function showAuthModal() {
-  authModal.classList.remove("hidden");
-}
-
-// Function to close the modal
-function closeAuthModal() {
-  authModal.classList.add("hidden");
-}
-
-// Function to switch between Login and Register modes
-function setAuthMode(isRegister) {
-  isRegisterMode = isRegister;
-  if (isRegister) {
-    authTitle.textContent = "Create an Account";
-    authActionBtn.textContent = "Register";
-    pinConfirmContainer.classList.remove("hidden"); // Show the container
-    pinConfirmInput.required = true;
-    registerLink.innerHTML = 'Already have an account? Login';
-  } else {
-    authTitle.textContent = "Login to AILA";
-    authActionBtn.textContent = "Login";
-    pinConfirmContainer.classList.add("hidden"); // Hide the container
-    pinConfirmInput.required = false;
-    registerLink.innerHTML = 'Don\'t have an account? Register';
-  }
-}
-// Get the actual PIN input element
-const pinInput = document.getElementById('pin');
-
-// This function filters the input to allow only numbers
-function enforceNumeric(event) {
-    event.target.value = event.target.value.replace(/\D/g, '');
-}
-
-// Apply the filter to both PIN fields as the user types
-if (pinInput) {
-    pinInput.addEventListener('input', enforceNumeric);
-}
-if (pinConfirmInput) {
-    pinConfirmInput.addEventListener('input', enforceNumeric);
-}
-
-// --- Event Listeners ---
-
-// Show the modal when the initial "Login / Register" button is clicked
-enterAppBtn.addEventListener("click", showAuthModal);
-
-// Close the modal with the 'X' button
-authCloseBtn.addEventListener("click", closeAuthModal);
-
-// Toggle between Login and Register modes
-registerLink.addEventListener("click", (e) => {
-  e.preventDefault();
-  setAuthMode(!isRegisterMode);
-});
-
-// Handle the form submission (Login or Register)
-authForm.addEventListener("submit", (e) => {
-  e.preventDefault(); // Prevent the form from reloading the page
-
-  const email = document.getElementById("email").value;
-  const pin = document.getElementById("pin").value;
-  const pinConfirm = pinConfirmInput.value;
-
-  // --- START: PIN Validation ---
-  if (pin.length !== 4) {
-      alert("PIN must be exactly 4 digits.");
-      return; // Stop the submission
-  }
-
-  if (isRegisterMode && pin !== pinConfirm) {
-      alert("The PINs you entered do not match. Please try again.");
-      return; // Stop the submission
-  }
-  // --- END: PIN Validation ---
-
-  // This is a placeholder for the real Supabase/Google Sheets logic
-  console.log("Form submitted!");
-  console.log("Mode:", isRegisterMode ? "Register" : "Login");
-  console.log("Email:", email);
-  console.log("PIN:", pin);
-
-  // --- Simulate a successful login/registration ---
-  localStorage.setItem('loggedInUser', email);
-  closeAuthModal();
-  enterAppBtn.classList.add("hidden");
-
-  const username = email.split('@')[0];
-  welcomeMessageText.textContent = isRegisterMode 
-    ? `Welcome to AILA, ${username}!`
-    : `Welcome back, ${username}!`;
-  welcomeMessageContainer.classList.remove("hidden");
-});
-
-// Handle the final "Enter AILA" button click
-finalEnterBtn.addEventListener("click", () => {
-    // This is the original logic to hide the overlay and show the app
-    const loadingOverlay = document.getElementById("loading-overlay");
-    if (ambientSound) {
-        ambientSound.pause();
-        ambientSound.currentTime = 0;
-    }
-    
-    playSound(SFX.whoosh, 0.8);
-    loadingOverlay.classList.remove("visible");
-    if (chatEl) {
-        chatEl.classList.add("entering");
-    }
-
-    updateStatus("pending");
-    showWelcomeScreen();
-});
 
 // --- END: Authentication Modal Logic ---
 // --- START: Navigation Sidebar Logic ---
