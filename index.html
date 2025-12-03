@@ -93,23 +93,12 @@
           </div>
           <div class="auth-modal-body">
             <form id="authForm">
-              <input
-                type="email"
-                id="email"
-                class="auth-input"
-                placeholder="Enter your Gmail"
-                required
-              />
-              <div class="separator">OR</div>
               <button id="googleLoginBtn" class="google-login-btn">
-                <img
-                  src="icons/google.png"
-                  alt="Google icon"
-                  class="google-icon"
-                />
+                <img src="icons/google.png" alt="Google icon" class="google-icon" />
                 <span>Continue with Google</span>
               </button>
-
+              <div class="separator">OR</div>
+              <input type="email" id="email" class="auth-input" placeholder="Enter your Gmail" required />
               <!-- START: 4-Digit PIN Input -->
               <p class="pin-description">Enter your 6-digit PIN</p>
               <div id="pinContainer" class="pin-digit-container">
@@ -139,7 +128,6 @@
                 <div class="spinner"></div>
               </button>
             </form>
-
             <!-- CORRECT PLACEMENT for the alert -->
             <div id="customAlert" class="custom-alert hidden"></div>
 
