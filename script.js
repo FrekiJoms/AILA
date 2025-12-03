@@ -372,8 +372,7 @@ function playSound(url, volume = 1.0) {
 }
 // N8N chat webhook link constant
 const CHAT_WEBHOOK = "https://levercrafter.app.n8n.cloud/webhook/aila-chat";
-const OFFLINE_DATA_URL =
-  "https://script.google.com/macros/s/AKfycbxyBAMvcSxdV_Gbc8JIKB1yJRPw0ocQKpczfZ8KLp4Gln2LgWTTbFar3ugjODGrqjiE/exec";
+const OFFLINE_DATA_URL = "https://script.google.com/macros/s/AKfycbxyBAMvcSxdV_Gbc8JIKB1yJRPw0ocQKpczfZ8KLp4Gln2LgWTTbFar3ugjODGrqjiE/exec";
 document.addEventListener("click", (e) => {
   if (!e.target.closest(".dropdown")) {
     const allDropdowns = document.querySelectorAll(".dropdown");
@@ -1008,6 +1007,16 @@ async function loadOfflineData() {
  * Initializes the app with a dynamic, multi-stage loading screen.
  */
 async function initializeApp() {
+    // --- START: Check for an existing session ---
+  const loggedInUserEmail = localStorage.getItem('loggedInUser');
+  if (loggedInUserEmail) {
+    // If a user is already logged in, bypass the loading screen entirely.
+    const loadingOverlay = document.getElementById("loading-overlay");
+    loadingOverlay.classList.remove("visible"); // Instantly hide the overlay
+    showWelcomeScreen(); // Show the main chat interface
+    updateStatus("pending"); // Set the initial status
+    return; // Stop the rest of the initializeApp function from running
+  }
   // --- 1. Define loading content & get elements ---
   const loadingStatuses = [
     "Starting...",
@@ -1132,27 +1141,6 @@ async function initializeApp() {
   // Show the enter button
   enterBtn.classList.remove("hidden");
   playSound(SFX.success, 0.8);
-
-  // --- 7. Set up the "Enter" button ---
-  enterBtn.addEventListener("click", () => {
-    // Stop all loading screen sounds and animations
-    if (ambientSound) {
-      ambientSound.pause();
-      ambientSound.currentTime = 0;
-    }
-    clearInterval(tipInterval);
-
-    // Play transition sound and start animations
-    playSound(SFX.whoosh, 0.8);
-    loadingOverlay.classList.remove("visible");
-    if (chatEl) {
-      chatEl.classList.add("entering");
-    }
-
-    // Show the main app content
-    updateStatus("pending");
-    showWelcomeScreen();
-  });
 }
 
 const ro = new MutationObserver(
@@ -1205,3 +1193,147 @@ messagesEl.addEventListener("click", (e) => {
     }
   }
 });
+// --- START: Authentication Modal Logic ---
+
+// Get all the elements we need from the DOM
+const authModal = document.getElementById("authModal");
+const authCloseBtn = document.getElementById("authCloseBtn");
+const authTitle = document.getElementById("authTitle");
+const authActionBtn = document.getElementById("authActionBtn");
+const pinConfirmInput = document.getElementById("pinConfirm");
+const registerLink = document.getElementById("registerLink");
+const authForm = document.getElementById("authForm");
+const enterAppBtn = document.getElementById("enter-app-btn");
+const welcomeMessageContainer = document.getElementById("welcome-message-container");
+const welcomeMessageText = document.getElementById("welcome-message-text");
+const finalEnterBtn = document.getElementById("final-enter-btn");
+
+let isRegisterMode = false;
+
+// Function to open the modal
+function showAuthModal() {
+  authModal.classList.remove("hidden");
+}
+
+// Function to close the modal
+function closeAuthModal() {
+  authModal.classList.add("hidden");
+}
+
+// Function to switch between Login and Register modes
+function setAuthMode(isRegister) {
+  isRegisterMode = isRegister;
+  if (isRegister) {
+    authTitle.textContent = "Create an Account";
+    authActionBtn.textContent = "Register";
+    pinConfirmInput.classList.remove("hidden");
+    pinConfirmInput.required = true; // Make it required for form validation
+    registerLink.innerHTML = 'Already have an account? Login';
+  } else {
+    authTitle.textContent = "Login to AILA";
+    authActionBtn.textContent = "Login";
+    pinConfirmInput.classList.add("hidden");
+    pinConfirmInput.required = false;
+    registerLink.innerHTML = 'Don\'t have an account? Register';
+  }
+}
+
+// --- Event Listeners ---
+
+// Show the modal when the initial "Login / Register" button is clicked
+enterAppBtn.addEventListener("click", showAuthModal);
+
+// Close the modal with the 'X' button
+authCloseBtn.addEventListener("click", closeAuthModal);
+
+// Toggle between Login and Register modes
+registerLink.addEventListener("click", (e) => {
+  e.preventDefault();
+  setAuthMode(!isRegisterMode);
+});
+
+// Handle the form submission (Login or Register)
+authForm.addEventListener("submit", (e) => {
+  e.preventDefault(); // Prevent the form from reloading the page
+
+  const email = document.getElementById("email").value;
+  const pin = document.getElementById("pin").value;
+
+  // This is a placeholder for the real Supabase/Google Sheets logic
+  console.log("Form submitted!");
+  console.log("Mode:", isRegisterMode ? "Register" : "Login");
+  console.log("Email:", email);
+  console.log("PIN:", pin);
+// --- NEW: Save the user's session to localStorage ---
+  localStorage.setItem('loggedInUser', email);
+  // --- Simulate a successful login/registration ---
+  // 1. Hide the auth form and initial button
+  closeAuthModal();
+  enterAppBtn.classList.add("hidden");
+
+  // 2. Prepare and show the welcome message
+  const username = email.split('@')[0]; // Simple way to get a username
+  welcomeMessageText.textContent = isRegisterMode 
+    ? `Welcome to AILA, ${username}!`
+    : `Welcome back, ${username}!`;
+  welcomeMessageContainer.classList.remove("hidden");
+});
+
+// Handle the final "Enter AILA" button click
+finalEnterBtn.addEventListener("click", () => {
+    // This is the original logic to hide the overlay and show the app
+    const loadingOverlay = document.getElementById("loading-overlay");
+    if (ambientSound) {
+        ambientSound.pause();
+        ambientSound.currentTime = 0;
+    }
+    
+    playSound(SFX.whoosh, 0.8);
+    loadingOverlay.classList.remove("visible");
+    if (chatEl) {
+        chatEl.classList.add("entering");
+    }
+
+    updateStatus("pending");
+    showWelcomeScreen();
+});
+
+// --- END: Authentication Modal Logic ---
+// --- START: Navigation Sidebar Logic ---
+
+// Get elements from the DOM
+const appContainer = document.querySelector('.app');
+const navLogo = document.getElementById('logo');
+const navSidebar = document.getElementById('navSidebar');
+const newChatBtn = document.getElementById('newChatBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+
+// Function to toggle the navigation sidebar
+function toggleNav() {
+    appContainer.classList.toggle('nav-open');
+}
+
+// Event listener for the AILA header logo
+if (navLogo) {
+    navLogo.addEventListener('click', toggleNav);
+}
+
+// Event listener for the "New Chat" button
+if (newChatBtn) {
+    newChatBtn.addEventListener('click', () => {
+        showWelcomeScreen(); // Re-use this function to clear the chat area
+        if (appContainer.classList.contains('nav-open')) {
+            toggleNav(); // Close the nav after starting a new chat
+        }
+    });
+}
+
+// Event listener for the "Log Out" button
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('loggedInUser'); // Clear the session
+        window.location.reload(); // Reload the page to go back to login
+    });
+}
+
+// --- END: Navigation Sidebar Logic ---
