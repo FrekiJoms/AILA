@@ -100,6 +100,15 @@
                 placeholder="Enter your Gmail"
                 required
               />
+              <div class="separator">OR</div>
+              <button id="googleLoginBtn" class="google-login-btn">
+                <img
+                  src="icons/google.png"
+                  alt="Google icon"
+                  class="google-icon"
+                />
+                <span>Continue with Google</span>
+              </button>
 
               <!-- START: 4-Digit PIN Input -->
               <p class="pin-description">Enter your 6-digit PIN</p>
@@ -193,11 +202,11 @@
           <!-- START: New User Profile Section -->
           <div id="userProfile" class="user-profile">
             <div class="user-avatar">
-              <span id="userInitial">J</span>
+              <span id="userInitial"></span>
             </div>
             <div class="user-info">
-              <span id="userEmail" class="user-email">joshua@gmail.com</span>
-              <span id="trialStatus" class="trial-status">30 days left</span>
+              <span id="userEmail" class="user-email"></span>
+              <span id="trialStatus" class="trial-status"></span>
             </div>
             <button id="logoutBtn" class="logout-icon-btn" title="Log Out">
               <svg

@@ -1,11 +1,13 @@
 // --- START: Supabase Client Initialization ---
-const SUPABASE_URL = 'https://woqlvcgryahmcejdlcqz.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvcWx2Y2dyeWFobWNlamRsY3F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3NDg5NTMsImV4cCI6MjA4MDMyNDk1M30.PXL0hJ-8Hv7BP21Fly3tHXonJoxfVL0GNCY7oWXDKRA';
+const SUPABASE_URL = "https://woqlvcgryahmcejdlcqz.supabase.co";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvcWx2Y2dyeWFobWNlamRsY3F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3NDg5NTMsImV4cCI6MjA4MDMyNDk1M30.PXL0hJ-8Hv7BP21Fly3tHXonJoxfVL0GNCY7oWXDKRA";
 
 const { createClient } = supabase;
 const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // --- END: Supabase Client Initialization ---
-const SCRIPT_API_URL = "https://script.google.com/macros/s/AKfycbxyBAMvcSxdV_Gbc8JIKB1yJRPw0ocQKpczfZ8KLp4Gln2LgWTTbFar3ugjODGrqjiE/exec";
+const SCRIPT_API_URL =
+  "https://script.google.com/macros/s/AKfycbxyBAMvcSxdV_Gbc8JIKB1yJRPw0ocQKpczfZ8KLp4Gln2LgWTTbFar3ugjODGrqjiE/exec";
 const SFX = {
   loadingAmbient: "sfx/loading-ambient.mp3",
   glassBreak: "sfx/glass-break.mp3",
@@ -30,6 +32,7 @@ const iconMap = {
   "sites.google.com": "icons/sites.png",
   "www.excelcampus.com": "icons/excel-campus-logo-optimized.png",
   "www.benlcollins.com": "icons/colins.png",
+  "www.facebook.com": "icons/facebook.png",
 };
 const defaultIcon = "icons/external.png";
 
@@ -1206,14 +1209,14 @@ messagesEl.addEventListener("click", (e) => {
 
 // 1. Get all the elements we need from the DOM first.
 // Add this line with the other constants
-const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+const forgotPasswordLink = document.getElementById("forgotPasswordLink");
 const customAlert = document.getElementById("customAlert");
 const authModal = document.getElementById("authModal");
 const authCloseBtn = document.getElementById("authCloseBtn");
 const authTitle = document.getElementById("authTitle");
 const authActionBtn = document.getElementById("authActionBtn");
 const pinContainer = document.getElementById("pinContainer");
-const pinConfirmGroup = document.getElementById('pinConfirmGroup');
+const pinConfirmGroup = document.getElementById("pinConfirmGroup");
 const registerLink = document.getElementById("registerLink");
 const authForm = document.getElementById("authForm");
 const enterAppBtn = document.getElementById("enter-app-btn");
@@ -1222,6 +1225,7 @@ const welcomeMessageContainer = document.getElementById(
 );
 const welcomeMessageText = document.getElementById("welcome-message-text");
 const finalEnterBtn = document.getElementById("final-enter-btn");
+const googleLoginBtn = document.getElementById("googleLoginBtn");
 
 let isRegisterMode = false;
 
@@ -1230,18 +1234,18 @@ let alertTimeout; // This will prevent multiple alert timers from running at onc
 // This function checks if the user's trial is still active.
 // Returns true if active, false if expired.
 function checkTrialStatus() {
-    const startDateString = localStorage.getItem('trialStartDate');
-    if (!startDateString) {
-        // If there's no start date, the trial is considered active.
-        return true; 
-    }
+  const startDateString = localStorage.getItem("trialStartDate");
+  if (!startDateString) {
+    // If there's no start date, the trial is considered active.
+    return true;
+  }
 
-    const startDate = new Date(startDateString);
-    const today = new Date();
-    const diffTime = today - startDate;
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  const startDate = new Date(startDateString);
+  const today = new Date();
+  const diffTime = today - startDate;
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-    return diffDays <= 30;
+  return diffDays <= 30;
 }
 
 function updateUserInfo() {
@@ -1257,7 +1261,7 @@ function updateUserInfo() {
     userInitialEl.textContent = userEmail.charAt(0).toUpperCase();
   if (userEmailEl) userEmailEl.textContent = userEmail;
   // Inside the authForm "submit" event listener
-  
+
   // Calculate and display trial days
   if (trialStatusEl) {
     let startDateString = localStorage.getItem("trialStartDate");
@@ -1275,23 +1279,23 @@ function updateUserInfo() {
   }
 }
 
-function showCustomAlert(message, type = 'error') {
-    clearTimeout(alertTimeout); 
-    customAlert.textContent = message;
+function showCustomAlert(message, type = "error") {
+  clearTimeout(alertTimeout);
+  customAlert.textContent = message;
 
-    // Add or remove the 'success' class based on the type
-    if (type === 'success') {
-        customAlert.classList.add('success');
-    } else {
-        customAlert.classList.remove('success');
-    }
+  // Add or remove the 'success' class based on the type
+  if (type === "success") {
+    customAlert.classList.add("success");
+  } else {
+    customAlert.classList.remove("success");
+  }
 
-    customAlert.classList.remove('hidden');
+  customAlert.classList.remove("hidden");
 
-    // Automatically hide the alert after 4 seconds
-    alertTimeout = setTimeout(() => {
-        customAlert.classList.add('hidden');
-    }, 4000);
+  // Automatically hide the alert after 4 seconds
+  alertTimeout = setTimeout(() => {
+    customAlert.classList.add("hidden");
+  }, 4000);
 }
 // Function to open the modal
 function showAuthModal() {
@@ -1306,7 +1310,7 @@ function closeAuthModal() {
 // Function to switch between Login and Register modes
 function setAuthMode(isRegister) {
   isRegisterMode = isRegister;
-  const btnText = authActionBtn.querySelector('.btn-text');
+  const btnText = authActionBtn.querySelector(".btn-text");
 
   if (isRegister) {
     authTitle.textContent = "Create an Account";
@@ -1375,89 +1379,112 @@ if (registerLink) {
 // Handle the form submission (Login or Register)
 // Replace the entire authForm event listener with this
 if (authForm) {
-    authForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        authActionBtn.classList.add('loading');
-        authActionBtn.disabled = true;
+  authForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    authActionBtn.classList.add("loading");
+    authActionBtn.disabled = true;
 
-        const email = document.getElementById("email").value;
-        const pin = getPinFromContainer(pinContainer);
-        const pinConfirm = getPinFromContainer(pinConfirmContainer);
+    const email = document.getElementById("email").value;
+    const pin = getPinFromContainer(pinContainer);
+    const pinConfirm = getPinFromContainer(pinConfirmContainer);
 
-        // --- Client-Side Validation ---
-        const emailRegex = /^[a-zA-Z0-9._-]+@gmail\.com$/;
-        if (!emailRegex.test(email)) {
-            showCustomAlert("Please enter a valid @gmail.com address.");
-            authActionBtn.classList.remove('loading'); authActionBtn.disabled = false; return;
+    // --- Client-Side Validation ---
+    const emailRegex = /^[a-zA-Z0-9._-]+@gmail\.com$/;
+    if (!emailRegex.test(email)) {
+      showCustomAlert("Please enter a valid @gmail.com address.");
+      authActionBtn.classList.remove("loading");
+      authActionBtn.disabled = false;
+      return;
+    }
+    if (pin.length !== 6) {
+      showCustomAlert("PIN must be exactly 6 digits.");
+      authActionBtn.classList.remove("loading");
+      authActionBtn.disabled = false;
+      return;
+    }
+    if (isRegisterMode && pin !== pinConfirm) {
+      showCustomAlert("The PINs you entered do not match.");
+      authActionBtn.classList.remove("loading");
+      authActionBtn.disabled = false;
+      return;
+    }
+
+    try {
+      if (isRegisterMode) {
+        // --- REAL REGISTRATION ---
+        const { error } = await _supabase.auth.signUp({
+          email: email,
+          password: pin,
+        });
+        if (error) throw error;
+
+        showCustomAlert(
+          "Registered successfully! Logging you in...",
+          "success"
+        );
+        // Short delay to let the user read the success message
+        setTimeout(() => {
+          localStorage.setItem("loggedInUser", email);
+          closeAuthModal();
+          enterAppBtn.classList.add("hidden");
+          welcomeMessageText.textContent = `Welcome to AILA, ${
+            email.split("@")[0]
+          }!`;
+          welcomeMessageContainer.classList.remove("hidden");
+          updateUserInfo();
+        }, 1500);
+      } else {
+        // --- REAL LOGIN ---
+        const { data, error } = await _supabase.auth.signInWithPassword({
+          email: email,
+          password: pin,
+        });
+        if (error) throw error;
+
+        // Trial Check from Supabase
+        const { data: profile, error: profileError } = await _supabase
+          .from("profiles")
+          .select("trial_start_date")
+          .eq("id", data.user.id)
+          .single();
+        if (profileError) throw profileError;
+
+        const startDate = new Date(profile.trial_start_date);
+        const diffDays = Math.floor(
+          (new Date() - startDate) / (1000 * 60 * 60 * 24)
+        );
+
+        if (diffDays > 30) {
+          showCustomAlert("Your 30-day trial has expired.");
+          _supabase.auth.signOut();
+          return;
         }
-        if (pin.length !== 6) {
-            showCustomAlert("PIN must be exactly 6 digits.");
-            authActionBtn.classList.remove('loading'); authActionBtn.disabled = false; return;
-        }
-        if (isRegisterMode && pin !== pinConfirm) {
-            showCustomAlert("The PINs you entered do not match.");
-            authActionBtn.classList.remove('loading'); authActionBtn.disabled = false; return;
-        }
 
-        try {
-            if (isRegisterMode) {
-                // --- REAL REGISTRATION ---
-                const { error } = await _supabase.auth.signUp({ email: email, password: pin });
-                if (error) throw error;
-                
-                showCustomAlert("Registered successfully! Logging you in...", 'success');
-                // Short delay to let the user read the success message
-                setTimeout(() => {
-                    localStorage.setItem('loggedInUser', email);
-                    closeAuthModal();
-                    enterAppBtn.classList.add("hidden");
-                    welcomeMessageText.textContent = `Welcome to AILA, ${email.split('@')[0]}!`;
-                    welcomeMessageContainer.classList.remove("hidden");
-                    updateUserInfo();
-                }, 1500);
-
-            } else {
-                // --- REAL LOGIN ---
-                const { data, error } = await _supabase.auth.signInWithPassword({ email: email, password: pin });
-                if (error) throw error;
-
-                // Trial Check from Supabase
-                const { data: profile, error: profileError } = await _supabase.from('profiles').select('trial_start_date').eq('id', data.user.id).single();
-                if (profileError) throw profileError;
-
-                const startDate = new Date(profile.trial_start_date);
-                const diffDays = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
-                
-                if (diffDays > 30) {
-                    showCustomAlert("Your 30-day trial has expired.");
-                    _supabase.auth.signOut();
-                    return;
-                }
-                
-                // --- Proceed with successful login ---
-                localStorage.setItem('loggedInUser', email);
-                closeAuthModal();
-                enterAppBtn.classList.add("hidden");
-                welcomeMessageText.textContent = `Welcome back, ${email.split('@')[0]}!`;
-                welcomeMessageContainer.classList.remove("hidden");
-                updateUserInfo();
-            }
-        } catch (error) {
-            // --- CUSTOM ERROR HANDLING ---
-            if (error.message.includes("User already registered")) {
-                showCustomAlert("User already registered. Please log in.");
-            } else if (error.message.includes("Invalid login credentials")) {
-                showCustomAlert("Email not registered or incorrect PIN.");
-            } else {
-                showCustomAlert(error.message);
-            }
-        } finally {
-            authActionBtn.classList.remove('loading');
-            authActionBtn.disabled = false;
-        }
-    });
+        // --- Proceed with successful login ---
+        localStorage.setItem("loggedInUser", email);
+        closeAuthModal();
+        enterAppBtn.classList.add("hidden");
+        welcomeMessageText.textContent = `Welcome back, ${
+          email.split("@")[0]
+        }!`;
+        welcomeMessageContainer.classList.remove("hidden");
+        updateUserInfo();
+      }
+    } catch (error) {
+      // --- CUSTOM ERROR HANDLING ---
+      if (error.message.includes("User already registered")) {
+        showCustomAlert("User already registered. Please log in.");
+      } else if (error.message.includes("Invalid login credentials")) {
+        showCustomAlert("Email not registered or incorrect PIN.");
+      } else {
+        showCustomAlert(error.message);
+      }
+    } finally {
+      authActionBtn.classList.remove("loading");
+      authActionBtn.disabled = false;
+    }
+  });
 }
-
 
 // Handle the final "Enter AILA" button click
 if (finalEnterBtn) {
@@ -1479,23 +1506,37 @@ if (finalEnterBtn) {
   });
 }
 if (forgotPasswordLink) {
-    forgotPasswordLink.addEventListener('click', async (e) => {
-        e.preventDefault();
-        const email = prompt("Please enter your email to receive a password reset link:");
-        
-        if (email) {
-            showCustomAlert("Sending reset instructions...", 'success');
-            const { error } = await _supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.href, // Redirects back to your app after reset
-            });
+  forgotPasswordLink.addEventListener("click", async (e) => {
+    e.preventDefault();
+    const email = prompt(
+      "Please enter your email to receive a password reset link:"
+    );
 
-            if (error) {
-                showCustomAlert(error.message);
-            } else {
-                showCustomAlert("Password reset instructions have been sent to your email.");
-            }
-        }
+    if (email) {
+      showCustomAlert("Sending reset instructions...", "success");
+      const { error } = await _supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.href, // Redirects back to your app after reset
+      });
+
+      if (error) {
+        showCustomAlert(error.message);
+      } else {
+        showCustomAlert(
+          "Password reset instructions have been sent to your email."
+        );
+      }
+    }
+  });
+  if (googleLoginBtn) {
+    googleLoginBtn.addEventListener("click", async () => {
+      const { error } = await _supabase.auth.signInWithOAuth({
+        provider: "google",
+      });
+      if (error) {
+        showCustomAlert(error.message);
+      }
     });
+  }
 }
 
 // --- END: Authentication Modal Logic ---

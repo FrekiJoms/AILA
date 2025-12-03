@@ -2811,3 +2811,48 @@ input:-webkit-autofill:active {
     background-color: rgba(47, 226, 122, 0.2); /* Greenish background */
     border-color: var(--success);
 }
+/* --- Google Login Button & Separator --- */
+.separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    margin: 20px 0;
+}
+.separator::before, .separator::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.separator:not(:empty)::before {
+    margin-right: .5em;
+}
+.separator:not(:empty)::after {
+    margin-left: .5em;
+}
+
+.google-login-btn {
+    width: 100%;
+    padding: 10px 12px;
+    background-color: transparent;
+    color: #e6fbff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    margin-bottom: 20px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: background-color 0.2s ease;
+}
+.google-login-btn:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+.google-icon {
+    width: 18px;
+    height: 18px;
+}
