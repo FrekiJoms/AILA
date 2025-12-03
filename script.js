@@ -7,12 +7,38 @@ const { createClient } = supabase;
 const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // --- END: Supabase Client Initialization ---
 // --- START: Supabase Auth State Listener ---
-_supabase.auth.onAuthStateChange((event, session) => {
-  if (event === "SIGNED_IN" && session) {
-    // This is a successful login (e.g., after Google redirect)
-    const user = session.user;
-    handleSuccessfulLogin(user.email);
-  }
+_supabase.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+        // This is a successful login (e.g., after Google redirect)
+        const user = session.user;
+
+        // --- Check Trial Status from Supabase ---
+        const { data: profile, error: profileError } = await _supabase
+            .from('profiles')
+            .select('trial_start_date')
+            .eq('id', user.id)
+            .single();
+
+        if (profileError) {
+            alert(`Error fetching profile: ${profileError.message}`);
+            return;
+        }
+
+        const startDate = new Date(profile.trial_start_date);
+        const diffDays = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
+        
+        if (diffDays > 30) {
+            alert("Your 30-day trial has expired.");
+            _supabase.auth.signOut();
+            return;
+        }
+
+        // --- Proceed with successful login UI ---
+        localStorage.setItem('loggedInUser', user.email);
+        document.getElementById('loading-overlay').classList.remove('visible');
+        showWelcomeScreen();
+        updateUserInfo();
+    }
 });
 // --- END: Supabase Auth State Listener ---
 
@@ -1482,7 +1508,7 @@ if (authForm) {
         }
 
         // --- Proceed with successful login ---
-handleSuccessfulLogin(email);
+        handleSuccessfulLogin(email);
       }
     } catch (error) {
       // --- CUSTOM ERROR HANDLING ---
