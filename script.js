@@ -7,44 +7,29 @@ const { createClient } = supabase;
 const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // --- END: Supabase Client Initialization ---
 // --- START: Supabase Auth State Listener ---
+// --- START: Supabase Auth State Listener ---
 _supabase.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN' && session) {
         // This is a successful login (e.g., after Google redirect)
-        const user = session.user;
-
-        // --- Check Trial Status from Supabase ---
-        const { data: profile, error: profileError } = await _supabase
-            .from('profiles')
-            .select('trial_start_date')
-            .eq('id', user.id)
-            .single();
-
-        if (profileError) {
-            alert(`Error fetching profile: ${profileError.message}`);
-            return;
-        }
-
-        const startDate = new Date(profile.trial_start_date);
-        const diffDays = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
         
-        if (diffDays > 30) {
-            alert("Your 30-day trial has expired.");
-            _supabase.auth.signOut();
-            return;
-        }
+        // Save the user's session to local storage
+        localStorage.setItem('loggedInUser', session.user.email);
 
-        // --- Proceed with successful login UI ---
-        handleSuccessfulLogin(email);
-        localStorage.setItem('loggedInUser', user.email);
-        document.getElementById('loading-overlay').classList.remove('visible');
-        showWelcomeScreen();
-        updateUserInfo();
+        // --- THIS IS THE FIX ---
+        // Check if the URL has the access token from the redirect.
+        // If it does, we need to clean the URL and reload the page.
+        if (window.location.hash.includes('access_token')) {
+            // Use replaceState to clean the URL without adding to browser history
+            window.history.replaceState(null, '', window.location.pathname);
+            // Now, reload the page. It will load with a clean URL.
+            window.location.reload();
+        }
+        // If the URL is already clean, initializeApp will handle showing the chat.
     }
 });
 // --- END: Supabase Auth State Listener ---
 
-const SCRIPT_API_URL =
-  "https://script.google.com/macros/s/AKfycbxyBAMvcSxdV_Gbc8JIKB1yJRPw0ocQKpczfZ8KLp4Gln2LgWTTbFar3ugjODGrqjiE/exec";
+const SCRIPT_API_URL ="https://script.google.com/macros/s/AKfycbxyBAMvcSxdV_Gbc8JIKB1yJRPw0ocQKpczfZ8KLp4Gln2LgWTTbFar3ugjODGrqjiE/exec";
 const SFX = {
   loadingAmbient: "sfx/loading-ambient.mp3",
   glassBreak: "sfx/glass-break.mp3",
@@ -1255,8 +1240,6 @@ function setupAuthModal() {
     const authForm = document.getElementById("authForm");
     const enterAppBtn = document.getElementById("enter-app-btn");
     const customAlert = document.getElementById("customAlert");
-
-    const emailGroup = document.getElementById('emailGroup');
     const pinGroup = document.getElementById('pinGroup');
     const pinContainer = document.getElementById("pinContainer");
     const pinConfirmGroup = document.getElementById('pinConfirmGroup');
@@ -1273,8 +1256,7 @@ function setupAuthModal() {
 
     let authState = 'login';
     let alertTimeout;
-    
-    function handleSuccessfulLogin(email, isNewUser = false) {
+function handleSuccessfulLogin(email, isNewUser = false) {
     localStorage.setItem('loggedInUser', email);
     if (isNewUser) {
         localStorage.setItem('trialStartDate', new Date().toISOString());
@@ -1291,7 +1273,6 @@ function setupAuthModal() {
     updateUserInfo();
     updateStatus("pending");
 }
-
 
     // 2. Define all functions.
 
@@ -1423,7 +1404,7 @@ function setupAuthModal() {
                         if (error) throw error;
                         
                         // Proceed to success screen
-                        showWelcomeAndEnter(email, false);
+                        handleSuccessfulLogin(email);
                     }
                 }
             } catch (error) {
