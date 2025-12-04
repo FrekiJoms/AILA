@@ -1416,7 +1416,7 @@ textarea#input {
 .footer-disclaimer {
   position: fixed !important;
   padding-top: 20px;
-  bottom: 8px;
+  bottom: 10px;
   /* Sits at the very bottom */
   left: 0;
   right: 0;
@@ -1731,8 +1731,38 @@ textarea#input {
 }
 
 /* --- Mobile View Enhancements --- */
-/* --- FORCED UNIFIED MOBILE & TABLET VIEW --- */
 @media (max-width: 900px) {
+    /* --- Auth Modal adjustments for mobile --- */
+  .auth-modal-content {
+      padding: 20px;
+      max-width: 90vw; /* Allow it to be a bit wider on mobile */
+      scale: 0.86;
+  }
+
+  .auth-modal-header h2 {
+      font-size: 18px;
+  }
+
+  .google-login-btn, .auth-action-btn {
+      padding: 11px;
+      font-size: 14px;
+  }
+
+  .pin-digit {
+      width: 40px; /* Make the PIN boxes slightly smaller */
+      height: 45px;
+      font-size: 24px;
+      scale: 0.86;
+  }
+
+  .pin-digit-container {
+      gap: 10px; /* Reduce the gap between PIN boxes */
+  }
+
+  .auth-link {
+      font-size: 11px;
+  }
+
   .module-dropdown-content a {
     display: wrap;
     font-size: 12px;
@@ -2712,7 +2742,7 @@ textarea#input {
 .pin-digit-container {
   display: flex;
   justify-content: center; /* This centers the boxes */
-  gap: 15px; /* This creates the space between the boxes */
+  gap: 10px; /* This creates the space between the boxes */
   margin-bottom: 20px;
 }
 
