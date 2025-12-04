@@ -1293,38 +1293,37 @@ function handleSuccessfulLogin(email, isNewUser = false) {
         authModal.classList.add("hidden");
     }
 
-    // The new state manager for the modal
-    function setAuthState(newState) {
-        authState = newState;
-        const btnText = authActionBtn.querySelector('.btn-text');
+// The new state manager for the modal
+function setAuthState(newState) {
+    authState = newState;
+    const btnText = authActionBtn.querySelector('.btn-text');
 
-        // Hide all optional components first
-        authForm.style.display = 'block';
-        successScreen.classList.add('hidden');
-        pinGroup.style.display = 'none';
-        pinConfirmGroup.classList.add('hidden');
-        registerLink.style.display = 'none';
-        forgotPasswordLink.style.display = 'none';
-        backToLoginLink.classList.add('hidden');
+    // Show all links by default
+    registerLink.style.display = 'inline';
+    forgotPasswordLink.style.display = 'inline';
+    backToLoginLink.classList.remove('hidden');
 
-        if (newState === 'login') {
-            authTitle.textContent = "Login to AILA";
-            btnText.textContent = "Login";
-            pinGroup.style.display = 'block';
-            registerLink.style.display = 'inline';
-            forgotPasswordLink.style.display = 'inline';
-        } else if (newState === 'register') {
-            authTitle.textContent = "Create an Account";
-            btnText.textContent = "Register";
-            pinGroup.style.display = 'block';
-            pinConfirmGroup.classList.remove('hidden');
-            backToLoginLink.style.display = 'inline';
-        } else if (newState === 'reset') {
-            authTitle.textContent = "Reset Password";
-            btnText.textContent = "Send Instructions";
-            backToLoginLink.style.display = 'inline';
-        }
+    // Hide all optional components first
+    authForm.style.display = 'block';
+    successScreen.classList.add('hidden');
+    pinGroup.style.display = 'none';
+    pinConfirmGroup.classList.add('hidden');
+
+    if (newState === 'login') {
+        authTitle.textContent = "Login to AILA";
+        btnText.textContent = "Login";
+        pinGroup.style.display = 'block';
+        backToLoginLink.classList.add('hidden'); // Hide "Back to Login" on the login screen
+    } else if (newState === 'register') {
+        authTitle.textContent = "Create an Account";
+        btnText.textContent = "Register";
+        pinGroup.style.display = 'block';
+        pinConfirmGroup.classList.remove('hidden');
+    } else if (newState === 'reset') {
+        authTitle.textContent = "Reset Password";
+        btnText.textContent = "Send Instructions";
     }
+}
     
     function showWelcomeAndEnter(email, isNewUser) {
         authForm.style.display = 'none'; // Hide the form
@@ -1389,7 +1388,7 @@ function handleSuccessfulLogin(email, isNewUser = false) {
 
             try {
                 if (authState === 'reset') {
-                     const { error } = await _supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+                    const { error } = await _supabase.auth.resetPasswordForEmail(email, { redirectTo: 'https://ailearningassistant.edgeone.app/reset' });
                     if (error) throw error;
                     showCustomAlert("Password reset instructions sent to your email.", 'success');
                     setTimeout(() => setAuthState('login'), 3000);
@@ -1488,3 +1487,55 @@ if (logoutBtn) {
 }
 
 // --- END: Navigation Sidebar Logic ---
+// --- START: Password Reset Page Logic ---
+
+window.addEventListener('DOMContentLoaded', () => {
+    // Check if the current URL path is '/reset'
+    if (window.location.pathname === '/reset') {
+        
+        const newPinForm = document.getElementById('newPinForm');
+        const updatePinBtn = document.getElementById('updatePinBtn');
+        const newPinContainer = document.getElementById('newPinContainer');
+        const confirmNewPinContainer = document.getElementById('confirmNewPinContainer');
+
+        // Setup the auto-focusing for the PIN inputs on this page
+        setupPinInput(newPinContainer);
+        setupPinInput(confirmNewPinContainer);
+
+        if (newPinForm) {
+            newPinForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                updatePinBtn.classList.add('loading');
+                updatePinBtn.disabled = true;
+
+                const newPin = getPinFromContainer(newPinContainer);
+                const confirmNewPin = getPinFromContainer(confirmNewPinContainer);
+
+                try {
+                    if (newPin.length !== 6) throw new Error("PIN must be exactly 6 digits.");
+                    if (newPin !== confirmNewPin) throw new Error("The PINs you entered do not match.");
+
+                    // Supabase automatically uses the token from the URL to authenticate this request
+                    const { error } = await _supabase.auth.updateUser({ password: newPin });
+                    
+                    if (error) throw error;
+
+                    showCustomAlert("Your PIN has been successfully reset. Redirecting to login...", 'success');
+
+                    // Redirect back to the main login page after a short delay
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 3000);
+
+                } catch (error) {
+                    showCustomAlert(error.message);
+                } finally {
+                    updatePinBtn.classList.remove('loading');
+                    updatePinBtn.disabled = false;
+                }
+            });
+        }
+    }
+});
+
+// --- END: Password Reset Page Logic ---

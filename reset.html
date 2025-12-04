@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Your Password - AILA</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- This modal will be shown by our script if a valid token is found -->
+    <div id="newPinModal" class="auth-modal-backdrop visible">
+        <div class="auth-modal-content">
+            <div class="auth-modal-header">
+                <h2>Set Your New PIN</h2>
+            </div>
+            <div class="auth-modal-body">
+                <form id="newPinForm">
+                    <p class="pin-description">Enter your new 6-digit PIN</p>
+                    <div id="newPinContainer" class="pin-digit-container">
+                        <input type="tel" class="pin-digit" maxlength="1" required />
+                        <input type="tel" class="pin-digit" maxlength="1" required />
+                        <input type="tel" class="pin-digit" maxlength="1" required />
+                        <input type="tel" class="pin-digit" maxlength="1" required />
+                        <input type="tel" class="pin-digit" maxlength="1" required />
+                        <input type="tel" class="pin-digit" maxlength="1" required />
+                    </div>
+
+                    <p class="pin-description">Confirm your new PIN</p>
+                    <div id="confirmNewPinContainer" class="pin-digit-container">
+                        <input type="tel" class="pin-digit" maxlength="1" required />
+                        <input type="tel" class="pin-digit" maxlength="1" required />
+                        <input type="tel" class="pin-digit" maxlength="1" required />
+                        <input type="tel" class="pin-digit" maxlength="1" required />
+                        <input type="tel" class="pin-digit" maxlength="1" required />
+                        <input type="tel" class="pin-digit" maxlength="1" required />
+                    </div>
+
+                    <button type="submit" id="updatePinBtn" class="auth-action-btn">
+                        <span class="btn-text">Update Password</span>
+                        <div class="spinner"></div>
+                    </button>
+                </form>
+                <div id="customAlert" class="custom-alert hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+</body>
+</html>
