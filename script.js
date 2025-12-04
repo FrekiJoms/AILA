@@ -1244,34 +1244,37 @@ messagesEl.addEventListener("click", (e) => {
 });
 // --- START: Authentication Modal Logic ---
 
-// 1. Get all the elements we need from the DOM first.
-// Add this line with the other constants
-const customAlert = document.getElementById("customAlert");
-const authModal = document.getElementById("authModal");
-const authCloseBtn = document.getElementById("authCloseBtn");
-const authTitle = document.getElementById("authTitle");
-const authActionBtn = document.getElementById("authActionBtn");
-const pinContainer = document.getElementById("pinContainer");
-const pinConfirmGroup = document.getElementById("pinConfirmGroup");
-const registerLink = document.getElementById("registerLink");
-const authForm = document.getElementById("authForm");
-const enterAppBtn = document.getElementById("enter-app-btn");
-const welcomeMessageContainer = document.getElementById(
-  "welcome-message-container"
-);
-const welcomeMessageText = document.getElementById("welcome-message-text");
-const finalEnterBtn = document.getElementById("final-enter-btn");
-const googleLoginBtn = document.getElementById("googleLoginBtn");
+// This function will set up everything related to the auth modal.
+// We run it after the window loads to ensure all HTML elements are ready.
+function setupAuthModal() {
+    // 1. Get all elements from the DOM.
+    const authModal = document.getElementById("authModal");
+    const authCloseBtn = document.getElementById("authCloseBtn");
+    const authTitle = document.getElementById("authTitle");
+    const authActionBtn = document.getElementById("authActionBtn");
+    const authForm = document.getElementById("authForm");
+    const enterAppBtn = document.getElementById("enter-app-btn");
+    const customAlert = document.getElementById("customAlert");
 
-let isRegisterMode = false;
+    const emailGroup = document.getElementById('emailGroup');
+    const pinGroup = document.getElementById('pinGroup');
+    const pinContainer = document.getElementById("pinContainer");
+    const pinConfirmGroup = document.getElementById('pinConfirmGroup');
+    const pinConfirmContainer = document.getElementById('pinConfirmContainer');
+    
+    const successScreen = document.getElementById('successScreen');
+    const successMessage = document.getElementById('successMessage');
+    const finalEnterBtn = document.getElementById('finalEnterBtn');
 
-// 2. Define all the functions the modal will use.
-let alertTimeout; // This will prevent multiple alert timers from running at once
-// This function checks if the user's trial is still active.
-// Returns true if active, false if expired.
+    const registerLink = document.getElementById("registerLink");
+    const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+    const backToLoginLink = document.getElementById('backToLoginLink');
+    const googleLoginBtn = document.getElementById('googleLoginBtn');
 
-function handleSuccessfulLogin(email, isNewUser = false) {
-
+    let authState = 'login';
+    let alertTimeout;
+    
+    function handleSuccessfulLogin(email, isNewUser = false) {
     localStorage.setItem('loggedInUser', email);
     if (isNewUser) {
         localStorage.setItem('trialStartDate', new Date().toISOString());
@@ -1279,8 +1282,7 @@ function handleSuccessfulLogin(email, isNewUser = false) {
 
     const loadingOverlay = document.getElementById("loading-overlay");
 
-    // --- THIS IS THE FIX ---
-    // Hide all overlays to reveal the main app
+    // Hide all overlays and modals
     if (loadingOverlay) loadingOverlay.classList.remove("visible");
     closeAuthModal(); 
 
@@ -1290,259 +1292,170 @@ function handleSuccessfulLogin(email, isNewUser = false) {
     updateStatus("pending");
 }
 
-function checkTrialStatus() {
-  const startDateString = localStorage.getItem("trialStartDate");
-  if (!startDateString) {
-    // If there's no start date, the trial is considered active.
-    return true;
-  }
 
-  const startDate = new Date(startDateString);
-  const today = new Date();
-  const diffTime = today - startDate;
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    // 2. Define all functions.
 
-  return diffDays <= 30;
-}
-
-function updateUserInfo() {
-  const userEmail = localStorage.getItem("loggedInUser");
-  if (!userEmail) return;
-
-  // Update UI elements
-  const userInitialEl = document.getElementById("userInitial");
-  const userEmailEl = document.getElementById("userEmail");
-  const trialStatusEl = document.getElementById("trialStatus");
-
-  if (userInitialEl)
-    userInitialEl.textContent = userEmail.charAt(0).toUpperCase();
-  if (userEmailEl) userEmailEl.textContent = userEmail;
-  // Inside the authForm "submit" event listener
-
-  // Calculate and display trial days
-  if (trialStatusEl) {
-    let startDateString = localStorage.getItem("trialStartDate");
-    if (!startDateString) {
-      // Fallback in case it wasn't set on registration
-      startDateString = new Date().toISOString();
-      localStorage.setItem("trialStartDate", startDateString);
-    }
-    const startDate = new Date(startDateString);
-    const today = new Date();
-    const diffTime = Math.abs(today - startDate);
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    const daysRemaining = Math.max(0, 30 - diffDays);
-    trialStatusEl.textContent = `${daysRemaining} days left`;
-  }
-}
-
-function showCustomAlert(message, type = "error") {
-  clearTimeout(alertTimeout);
-  customAlert.textContent = message;
-
-  // Add or remove the 'success' class based on the type
-  if (type === "success") {
-    customAlert.classList.add("success");
-  } else {
-    customAlert.classList.remove("success");
-  }
-
-  customAlert.classList.remove("hidden");
-
-  // Automatically hide the alert after 4 seconds
-  alertTimeout = setTimeout(() => {
-    customAlert.classList.add("hidden");
-  }, 4000);
-}
-// Function to open the modal
-function showAuthModal() {
-  authModal.classList.remove("hidden");
-}
-
-// Function to close the modal
-function closeAuthModal() {
-  authModal.classList.add("hidden");
-}
-
-// Function to switch between Login and Register modes
-function setAuthMode(isRegister) {
-  isRegisterMode = isRegister;
-  const btnText = authActionBtn.querySelector(".btn-text");
-
-  if (isRegister) {
-    authTitle.textContent = "Create an Account";
-    btnText.textContent = "Register";
-    pinConfirmGroup.classList.remove("hidden");
-    registerLink.innerHTML = "Already have an account? Login";
-  } else {
-    authTitle.textContent = "Login to AILA";
-    btnText.textContent = "Login";
-    pinConfirmGroup.classList.add("hidden");
-    registerLink.innerHTML = "Don't have an account? Register";
-  }
-}
-
-// Function to handle the auto-focusing logic for the 4-digit PIN inputs
-function setupPinInput(container) {
-  const inputs = [...container.children];
-  inputs.forEach((input, index) => {
-    input.addEventListener("input", () => {
-      // Only allow numbers
-      input.value = input.value.replace(/\D/g, "");
-      // Move to next input if a digit is entered
-      if (input.value && index < inputs.length - 1) {
-        inputs[index + 1].focus();
-      }
-    });
-
-    input.addEventListener("keydown", (e) => {
-      // Move to previous input on backspace if current input is empty
-      if (e.key === "Backspace" && !input.value && index > 0) {
-        inputs[index - 1].focus();
-      }
-    });
-  });
-}
-
-function getPinFromContainer(container) {
-    if (!container) return ""; // Add a guard clause
-    // Use querySelectorAll to ONLY get the input digits
-    return [...container.querySelectorAll('.pin-digit')].map((input) => input.value).join("");
-}
-
-// 3. Attach all the event listeners last.
-
-// Setup the logic for both PIN containers
-setupPinInput(pinContainer);
-// Show the modal when the initial "Login / Register" button is clicked
-if (enterAppBtn) {
-  enterAppBtn.addEventListener("click", showAuthModal);
-}
-
-// Close the modal with the 'X' button
-if (authCloseBtn) {
-  authCloseBtn.addEventListener("click", closeAuthModal);
-}
-
-// Toggle between Login and Register modes
-if (registerLink) {
-  registerLink.addEventListener("click", (e) => {
-    e.preventDefault();
-    setAuthMode(!isRegisterMode);
-  });
-}
-
-// Handle the final "Enter AILA" button click
-if (finalEnterBtn) {
-  finalEnterBtn.addEventListener("click", () => {
-    const loadingOverlay = document.getElementById("loading-overlay");
-    if (ambientSound) {
-      ambientSound.pause();
-      ambientSound.currentTime = 0;
+    function showCustomAlert(message, type = 'error') {
+        clearTimeout(alertTimeout);
+        customAlert.textContent = message;
+        customAlert.classList.toggle('success', type === 'success');
+        customAlert.classList.remove('hidden');
+        alertTimeout = setTimeout(() => customAlert.classList.add('hidden'), 4000);
     }
 
-    playSound(SFX.whoosh, 0.8);
-    loadingOverlay.classList.remove("visible");
-    if (chatEl) {
-      chatEl.classList.add("entering");
+    function showAuthModal() {
+        setAuthState('login'); // Always default to login state when opening
+        authModal.classList.remove("hidden");
     }
 
-    updateStatus("pending");
-    showWelcomeScreen();
-  });
-}
-
-if (forgotPasswordLink) {
-  forgotPasswordLink.addEventListener("click", async (e) => {
-    e.preventDefault();
-    const email = prompt(
-      "Please enter your email to receive a password reset link:"
-    );
-
-    if (email) {
-      showCustomAlert("Sending reset instructions...", "success");
-      const { error } = await _supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.href, // Redirects back to your app after reset
-      });
-
-      if (error) {
-        showCustomAlert(error.message);
-      } else {
-        showCustomAlert(
-          "Password reset instructions have been sent to your email."
-        );
-      }
+    function closeAuthModal() {
+        authModal.classList.add("hidden");
     }
-  });
-  if (googleLoginBtn) {
-    googleLoginBtn.addEventListener("click", async () => {
-      const { error } = await _supabase.auth.signInWithOAuth({
-        provider: "google",
-      });
-      if (error) {
-        showCustomAlert(error.message);
-      }
-    });
-  }
-if (authForm) {
-    authForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        authActionBtn.classList.add('loading');
-        authActionBtn.disabled = true;
 
-        const email = document.getElementById("email").value;
-        const pin = getPinFromContainer(pinContainer);
-        const pinConfirm = getPinFromContainer(pinConfirmGroup);
+    // The new state manager for the modal
+    function setAuthState(newState) {
+        authState = newState;
+        const btnText = authActionBtn.querySelector('.btn-text');
 
-        try {
-            // --- Client-Side Validation ---
-            const emailRegex = /^[a-zA-Z0-9._-]+@gmail\.com$/;
-            if (!emailRegex.test(email)) throw new Error("Please enter a valid @gmail.com address.");
-            if (pin.length !== 6) throw new Error("PIN must be exactly 6 digits.");
-            if (isRegisterMode && pin !== pinConfirm) throw new Error("The PINs you entered do not match.");
+        // Hide all optional components first
+        authForm.style.display = 'block';
+        successScreen.classList.add('hidden');
+        pinGroup.style.display = 'none';
+        pinConfirmGroup.classList.add('hidden');
+        registerLink.style.display = 'none';
+        forgotPasswordLink.style.display = 'none';
+        backToLoginLink.classList.add('hidden');
 
-            if (isRegisterMode) {
-                // --- REAL REGISTRATION ---
-                const { data, error } = await _supabase.auth.signUp({ email, password: pin });
-                if (error) throw error;
-                
-                showCustomAlert("Registered successfully! You can now log in.", 'success');
-                // After successful registration, send them back to the login view
-                setTimeout(() => {
-                    setAuthMode(false); // Switch to login view
-                }, 3000);
-
-            } else {
-                // --- REAL LOGIN ---
-                const { data, error } = await _supabase.auth.signInWithPassword({ email, password: pin });
-                if (error) throw error;
-
-                // --- On successful login, save session and RELOAD ---
-                // This is the most reliable way to let initializeApp handle the correct view.
-                localStorage.setItem('loggedInUser', data.user.email);
-                window.location.reload();
-            }
-        } catch (error) {
-            // --- CUSTOM ERROR HANDLING ---
-            if (error.message.includes("User already registered")) {
-                showCustomAlert("User already registered. Please log in.");
-            } else if (error.message.includes("Invalid login credentials")) {
-                showCustomAlert("Email not registered or incorrect PIN.");
-            } else if (error.message.includes("Email not confirmed")) {
-                showCustomAlert("Please check your inbox to confirm your email address first.");
-            } else {
-                showCustomAlert(error.message);
-            }
-        } finally {
-            // This FINALLY block will ALWAYS run, ensuring the spinner is always hidden.
-            authActionBtn.classList.remove('loading');
-            authActionBtn.disabled = false;
+        if (newState === 'login') {
+            authTitle.textContent = "Login to AILA";
+            btnText.textContent = "Login";
+            pinGroup.style.display = 'block';
+            registerLink.style.display = 'inline';
+            forgotPasswordLink.style.display = 'inline';
+        } else if (newState === 'register') {
+            authTitle.textContent = "Create an Account";
+            btnText.textContent = "Register";
+            pinGroup.style.display = 'block';
+            pinConfirmGroup.classList.remove('hidden');
+            backToLoginLink.style.display = 'inline';
+        } else if (newState === 'reset') {
+            authTitle.textContent = "Reset Password";
+            btnText.textContent = "Send Instructions";
+            backToLoginLink.style.display = 'inline';
         }
-    });
-}}
+    }
+    
+    function showWelcomeAndEnter(email, isNewUser) {
+        authForm.style.display = 'none'; // Hide the form
+        successScreen.classList.remove('hidden'); // Show the success screen
+        
+        const username = email.split('@')[0];
+        successMessage.textContent = isNewUser
+            ? `Welcome, ${username}!`
+            : `Welcome back, ${username}!`;
+    }
+
+    function setupPinInput(container) {
+      if (!container) return;
+      const inputs = [...container.querySelectorAll('.pin-digit')];
+      inputs.forEach((input, index) => {
+        input.addEventListener("input", () => {
+          input.value = input.value.replace(/\D/g, "");
+          if (input.value && index < inputs.length - 1) inputs[index + 1].focus();
+        });
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Backspace" && !input.value && index > 0) inputs[index - 1].focus();
+        });
+      });
+    }
+
+    function getPinFromContainer(container) {
+      if (!container) return "";
+      return [...container.querySelectorAll('.pin-digit')].map(input => input.value).join("");
+    }
+    
+    // 3. Attach all event listeners.
+    
+    if (enterAppBtn) enterAppBtn.addEventListener("click", showAuthModal);
+    if (authCloseBtn) authCloseBtn.addEventListener("click", closeAuthModal);
+    if (registerLink) registerLink.addEventListener("click", (e) => { e.preventDefault(); setAuthState('register'); });
+    if (forgotPasswordLink) forgotPasswordLink.addEventListener("click", (e) => { e.preventDefault(); setAuthState('reset'); });
+    if (backToLoginLink) backToLoginLink.addEventListener("click", (e) => { e.preventDefault(); setAuthState('login'); });
+
+    if (googleLoginBtn) {
+        googleLoginBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const { error } = await _supabase.auth.signInWithOAuth({ provider: 'google' });
+            if (error) showCustomAlert(error.message);
+        });
+    }
+
+    if (authForm) {
+        authForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            authActionBtn.classList.add('loading');
+            authActionBtn.disabled = true;
+
+            const email = document.getElementById("email").value;
+
+            try {
+                if (authState === 'reset') {
+                     const { error } = await _supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+                    if (error) throw error;
+                    showCustomAlert("Password reset instructions sent to your email.", 'success');
+                    setTimeout(() => setAuthState('login'), 3000);
+
+                } else {
+                    const pin = getPinFromContainer(pinContainer);
+                    const pinConfirm = getPinFromContainer(pinConfirmContainer);
+                    
+                    if (pin.length !== 6) throw new Error("PIN must be exactly 6 digits.");
+                    if (authState === 'register' && pin !== pinConfirm) throw new Error("The PINs you entered do not match.");
+
+                    if (authState === 'register') {
+                        const { error } = await _supabase.auth.signUp({ email, password: pin });
+                        if (error) throw error;
+                        showCustomAlert("Registered successfully!", 'success');
+                        setTimeout(() => showWelcomeAndEnter(email, true), 1500);
+
+                    } else { // Login
+                        const { data, error } = await _supabase.auth.signInWithPassword({ email, password: pin });
+                        if (error) throw error;
+                        
+                        // Proceed to success screen
+                        showWelcomeAndEnter(email, false);
+                    }
+                }
+            } catch (error) {
+                if (error.message.includes("User already registered")) {
+                    showCustomAlert("User already registered. Please log in.");
+                } else if (error.message.includes("Invalid login credentials")) {
+                    showCustomAlert("Email not registered or incorrect PIN.");
+                } else {
+                    showCustomAlert(error.message);
+                }
+            } finally {
+                authActionBtn.classList.remove('loading');
+                authActionBtn.disabled = false;
+            }
+        });
+    }
+    
+    if (finalEnterBtn) {
+      finalEnterBtn.addEventListener("click", () => {
+        const email = localStorage.getItem('loggedInUser'); // Get the email we'll need
+        handleSuccessfulLogin(email);
+      });
+    }
+
+    setupPinInput(pinContainer);
+    setupPinInput(pinConfirmContainer);
+}
+
+// Run the setup function after the page has fully loaded
+window.addEventListener('load', setupAuthModal);
 
 // --- END: Authentication Modal Logic ---
-
 // --- START: Navigation Sidebar Logic ---
 
 // Get elements from the DOM

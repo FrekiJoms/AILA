@@ -2856,3 +2856,19 @@ input:-webkit-autofill:active {
     width: 18px;
     height: 18px;
 }
+/* --- Auth Modal Success Screen --- */
+#successScreen {
+    text-align: center;
+}
+
+#successMessage {
+    font-size: 18px;
+    font-weight: 500;
+    color: #e8fbff;
+    margin-bottom: 20px;
+}
+
+/* We can reuse the auth-action-btn style for the final enter button */
+#finalEnterBtn {
+    width: 100%;
+}

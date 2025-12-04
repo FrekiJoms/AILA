@@ -82,7 +82,7 @@
         <button id="final-enter-btn">Enter AILA</button>
       </div>
 
-      <!-- NEW: Login/Registration Modal -->
+      <!-- START: Consolidated Authentication Modal -->
       <div id="authModal" class="auth-modal-backdrop hidden">
         <div class="auth-modal-content">
           <div class="auth-modal-header">
@@ -93,24 +93,42 @@
           </div>
           <div class="auth-modal-body">
             <form id="authForm">
-              <button id="googleLoginBtn" class="google-login-btn">
-                <img src="icons/google.png" alt="Google icon" class="google-icon" />
+              <button
+                id="googleLoginBtn"
+                class="google-login-btn"
+                type="button"
+              >
+                <img
+                  src="icons/google.png"
+                  alt="Google icon"
+                  class="google-icon"
+                />
                 <span>Continue with Google</span>
               </button>
               <div class="separator">OR</div>
-              <input type="email" id="email" class="auth-input" placeholder="Enter your Gmail" required />
-              <!-- START: 4-Digit PIN Input -->
-              <p class="pin-description">Enter your 6-digit PIN</p>
-              <div id="pinContainer" class="pin-digit-container">
-                <input type="tel" class="pin-digit" maxlength="1" />
-                <input type="tel" class="pin-digit" maxlength="1" />
-                <input type="tel" class="pin-digit" maxlength="1" />
-                <input type="tel" class="pin-digit" maxlength="1" />
-                <input type="tel" class="pin-digit" maxlength="1" />
-                <input type="tel" class="pin-digit" maxlength="1" />
+
+              <div id="emailGroup">
+                <input
+                  type="email"
+                  id="email"
+                  class="auth-input"
+                  placeholder="Enter your Gmail"
+                  required
+                />
               </div>
-              <!-- END: 4-Digit PIN Input -->
-              <!-- START: 4-Digit PIN Confirm Input Group -->
+
+              <div id="pinGroup">
+                <p class="pin-description">Enter your 6-digit PIN</p>
+                <div id="pinContainer" class="pin-digit-container">
+                  <input type="tel" class="pin-digit" maxlength="1" />
+                  <input type="tel" class="pin-digit" maxlength="1" />
+                  <input type="tel" class="pin-digit" maxlength="1" />
+                  <input type="tel" class="pin-digit" maxlength="1" />
+                  <input type="tel" class="pin-digit" maxlength="1" />
+                  <input type="tel" class="pin-digit" maxlength="1" />
+                </div>
+              </div>
+
               <div id="pinConfirmGroup" class="hidden">
                 <p class="pin-description">Confirm your PIN</p>
                 <div id="pinConfirmContainer" class="pin-digit-container">
@@ -122,13 +140,13 @@
                   <input type="tel" class="pin-digit" maxlength="1" />
                 </div>
               </div>
-              <!-- END: 4-Digit PIN Confirm Input Group -->
+
               <button type="submit" id="authActionBtn" class="auth-action-btn">
                 <span class="btn-text">Login</span>
                 <div class="spinner"></div>
               </button>
             </form>
-            <!-- CORRECT PLACEMENT for the alert -->
+
             <div id="customAlert" class="custom-alert hidden"></div>
 
             <div class="auth-links">
@@ -138,12 +156,23 @@
               <a href="#" id="registerLink" class="auth-link"
                 >Don't have an account? Register</a
               >
+              <a href="#" id="backToLoginLink" class="auth-link hidden"
+                >&larr; Back to Login</a
+              >
             </div>
+          </div>
+
+          <!-- NEW: Success Screen Container -->
+          <div id="successScreen" class="hidden">
+            <p id="successMessage"></p>
+            <button id="finalEnterBtn" class="auth-action-btn">
+              Enter AILA
+            </button>
           </div>
         </div>
       </div>
     </div>
-    <!-- END: Lively Loading Overlay -->
+    <!-- END: Consolidated Authentication Modal -->
 
     <div class="app">
       <!-- START: Navigation Sidebar -->
