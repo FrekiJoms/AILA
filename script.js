@@ -1480,8 +1480,8 @@ if (newChatBtn) {
 }
 
 if (logoutBtn) {
-  logoutBtn.addEventListener("click", () => {
-    _supabase.auth.signOut(); // <-- ADD THIS LINE
+  logoutBtn.addEventListener("click", async () => { // Make the function async
+    await _supabase.auth.signOut(); // Await the sign-out process
     localStorage.removeItem("loggedInUser");
     window.location.reload();
   });
