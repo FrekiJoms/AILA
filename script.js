@@ -1475,23 +1475,90 @@ window.addEventListener('load', () => {
 
 // --- END: Authentication Modal Logic ---
 // --- START: User Info Update ---
-function updateUserInfo() {
-    const userEmailEl = document.getElementById('userEmail');
-    const userInitialEl = document.getElementById('userInitial');
-    const loggedInUserEmail = localStorage.getItem("loggedInUser");
+let trialInterval; // Keep a reference to the timer to clear it on logout
 
-    if (loggedInUserEmail && userEmailEl && userInitialEl) {
-        userEmailEl.textContent = loggedInUserEmail;
-        userInitialEl.textContent = loggedInUserEmail.charAt(0).toUpperCase();
+async function updateUserInfo() {
+    // Clear any existing timer before starting a new one
+    if (trialInterval) clearInterval(trialInterval);
+
+    // --- Get all DOM elements ---
+    const userEmailEl = document.getElementById('userEmail');
+    const userAvatarEl = document.getElementById('userAvatar');
+    const trialStatusEl = document.getElementById('trialStatus');
+    const menuUserAvatarEl = document.getElementById('menuUserAvatar');
+    const menuUserNameEl = document.getElementById('menuUserName');
+    const menuUserEmailEl = document.getElementById('menuUserEmail');
+    const trialTimerEl = document.getElementById('trialTimer');
+
+    // --- Fetch session from Supabase ---
+    const { data: { session } } = await _supabase.auth.getSession();
+
+    if (session) {
+        const user = session.user;
+
+        // --- Populate user info in sidebar and menu header ---
+        const displayName = (user.app_metadata.provider === 'google' && user.user_metadata)
+            ? user.user_metadata.full_name
+            : user.email.split('@')[0];
+
+        const avatarContent = (user.app_metadata.provider === 'google' && user.user_metadata)
+            ? `<img src="${user.user_metadata.avatar_url}" alt="User Avatar" class="user-avatar-img">`
+            : `<span id="userInitial">${displayName.charAt(0).toUpperCase()}</span>`;
+
+        userEmailEl.textContent = displayName;
+        userAvatarEl.innerHTML = avatarContent;
+        menuUserNameEl.textContent = displayName;
+        menuUserEmailEl.textContent = user.email;
+        menuUserAvatarEl.innerHTML = avatarContent;
+
+
+        // --- Real-time Trial Countdown Logic ---
+        const createdAt = new Date(user.created_at);
+        const trialEndDate = new Date(createdAt.setDate(createdAt.getDate() + 30));
+
+        trialInterval = setInterval(() => {
+            const now = new Date();
+            const diffTime = trialEndDate - now;
+
+            if (diffTime <= 0) {
+                trialStatusEl.textContent = 'Trial Expired';
+                trialStatusEl.style.color = 'var(--danger)';
+                trialTimerEl.textContent = 'EXPIRED';
+                clearInterval(trialInterval);
+                return;
+            }
+
+            const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diffTime % (1000 * 60)) / 1000);
+
+            // Update sidebar text (days only)
+            trialStatusEl.textContent = `Trial: ${days} days left`;
+             trialStatusEl.style.color = days < 7 ? '#FFC107' : 'var(--success)';
+
+
+            // Update menu timer (real-time)
+            trialTimerEl.textContent = `${String(days).padStart(2, '0')}:${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+        }, 1000);
+
+    } else {
+        // --- Handle logged out state ---
+        userEmailEl.textContent = 'Not logged in';
+        userAvatarEl.innerHTML = `<span id="userInitial">?</span>`;
+        trialStatusEl.textContent = '';
+        if (trialTimerEl) trialTimerEl.textContent = '--:--:--:--';
     }
 }
 // --- END: User Info Update ---
 
 // --- START: Navigation Sidebar Logic ---
+// --- START: Navigation Sidebar Logic ---
 function setupNavigation() {
     // Get elements from the DOM
     const navSidebar = document.getElementById("navSidebar");
-    const navLogo = document.getElementById("logo");
+    const sidebarToggleBtn = document.getElementById("sidebarToggleBtn"); // Corrected trigger
     const newChatBtn = document.getElementById("newChatBtn");
     const userProfileBtn = document.getElementById("userProfile");
     const userMenu = document.getElementById("userMenu");
@@ -1502,22 +1569,20 @@ function setupNavigation() {
         navSidebar.classList.toggle("expanded");
     }
 
-    // Event listener for the AILA header logo to expand/collapse
-    if (navLogo) {
-        navLogo.addEventListener("click", toggleNav);
+    // Event listener for the new sidebar toggle button
+    if (sidebarToggleBtn) {
+        sidebarToggleBtn.addEventListener("click", toggleNav);
     }
 
     // Event listener for the "New Chat" button
     if (newChatBtn) {
         newChatBtn.addEventListener("click", () => {
             showWelcomeScreen(); // Re-use this function to clear the chat area
-            if (navSidebar.classList.contains("expanded")) {
-                toggleNav(); // Close the nav after starting a new chat
-            }
+            // We don't need to auto-close the nav anymore
         });
     }
 
-    // --- NEW: User Profile Menu Logic ---
+    // --- User Profile Menu Logic ---
     if (userProfileBtn && userMenu) {
         userProfileBtn.addEventListener("click", (e) => {
             e.stopPropagation(); // Prevents the window click listener from firing immediately
@@ -1545,6 +1610,7 @@ function setupNavigation() {
         });
     }
 }
+// --- END: Navigation Sidebar Logic ---
 // --- END: Navigation Sidebar Logic ---
 // --- START: Password Reset Page Logic ---
 
