@@ -1732,35 +1732,72 @@ textarea#input {
 
 /* --- Mobile View Enhancements --- */
 @media (max-width: 900px) {
-    /* --- Auth Modal adjustments for mobile --- */
+  .nav-sidebar {
+    transform: translateX(-100%);
+    width: 260px;
+    /* Always full width on mobile */
+  }
+
+  .nav-sidebar.expanded {
+    transform: translateX(0);
+    /* Slide in when expanded */
+  }
+
+  .chat {
+    margin-left: 0;
+    /* No margin on mobile */
+    width: 100%;
+  }
+
+  .nav-sidebar.expanded + .chat {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .open-nav-btn {
+    display: block;
+    /* Show the hamburger menu button on mobile */
+  }
+
+  .close-nav-btn {
+    display: flex;
+    /* Always show the close button on mobile sidebar */
+  }
+
+  .nav-text {
+    opacity: 1;
+    /* Always show text on mobile sidebar */
+  }
+  /* --- Auth Modal adjustments for mobile --- */
   .auth-modal-content {
-      padding: 20px;
-      max-width: 90vw; /* Allow it to be a bit wider on mobile */
-      scale: 0.86;
+    padding: 20px;
+    max-width: 90vw; /* Allow it to be a bit wider on mobile */
+    scale: 0.86;
   }
 
   .auth-modal-header h2 {
-      font-size: 18px;
+    font-size: 18px;
   }
 
-  .google-login-btn, .auth-action-btn {
-      padding: 11px;
-      font-size: 14px;
+  .google-login-btn,
+  .auth-action-btn {
+    padding: 11px;
+    font-size: 14px;
   }
 
   .pin-digit {
-      width: 40px; /* Make the PIN boxes slightly smaller */
-      height: 45px;
-      font-size: 24px;
-      scale: 0.86;
+    width: 40px; /* Make the PIN boxes slightly smaller */
+    height: 45px;
+    font-size: 24px;
+    scale: 0.86;
   }
 
   .pin-digit-container {
-      gap: 10px; /* Reduce the gap between PIN boxes */
+    gap: 10px; /* Reduce the gap between PIN boxes */
   }
 
   .auth-link {
-      font-size: 11px;
+    font-size: 11px;
   }
 
   .module-dropdown-content a {
@@ -2577,166 +2614,135 @@ textarea#input {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
-/* --- Navigation Sidebar --- */
+/* --- New Responsive Navigation Sidebar --- */
+.app {
+  position: relative;
+  width: 100%;
+}
+
 .nav-sidebar {
   position: fixed;
   top: 0;
   left: 0;
   height: 100%;
-  width: 260px;
-  background-color: #0d1a2e; /* A slightly different shade from the main chat */
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 20px;
-  box-sizing: border-box;
+  background-color: #202123; /* Dark background like ChatGPT */
   display: flex;
   flex-direction: column;
-  transform: translateX(-100%);
-  transition: transform 0.3s ease-in-out;
   z-index: 1100;
+  transition: width 0.3s ease-in-out;
+  width: 80px; /* Collapsed width */
 }
 
-/* This class will be toggled by JS to show the sidebar */
-.app.nav-open .nav-sidebar {
-  transform: translateX(0);
+.nav-sidebar.expanded {
+  width: 260px; /* Expanded width */
 }
 
-/* This class pushes the main chat window to the right */
-.app.nav-open .chat {
-  transform: translateX(260px);
-  border-top-left-radius: 14px;
-  border-bottom-left-radius: 14px;
-}
-
-.chat {
-  transition: transform 0.3s ease-in-out, border-radius 0.3s ease-in-out;
-}
-
-/* Sidebar Content Styling */
+/* Header of the sidebar */
 .nav-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  justify-content: space-between;
+  padding: 20px;
   flex-shrink: 0;
 }
 
 .new-chat-btn {
-  width: auto;
-  flex-grow: 1;
-  margin-right: 10px; /* Add space between the two buttons */
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #e6fbff;
-  font-size: 14px;
-  border-radius: 10px;
+  flex-grow: 1; /* Allows it to take up space */
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border-radius: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 10px;
   transition: background-color 0.2s ease;
+  overflow: hidden; /* Hide text when collapsed */
+  white-space: nowrap;
+}
+.new-chat-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
-.new-chat-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+.nav-text {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+.nav-sidebar.expanded .nav-text {
+  opacity: 1;
+}
+
+.close-nav-btn {
+  display: none; /* Hidden by default, only shown when expanded */
+  /* ... other styles for the button (already correct) ... */
+}
+.nav-sidebar.expanded .close-nav-btn {
+  display: flex;
 }
 
 .chat-history-list {
   flex-grow: 1;
   overflow-y: auto;
-  /* You can add custom scrollbar styles here later if you wish */
-}
-.close-nav-btn {
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--muted);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  padding: 0 20px;
 }
 
-.close-nav-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #e6fbff;
-}
-
+/* Footer of the sidebar */
 .nav-footer {
-  padding-top: 15px;
-  margin-top: 15px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  flex-shrink: 0;
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* --- User Profile Section in Nav Footer --- */
 .user-profile {
   display: flex;
   align-items: center;
-  width: 100%;
+  gap: 10px;
   padding: 8px;
-  box-sizing: border-box;
-  border-radius: 10px;
+  border-radius: 8px;
+  cursor: pointer;
   transition: background-color 0.2s ease;
+  overflow: hidden; /* Hide text when collapsed */
 }
-
 .user-profile:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .user-avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-color: #5e489c; /* Purple accent */
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  margin-right: 12px;
-  flex-shrink: 0;
+  /* ... rest of avatar styles are correct ... */
 }
 
 .user-info {
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
-  overflow: hidden; /* Prevents long emails from breaking layout */
-}
-
-.user-email {
-  font-size: 14px;
-  color: #e6fbff;
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; /* Adds "..." if the email is too long */
+  white-space: nowrap;
 }
 
-.trial-status {
-  font-size: 11px;
-  color: var(--muted);
+/* Main Chat Window styles */
+.chat {
+  transition: margin-left 0.3s ease-in-out;
+  margin-left: 80px; /* Default margin to make space for collapsed sidebar */
+  width: calc(100% - 80px);
 }
 
-.logout-icon-btn {
+.nav-sidebar.expanded + .chat {
+  margin-left: 260px; /* Margin when sidebar is expanded */
+  width: calc(100% - 260px);
+}
+
+.open-nav-btn {
+  display: none; /* Hidden by default on desktop */
   background: transparent;
   border: none;
   color: var(--muted);
   cursor: pointer;
-  padding: 5px;
-  border-radius: 6px;
-  flex-shrink: 0;
-  transition: color 0.2s ease, background-color 0.2s ease;
+  padding: 8px;
+  margin-right: 10px;
 }
 
-.user-profile:hover .logout-icon-btn {
-  color: #e6fbff;
-  background-color: rgba(255, 255, 255, 0.1);
-}
 /* --- Stylized PIN Input --- */
 /* --- Stylized 4-Digit PIN Input --- */
 .pin-digit-container {
@@ -2804,101 +2810,102 @@ input:-webkit-autofill:active {
 }
 /* --- Auth Button Spinner --- */
 .auth-action-btn {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 45px; /* Ensure button height is consistent */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 45px; /* Ensure button height is consistent */
 }
 
 .spinner {
-    display: none; /* Add this line */
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    border-top: 2px solid #fff;
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    animation: spin 1s linear infinite;
+  display: none; /* Add this line */
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top: 2px solid #fff;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  animation: spin 1s linear infinite;
 }
 
 .auth-action-btn.loading .spinner {
-    display: block;
+  display: block;
 }
 
 .auth-action-btn.loading .btn-text {
-    display: none;
+  display: none;
 }
 
 /* --- PIN Description Text --- */
 .pin-description {
-    font-size: 11px;
-    color: var(--muted);
-    text-align: center;
-    margin-top: -12px; /* Pull it closer to the input */
-    margin-bottom: 15px;
-    height: 14px; /* Reserve space to prevent layout shift */
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  margin-top: -12px; /* Pull it closer to the input */
+  margin-bottom: 15px;
+  height: 14px; /* Reserve space to prevent layout shift */
 }
 .custom-alert.success {
-    background-color: rgba(47, 226, 122, 0.2); /* Greenish background */
-    border-color: var(--success);
+  background-color: rgba(47, 226, 122, 0.2); /* Greenish background */
+  border-color: var(--success);
 }
 /* --- Google Login Button & Separator --- */
 .separator {
-    display: flex;
-    align-items: center;
-    text-align: center;
-    color: var(--muted);
-    font-size: 12px;
-    margin: 20px 0;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  margin: 20px 0;
 }
-.separator::before, .separator::after {
-    content: '';
-    flex: 1;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.separator::before,
+.separator::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 .separator:not(:empty)::before {
-    margin-right: .5em;
+  margin-right: 0.5em;
 }
 .separator:not(:empty)::after {
-    margin-left: .5em;
+  margin-left: 0.5em;
 }
 
 .google-login-btn {
-    width: 100%;
-    padding: 10px 12px;
-    background-color: transparent;
-    color: #e6fbff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    margin-bottom: 20px;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    transition: background-color 0.2s ease;
+  width: 100%;
+  padding: 10px 12px;
+  background-color: transparent;
+  color: #e6fbff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  margin-bottom: 20px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background-color 0.2s ease;
 }
 .google-login-btn:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 .google-icon {
-    width: 18px;
-    height: 18px;
+  width: 18px;
+  height: 18px;
 }
 /* --- Auth Modal Success Screen --- */
 #successScreen {
-    text-align: center;
+  text-align: center;
 }
 
 #successMessage {
-    font-size: 18px;
-    font-weight: 500;
-    color: #e8fbff;
-    margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 500;
+  color: #e8fbff;
+  margin-bottom: 20px;
 }
 
 /* We can reuse the auth-action-btn style for the final enter button */
 #finalEnterBtn {
-    width: 100%;
+  width: 100%;
 }
