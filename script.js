@@ -9,25 +9,20 @@ const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // --- START: Supabase Auth State Listener ---
 // --- START: Supabase Auth State Listener ---
 _supabase.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session) {
-        // This is a successful login (e.g., after Google redirect)
+    // This listener now handles all SIGNED_IN events, including Google redirects
+    if (event === "SIGNED_IN" && session) {
         
-        // Save the user's session to local storage
-        localStorage.setItem('loggedInUser', session.user.email);
-
         // --- THIS IS THE FIX ---
-        // Check if the URL has the access token from the redirect.
-        // If it does, we need to clean the URL and reload the page.
+        // Instead of reloading, we now directly call the success handler.
+        // This will hide the loading overlay and show the main chat.
+        handleSuccessfulLogin(session.user.email);
+
+        // We also clean the URL to prevent issues on the next refresh.
         if (window.location.hash.includes('access_token')) {
-            // Use replaceState to clean the URL without adding to browser history
             window.history.replaceState(null, '', window.location.pathname);
-            // Now, reload the page. It will load with a clean URL.
-            window.location.reload();
         }
-        // If the URL is already clean, initializeApp will handle showing the chat.
     }
 });
-// --- END: Supabase Auth State Listener ---
 
 const SCRIPT_API_URL ="https://script.google.com/macros/s/AKfycbxyBAMvcSxdV_Gbc8JIKB1yJRPw0ocQKpczfZ8KLp4Gln2LgWTTbFar3ugjODGrqjiE/exec";
 const SFX = {
@@ -1057,7 +1052,6 @@ async function initializeApp() {
       }
   // --- 1. Define loading content & get elements ---
   const loadingStatuses = [
-    "Starting...",
     "Initializing...",
     "Loading resources...",
     "Connecting to APIs...",
@@ -1075,7 +1069,8 @@ async function initializeApp() {
     "Navigate the Tool icon 🔧 to access Modules, Orientation, and Learning Materials.",
     "You can find learning materials by clicking Tool icon > Materials.",
     "Aila was envisioned on the 9th of October, later created on 26th of October",
-    "Dyk, AILA main developer was, N. Joshua?",
+    "Dyk, AILA's main developer was, N. Joshua.",
+    "Dyk, Mr. Kaiser is the one who envissioned AILA.",
   ];
   const loadingOverlay = document.getElementById("loading-overlay");
   const logoContainer = document.getElementById("loading-logo-container");
