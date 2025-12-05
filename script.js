@@ -1,7 +1,6 @@
 // --- START: Supabase Client Initialization ---
 const SUPABASE_URL = "https://woqlvcgryahmcejdlcqz.supabase.co";
-const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvcWx2Y2dyeWFobWNlamRsY3F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3NDg5NTMsImV4cCI6MjA4MDMyNDk1M30.PXL0hJ-8Hv7BP21Fly3tHXonJoxfVL0GNCY7oWXDKRA";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvcWx2Y2dyeWFobWNlamRsY3F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3NDg5NTMsImV4cCI6MjA4MDMyNDk1M30.PXL0hJ-8Hv7BP21Fly3tHXonJoxfVL0GNCY7oWXDKRA";
 
 const { createClient } = supabase;
 const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1257,6 +1256,24 @@ function showConfirm(title, message) {
     });
 }
 
+function handleSuccessfulLogin(email, isNewUser = false) {
+    localStorage.setItem('loggedInUser', email);
+    if (isNewUser) {
+        localStorage.setItem('trialStartDate', new Date().toISOString());
+    }
+
+    const loadingOverlay = document.getElementById("loading-overlay");
+
+    // Hide all overlays and modals
+    if (loadingOverlay) loadingOverlay.classList.add("hidden");
+    closeModal(); 
+
+    // Now, show the main application screen and update user info
+    showWelcomeScreen();
+    updateUserInfo();
+    updateStatus("pending");
+}
+
 function setupAuthModal() {
     // 1. Get all elements from the DOM.
     const authModal = document.getElementById("authModal");
@@ -1282,23 +1299,6 @@ function setupAuthModal() {
 
     let authState = 'login';
     let alertTimeout;
-function handleSuccessfulLogin(email, isNewUser = false) {
-    localStorage.setItem('loggedInUser', email);
-    if (isNewUser) {
-        localStorage.setItem('trialStartDate', new Date().toISOString());
-    }
-
-    const loadingOverlay = document.getElementById("loading-overlay");
-
-    // Hide all overlays and modals
-    if (loadingOverlay) loadingOverlay.classList.add("hidden");
-    closeAuthModal(); 
-
-    // Now, show the main application screen and update user info
-    showWelcomeScreen();
-    updateUserInfo();
-    updateStatus("pending");
-}
 
     // 2. Define all functions.
 // A reusable function to show a confirmation modal
