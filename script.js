@@ -22,7 +22,7 @@ _supabase.auth.onAuthStateChange(async (event, session) => {
             // Use replaceState to clean the URL without adding to browser history
             window.history.replaceState(null, '', window.location.pathname);
             // Now, reload the page. It will load with a clean URL.
-            window.location.reload();
+            window.location.reload(true);
         }
         // If the URL is already clean, initializeApp will handle showing the chat.
     }
@@ -1038,22 +1038,20 @@ async function loadOfflineData() {
 /**
  * Initializes the app with a dynamic, multi-stage loading screen.
  */
-/**
- * Initializes the app with a dynamic, multi-stage loading screen.
- */
 async function initializeApp() {
   // --- START: Check for an existing session ---
       const loggedInUserEmail = localStorage.getItem("loggedInUser");
       if (loggedInUserEmail) {
         // --- THIS IS THE FIX ---
         // Load offline data even when the user is already logged in.
-       
+        await loadOfflineData(); 
+        
         // If a user is already logged in, bypass the loading screen entirely.
         const loadingOverlay = document.getElementById("loading-overlay");
         loadingOverlay.classList.add("hidden");
         showWelcomeScreen(); // Show the main chat interface
+        updateStatus("pending"); // Set the initial status
         updateUserInfo();
-        //loadChatHistoryList() // load chat history
         return; // Stop the rest of the initializeApp function from running
       }
   // --- 1. Define loading content & get elements ---
@@ -1168,7 +1166,7 @@ async function initializeApp() {
   cycleStatus();
 
   // --- 5. Start the actual data loading ---
-  //await loadOfflineData();
+  await loadOfflineData();
 
   // --- 6. Handle the completion state ---
   // Keep animations running, but hide the "Click Me" text
