@@ -177,47 +177,83 @@
     <!-- Main App Container -->
     <div class="app">
       <!-- START: New Navigation Sidebar -->
-<div class="nav-header">
-    <!-- Mobile toggle button -->
-    <button id="mobileNavToggle" class="mobile-nav-toggle">
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-        >
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="9" y1="3" x2="9" y2="21"></line>
-            <polyline points="13 8 17 12 13 16"></polyline>
-        </svg>
-    </button>
-
-    <div class="your-chats-dropdown">
-        <button id="yourChatsBtn" class="your-chats-btn">
-            Your chats
-            <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 12 15 18 9"></polyline>
+      <div id="navSidebar" class="nav-sidebar">
+        <div class="nav-header">
+          <!-- ADD THIS BUTTON -->
+          <button id="sidebarToggleBtn" class="sidebar-toggle-btn">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="9" y1="3" x2="9" y2="21"></line>
+              <polyline points="13 8 17 12 13 16"></polyline>
             </svg>
-        </button>
-        <div id="chatHistoryList" class="chat-history-list">
-            <!-- Chat history items will be dynamically added here -->
-        </div>
-    </div>
+            <!-- END OF NEW SVG ICON -->
+          </button>
+          <!-- END OF ADDED BUTTON -->
 
-    <!-- Search button -->
-    <button id="searchBtn" class="search-btn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <span class="nav-text">Search</span>
-    </button>
-</div>
+          <button id="newChatBtn" class="new-chat-btn">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span class="nav-text">New Chat</span>
+          </button>
+        </div>
+        <div class="your-chats-dropdown">
+          <button id="yourChatsBtn" class="your-chats-btn">
+            Your chats
+            <svg
+              class="dropdown-arrow"
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div id="chatHistoryList" class="chat-history-list">
+            <!-- Chat history items will be dynamically added here -->
+          </div>
+        </div>
+        <div class="nav-footer">
+          <button id="userProfile" class="user-profile">
+            <!-- The user's Google Picture or Initial will go here -->
+            <div class="user-avatar" id="userAvatar">
+              <span id="userInitial"></span>
+            </div>
+            <div class="user-info nav-text">
+              <span id="userEmail" class="user-email"></span>
+              <!-- NEW: This span will hold the trial countdown -->
+              <span id="trialStatus" class="trial-status"></span>
+            </div>
+          </button>
+        </div>
+      </div>
       <!-- END: New Navigation Sidebar -->
       <!-- NEW: User Profile Pop-up Menu -->
       <div id="userMenu" class="user-menu hidden">
@@ -260,12 +296,23 @@
         <div class="header">
           <!-- ADD THIS MOBILE-ONLY BUTTON -->
           <button id="mobileNavToggle" class="mobile-nav-toggle">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
+            <!-- NEW SVG ICON -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="9" y1="3" x2="9" y2="21"></line>
+              <polyline points="13 8 17 12 13 16"></polyline>
             </svg>
+            <!-- END OF NEW SVG ICON -->
           </button>
           <!-- END OF ADDED BUTTON -->
           <div class="brand">
@@ -292,7 +339,7 @@
               align-items: center;
               gap: 8px;
               padding-right: 8px;
-            "
+            " id="headerallbtn" class="header-allbtn"
           >
             <div id="status-indicator" class="status-indicator"></div>
             <button
@@ -475,8 +522,8 @@
       </div>
     </div>
     <!-- END: Custom Confirmation Modal -->
-     <!-- END: Custom Confirmation Modal -->
-<div id="mobileNavOverlay" class="mobile-nav-overlay hidden"></div>
+    <!-- END: Custom Confirmation Modal -->
+    <div id="mobileNavOverlay" class="mobile-nav-overlay hidden"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>

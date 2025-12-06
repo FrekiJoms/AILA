@@ -7,15 +7,19 @@
 
 /* This class triggers the "break" animation */
 #loading-logo.broken {
-  transform: scale(1.5) rotate(20deg) !important; /* Use !important to override the float */
+  transform: scale(1.5) rotate(20deg) !important;
+  /* Use !important to override the float */
   opacity: 0;
 }
+
 /* This class triggers the "restore" animation */
 #loading-logo.restoring {
-  transition-duration: 0.5s; /* Make the restore a bit slower and more satisfying */
+  transition-duration: 0.5s;
+  /* Make the restore a bit slower and more satisfying */
   transform: scale(1) rotate(0deg) !important;
   opacity: 1;
 }
+
 .loading-text-container {
   margin-top: 30px;
   text-align: center;
@@ -23,9 +27,11 @@
 
 .loading-text-container p {
   margin: 0;
-  color: #e8fbff; /* Bright main text color */
+  color: #e8fbff;
+  /* Bright main text color */
   font-size: 16px;
 }
+
 /* --- Glowing, Floating Logo with Particle Aura --- */
 
 /* The container sets up the space for the particles */
@@ -77,7 +83,8 @@
   width: 5px;
   height: 5px;
   box-shadow: 0 0 8px var(--accent2);
-  animation-delay: -4s; /* Start it halfway through the animation */
+  animation-delay: -4s;
+  /* Start it halfway through the animation */
 }
 
 /* --- Keyframe Animations --- */
@@ -87,9 +94,11 @@
   0% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-10px);
   }
+
   100% {
     transform: translateY(0px);
   }
@@ -100,6 +109,7 @@
   0% {
     transform: rotate(0deg) translateX(55px) rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg) translateX(55px) rotate(-360deg);
   }
@@ -108,10 +118,12 @@
 /* --- Logo Shatter Effect --- */
 .shatter-piece {
   position: absolute;
-  width: calc(100% / 4); /* We will use a 4x4 grid */
+  width: calc(100% / 4);
+  /* We will use a 4x4 grid */
   height: calc(100% / 4);
   background-image: url("ailalogo.png");
-  background-size: 80px 80px; /* Match the logo size */
+  background-size: 80px 80px;
+  /* Match the logo size */
   transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1),
     opacity 0.8s ease-out;
   border-radius: 2px;
@@ -131,6 +143,7 @@
   margin-top: 3px;
   text-align: center;
 }
+
 /* --- Status Overlay and Loader --- */
 .status-overlay {
   position: fixed;
@@ -169,6 +182,7 @@
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -178,24 +192,29 @@
   color: var(--muted);
   font-size: 16px;
 }
+
 /* --- Header Status Indicator --- */
 .status-indicator {
-  position: relative; /* This is crucial for positioning the tooltip */
+  position: relative;
+  /* This is crucial for positioning the tooltip */
   width: 10px;
   height: 10px;
   border-radius: 50%;
   margin-right: 4px;
   transition: all 0.4s ease;
   border: 1px solid rgba(0, 0, 0, 0.2);
-  cursor: pointer; /* Indicates it's interactive */
+  cursor: pointer;
+  /* Indicates it's interactive */
 }
 
 /* --- Custom Tooltip --- */
 /* This creates the tooltip bubble using the ::before pseudo-element */
 .status-indicator::before {
-  content: attr(data-tooltip); /* Pulls text from an HTML data-attribute */
+  content: attr(data-tooltip);
+  /* Pulls text from an HTML data-attribute */
   position: absolute;
-  bottom: 150%; /* Position it above the dot */
+  bottom: 150%;
+  /* Position it above the dot */
   left: 50%;
   transform: translateX(-50%);
 
@@ -206,12 +225,14 @@
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 12px;
-  white-space: nowrap; /* Prevent text from wrapping */
+  white-space: nowrap;
+  /* Prevent text from wrapping */
 
   /* Hide by default */
   opacity: 0;
   visibility: hidden;
-  pointer-events: none; /* Make it non-interactive */
+  pointer-events: none;
+  /* Make it non-interactive */
   transition: opacity 0.2s ease, visibility 0.2s ease;
   z-index: 10;
 }
@@ -244,40 +265,43 @@
 
 /* This styles the link itself into a bordered box or "pill" */
 .msg a {
-  display: inline-flex; /* This is key: it makes the link a container for the text and icon */
-  align-items: center; /* This vertically centers the text and the icon inside the box */
+  display: inline-flex;
+  /* This is key: it makes the link a container for the text and icon */
+  align-items: center;
+  /* This vertically centers the text and the icon inside the box */
 
   /* Appearance */
   scale: 0.95;
   background-color: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px; /* Makes the corners fully rounded for a pill shape */
-  margin: 0 2px; /* Adds a tiny bit of space around the outside of the pill */
+  border-radius: 10px;
+  /* Makes the corners fully rounded for a pill shape */
+  margin: 0 2px;
+  /* Adds a tiny bit of space around the outside of the pill */
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
   padding-right: 10px;
   /* Text & Font */
-  text-decoration: none !important; /* This is crucial for removing the underline */
+  text-decoration: none !important;
+  /* This is crucial for removing the underline */
   color: #cdd9e3;
   font-size: 14px;
   font-weight: 500;
 
   /* Animation */
-  transition: all 0.2s ease; /* Makes the hover effect smooth */
+  transition: all 0.2s ease;
+  /* Makes the hover effect smooth */
 }
 
 /* This adds a hover effect when the mouse is over the link */
 .msg a:hover {
-  background-color: rgba(
-    0,
-    209,
-    255,
-    0.1
-  ); /* Uses your site's accent color for the glow */
+  background-color: rgba(0, 209, 255, 0.1);
+  /* Uses your site's accent color for the glow */
   border-color: rgba(0, 209, 255, 0.2);
   color: #e6fbff;
-  transform: translateY(-1px); /* Adds a subtle "lift" effect */
+  transform: translateY(-1px);
+  /* Adds a subtle "lift" effect */
 }
 
 /* This styles the icon image that is INSIDE the link */
@@ -286,7 +310,8 @@
   width: 16px;
   padding-right: 10px;
   height: 100%;
-  margin-left: 8px; /* This creates the space between the text and the icon */
+  margin-left: 8px;
+  /* This creates the space between the text and the icon */
 }
 
 .icon-link {
@@ -412,6 +437,7 @@
   transition: all 0.12s ease;
   text-decoration: none;
 }
+
 /* --- Header Buttons: Tools & Feedback --- */
 .header-feedback-btn,
 .header-home-btn {
@@ -431,6 +457,7 @@
   transition: all 0.12s ease;
   text-decoration: none;
 }
+
 .header-home-btn:hover {
   color: #e8fbff;
   border-color: rgba(255, 255, 255, 0.15);
@@ -869,7 +896,8 @@ textarea#input {
   display: flex;
   background: var(--user);
   color: #ffffffd8;
-  border-radius: 20px; /* A very large value ensures a perfect pill shape */
+  border-radius: 20px;
+  /* A very large value ensures a perfect pill shape */
   padding-top: 1px;
   margin-top: 1px;
   max-height: fit-content;
@@ -877,16 +905,22 @@ textarea#input {
   margin-bottom: 2px;
   max-width: 60%;
   padding-left: 20px;
-  padding-right: 20px; /* More balanced vertical and horizontal padding */
+  padding-right: 20px;
+  /* More balanced vertical and horizontal padding */
   box-sizing: border-box;
   overflow-wrap: break-word;
-  line-height: 1; /* Reduced line height to make the pill more compact */
+  line-height: 1;
+  /* Reduced line height to make the pill more compact */
 }
+
 /* This ensures that paragraphs inside a bot message are not faint or transparent */
 .msg.bot p {
-  color: #e8fbff; /* Uses the main bright text color of your app */
-  margin-top: 0; /* Optional: Removes extra space above paragraphs for a cleaner look */
-  margin-bottom: 1em; /* Optional: Ensures consistent spacing between paragraphs */
+  color: #e8fbff;
+  /* Uses the main bright text color of your app */
+  margin-top: 0;
+  /* Optional: Removes extra space above paragraphs for a cleaner look */
+  margin-bottom: 1em;
+  /* Optional: Ensures consistent spacing between paragraphs */
 }
 
 .msg.bot {
@@ -1057,24 +1091,33 @@ textarea#input {
 
 textarea#input {
   /* --- Core Sizing & Layout --- */
-  flex: 1; /* Allow it to grow and shrink */
-  box-sizing: border-box; /* Ensures padding is included in the size */
-  resize: none !important; /* Disable manual resizing */
+  flex: 1;
+  /* Allow it to grow and shrink */
+  box-sizing: border-box;
+  /* Ensures padding is included in the size */
+  resize: none !important;
+  /* Disable manual resizing */
 
   /* --- Dynamic Height --- */
-  min-height: 55px !important; /* The starting height */
-  max-height: 150px !important; /* The maximum height it can grow to */
-  height: auto; /* Let JavaScript control the height */
-  overflow-y: auto !important; /* Show a scrollbar ONLY when max-height is reached */
+  min-height: 55px !important;
+  /* The starting height */
+  max-height: 150px !important;
+  /* The maximum height it can grow to */
+  height: auto;
+  /* Let JavaScript control the height */
+  overflow-y: auto !important;
+  /* Show a scrollbar ONLY when max-height is reached */
 
   /* --- Visual Styling (from your original design) --- */
   border-radius: 24px !important;
-  padding: 18px 48px 18px 20px !important; /* Adjusted padding for better text alignment */
+  padding: 18px 48px 18px 20px !important;
+  /* Adjusted padding for better text alignment */
   line-height: 1.4;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   background: #1c2532ee !important;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.445) !important;
-  transition: height 0.2s ease; /* Add a smooth transition for the height change */
+  transition: height 0.2s ease;
+  /* Add a smooth transition for the height change */
 }
 
 textarea#input:focus {
@@ -1388,35 +1431,36 @@ textarea#input {
 
 /* --- Enhanced Custom Scrollbar for Messages --- */
 .messages::-webkit-scrollbar {
-  width: 12px; /* A bit wider for easier grabbing */
+  width: 12px;
+  /* A bit wider for easier grabbing */
 }
 
 .messages::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.15); /* A subtle, visible track color */
+  background: rgba(0, 0, 0, 0.15);
+  /* A subtle, visible track color */
 }
 
 .messages::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, var(--accent2), var(--accent1));
   border-radius: 6px;
-  border: 3px solid transparent; /* Creates padding around the thumb */
-  background-clip: content-box; /* Ensures the border doesn't have the background */
+  border: 3px solid transparent;
+  /* Creates padding around the thumb */
+  background-clip: content-box;
+  /* Ensures the border doesn't have the background */
   transition: background 0.2s ease-in-out;
 }
 
 .messages::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(
-    180deg,
-    var(--accent1),
-    var(--accent2)
-  ); /* Invert gradient on hover */
+  background: linear-gradient(180deg, var(--accent1), var(--accent2));
+  /* Invert gradient on hover */
   background-clip: content-box;
 }
 
 /* --- Final Composer & Pill Text Area Style --- */
 .footer-disclaimer {
-  position: fixed !important;
+  position: absolute !important;
   padding-top: 20px;
-  bottom: 10px;
+  bottom: 7px;
   /* Sits at the very bottom */
   left: 0;
   right: 0;
@@ -1631,6 +1675,7 @@ textarea#input {
 .placeholder-section .question-link:hover {
   background: rgba(255, 255, 255, 0.08);
 }
+
 .module-dropdown-content .description {
   padding-top: 20px;
   z-index: hidden;
@@ -1650,6 +1695,7 @@ textarea#input {
   margin-bottom: 1px;
   /* Adds space between each module button */
 }
+
 .module-dropdown-btn {
   display: flex;
   justify-content: space-between;
@@ -1693,9 +1739,11 @@ textarea#input {
   margin-bottom: 0;
   border-left: 2px solid rgba(255, 255, 255, 0.1);
 }
+
 /* When the button is active, expand the content next to it */
 .module-dropdown-btn.active + .module-dropdown-content {
-  max-height: 500px; /* A height large enough for your content */
+  max-height: 500px;
+  /* A height large enough for your content */
 }
 
 .module-dropdown-content a {
@@ -1731,21 +1779,20 @@ textarea#input {
 }
 
 /* --- Mobile View Enhancements --- */
-@media (max-width: 900px) {
-/* Header of the sidebar */
-  .nav-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    padding: 10px;
-    /* MODIFIED: Adjusted padding */
-    flex-shrink: 0;
+@media (max-width: 640px) {
+  /* Header of the sidebar */
+  .your-chats-dropdown {
+    position: absolute;
+    /* For dropdown positioning */
+    width: 100%;
+    top: 10% !important;
   }
+
   /* --- Auth Modal adjustments for mobile --- */
   .auth-modal-content {
     padding: 20px;
-    max-width: 90vw; /* Allow it to be a bit wider on mobile */
+    max-width: 90vw;
+    /* Allow it to be a bit wider on mobile */
     scale: 0.86;
   }
 
@@ -1760,14 +1807,16 @@ textarea#input {
   }
 
   .pin-digit {
-    width: 40px; /* Make the PIN boxes slightly smaller */
+    width: 40px;
+    /* Make the PIN boxes slightly smaller */
     height: 45px;
     font-size: 24px;
     scale: 0.86;
   }
 
   .pin-digit-container {
-    gap: 10px; /* Reduce the gap between PIN boxes */
+    gap: 10px;
+    /* Reduce the gap between PIN boxes */
   }
 
   .auth-link {
@@ -1786,6 +1835,7 @@ textarea#input {
     overflow-wrap: break-word;
     line-height: 1;
   }
+
   .msg.user {
     align-self: flex-end;
     background: var(--user);
@@ -1804,6 +1854,7 @@ textarea#input {
     height: fit-content;
     /* Reduced line height to make the pill more compact */
   }
+
   /* Make the logo container smaller on mobile */
   .msg pre {
     border-radius: 8px;
@@ -1838,6 +1889,7 @@ textarea#input {
       transform: rotate(360deg) translateX(65px) rotate(-360deg);
     }
   }
+
   .status-indicator::before {
     bottom: auto;
     top: 150%;
@@ -1856,7 +1908,8 @@ textarea#input {
     text-decoration: none !important;
     color: #cdd9e3;
     font-size: 11px;
-    font-weight: 500; /* Animation */
+    font-weight: 500;
+    /* Animation */
     transition: all 0.2s ease;
   }
 
@@ -1878,12 +1931,15 @@ textarea#input {
     margin-left: 8px;
     /* This creates the space between the text and the icon */
   }
+
   .tools-nav .module-dropdown-content {
     box-sizing: border-box;
   }
+
   .module-dropdown-content {
     box-sizing: border-box;
   }
+
   .module-dropdown-content .description {
     padding-top: 20px;
     z-index: hidden;
@@ -1896,9 +1952,11 @@ textarea#input {
     line-height: 1.4;
     overflow-wrap: break-word;
   }
+
   .welcome-screen {
     scale: 1;
   }
+
   .welcome-actions {
     display: flex;
     flex-direction: column;
@@ -1972,7 +2030,8 @@ textarea#input {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
-    width: 100vw !important;
+    width: 100% !important;
+    max-width: 100%;
     height: 100% !important;
     margin: 0;
     padding: 0;
@@ -1988,6 +2047,7 @@ textarea#input {
     border-radius: 0 !important;
     border: none !important;
   }
+
   .messages {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -2006,7 +2066,7 @@ textarea#input {
 
   .footer-disclaimer {
     position: fixed;
-    bottom: 8px;
+    bottom: 7;
     left: 0;
     right: 0;
     text-align: center;
@@ -2016,11 +2076,13 @@ textarea#input {
 
   /* --- 2. Header & Brand --- */
   .header {
+    display: flex;
     padding: 8px 12px;
   }
 
   .header .subtitle {
-    display: none;
+    display: flex;
+    justify-content: flex-start;
   }
 
   .brand {
@@ -2070,6 +2132,7 @@ textarea#input {
     width: 100%;
   }
 }
+
 /* --- Lively Loading Screen --- */
 #loading-status-text {
   color: #e8fbff;
@@ -2107,9 +2170,11 @@ textarea#input {
 .completion-line {
   padding-top: 20px;
   display: flex;
-  align-items: center; /* This is the key to vertically centering the text and icon */
+  align-items: center;
+  /* This is the key to vertically centering the text and icon */
   justify-content: center;
-  gap: 10px; /* Adds space between text and checkmark */
+  gap: 10px;
+  /* Adds space between text and checkmark */
 }
 
 #loading-complete p {
@@ -2121,7 +2186,8 @@ textarea#input {
 }
 
 .checkmark {
-  width: 28px; /* Slightly larger for better balance */
+  width: 28px;
+  /* Slightly larger for better balance */
   height: 28px;
   display: block;
   border-radius: 50%;
@@ -2132,6 +2198,7 @@ textarea#input {
   animation: fill 0.4s ease-in-out 0.4s forwards,
     scale 0.3s ease-in-out 0.9s both;
 }
+
 .checkmark-circle {
   stroke-dasharray: 166;
   stroke-dashoffset: 166;
@@ -2141,26 +2208,31 @@ textarea#input {
   fill: none;
   animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
 }
+
 .checkmark-check {
   transform-origin: 50% 50%;
   stroke-dasharray: 48;
   stroke-dashoffset: 48;
   animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
 }
+
 @keyframes stroke {
   100% {
     stroke-dashoffset: 0;
   }
 }
+
 @keyframes scale {
   0%,
   100% {
     transform: none;
   }
+
   50% {
     transform: scale3d(1.1, 1.1, 1);
   }
 }
+
 @keyframes fill {
   100% {
     box-shadow: inset 0px 0px 0px 30px var(--success);
@@ -2169,9 +2241,12 @@ textarea#input {
 
 /* --- New Glass-like Enter Button Style --- */
 #enter-app-btn {
-  background: rgba(255, 255, 255, 0.05); /* Semi-transparent background */
-  border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
-  color: #e6fbff; /* Bright text color */
+  background: rgba(255, 255, 255, 0.05);
+  /* Semi-transparent background */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  /* Subtle border */
+  color: #e6fbff;
+  /* Bright text color */
 
   /* All other properties remain the same */
   padding: 12px 24px;
@@ -2187,9 +2262,11 @@ textarea#input {
 }
 
 #enter-app-btn:hover {
-  background: rgba(255, 255, 255, 0.1); /* Brighter on hover */
+  background: rgba(255, 255, 255, 0.1);
+  /* Brighter on hover */
   border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px) scale(1); /* Keep the satisfying lift effect */
+  transform: translateY(-2px) scale(1);
+  /* Keep the satisfying lift effect */
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
@@ -2252,7 +2329,8 @@ textarea#input {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px; /* Adds space between text and checkmark */
+  gap: 8px;
+  /* Adds space between text and checkmark */
 }
 
 #loading-complete p {
@@ -2263,7 +2341,8 @@ textarea#input {
 
 .checkmark {
   width: 24px;
-  height: 24px; /* Make the checkmark small */
+  height: 24px;
+  /* Make the checkmark small */
   display: block;
   stroke-width: 3;
   stroke: #fff;
@@ -2271,6 +2350,7 @@ textarea#input {
   animation: fill 0.4s ease-in-out 0.4s forwards,
     scale 0.3s ease-in-out 0.9s both;
 }
+
 .checkmark-circle {
   stroke-dasharray: 166;
   stroke-dashoffset: 166;
@@ -2280,41 +2360,43 @@ textarea#input {
   fill: none;
   animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
 }
+
 .checkmark-check {
   transform-origin: 50% 50%;
   stroke-dasharray: 48;
   stroke-dashoffset: 48;
   animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
 }
+
 @keyframes stroke {
   100% {
     stroke-dashoffset: 0;
   }
 }
+
 @keyframes scale {
   0%,
   100% {
     transform: none;
   }
+
   50% {
     transform: scale3d(1.1, 1.1, 1);
   }
 }
+
 @keyframes fill {
   100% {
     box-shadow: inset 0px 0px 0px 30px var(--success);
   }
 }
+
 /* --- New Message Animations --- */
 .msg.new-message {
   /* This defines the speed and feel of the animation */
   animation-duration: 0.3s;
-  animation-timing-function: cubic-bezier(
-    0.25,
-    0.46,
-    0.45,
-    0.94
-  ); /* A smooth "ease-out" curve */
+  animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* A smooth "ease-out" curve */
   animation-fill-mode: forwards;
 }
 
@@ -2333,6 +2415,7 @@ textarea#input {
     opacity: 0;
     transform: translateX(30px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -2345,11 +2428,13 @@ textarea#input {
     opacity: 0;
     transform: translateX(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
   }
 }
+
 /* --- Chat Window "Enter" Animation --- */
 .chat.entering {
   /* This animation will be triggered by adding the 'entering' class */
@@ -2361,20 +2446,24 @@ textarea#input {
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
   }
 }
+
 /* --- "Click Me" Floating Text --- */
 .click-me-text {
   position: absolute;
-  top: -70px; /* Position it above the logo */
+  top: -70px;
+  /* Position it above the logo */
   font-size: 16px;
   font-weight: 600;
   color: var(--accent1);
   border-radius: 6px;
-  pointer-events: none; /* Make sure it doesn't block clicks on the logo */
+  pointer-events: none;
+  /* Make sure it doesn't block clicks on the logo */
   animation: float-up-down 2s ease-in-out infinite;
   transition: opacity 0.3s ease;
 }
@@ -2384,10 +2473,12 @@ textarea#input {
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-8px);
   }
 }
+
 /* --- Code Block and Formula Visualizer (Corrected) --- */
 .msg pre {
   background-color: rgba(0, 0, 0, 0.2);
@@ -2398,12 +2489,14 @@ textarea#input {
   width: fit-content;
   position: relative;
 }
+
 .msg code {
   font-family: "Courier New", Courier, monospace;
   font-size: 14px;
   color: #e6fbff;
   white-space: pre-wrap;
 }
+
 .copy-btn {
   position: absolute;
   top: 8px;
@@ -2419,14 +2512,17 @@ textarea#input {
   visibility: hidden;
   transition: opacity 0.2s ease, visibility 0.2s ease;
 }
+
 .msg pre:hover .copy-btn {
   opacity: 1;
   visibility: visible;
 }
+
 .copy-btn:hover {
   background: var(--accent1);
   color: #042022;
 }
+
 /* --- Authentication Modal --- */
 .auth-modal-backdrop {
   position: absolute;
@@ -2588,12 +2684,15 @@ textarea#input {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
+
 /* --- Stylized PIN Input --- */
 /* --- Stylized 4-Digit PIN Input --- */
 .pin-digit-container {
   display: flex;
-  justify-content: center; /* This centers the boxes */
-  gap: 10px; /* This creates the space between the boxes */
+  justify-content: center;
+  /* This centers the boxes */
+  gap: 10px;
+  /* This creates the space between the boxes */
   margin-bottom: 20px;
 }
 
@@ -2617,13 +2716,15 @@ textarea#input {
   border-color: var(--accent1);
   box-shadow: 0 0 0 3px rgba(0, 210, 255, 0.1);
 }
+
 /* --- Custom Alert for Auth Modal --- */
 .custom-alert {
   padding: 12px;
   margin-top: 15px;
   margin-bottom: 5px;
   border-radius: 8px;
-  background-color: rgba(255, 92, 108, 0.2); /* Reddish background */
+  background-color: rgba(255, 92, 108, 0.2);
+  /* Reddish background */
   border: 1px solid var(--danger);
   color: #e6fbff;
   font-size: 13px;
@@ -2638,31 +2739,40 @@ textarea#input {
   opacity: 1;
   transform: translateY(0);
 }
+
 /* --- Override Browser Autofill Styles --- */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-  -webkit-text-fill-color: #e8fbff !important; /* Force the text color to be light */
-  box-shadow: 0 0 0 30px var(--bg2) inset !important; /* Create a fake background using an inset shadow */
-  -webkit-box-shadow: 0 0 0 30px var(--bg2) inset !important; /* For older WebKit browsers */
-  transition: background-color 5000s ease-in-out 0s; /* A long transition to delay the browser's style from kicking in */
+  -webkit-text-fill-color: #e8fbff !important;
+  /* Force the text color to be light */
+  box-shadow: 0 0 0 30px var(--bg2) inset !important;
+  /* Create a fake background using an inset shadow */
+  -webkit-box-shadow: 0 0 0 30px var(--bg2) inset !important;
+  /* For older WebKit browsers */
+  transition: background-color 5000s ease-in-out 0s;
+  /* A long transition to delay the browser's style from kicking in */
 }
 
 .pin-digit:-webkit-autofill {
   -webkit-text-fill-color: #e8fbff !important;
-  caret-color: transparent !important; /* Hides the caret which can be misplaced in autofilled PINs */
+  caret-color: transparent !important;
+  /* Hides the caret which can be misplaced in autofilled PINs */
 }
+
 /* --- Auth Button Spinner --- */
 .auth-action-btn {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 45px; /* Ensure button height is consistent */
+  min-height: 45px;
+  /* Ensure button height is consistent */
 }
 
 .spinner {
-  display: none; /* Add this line */
+  display: none;
+  /* Add this line */
   border: 2px solid rgba(255, 255, 255, 0.4);
   border-top: 2px solid #fff;
   border-radius: 50%;
@@ -2684,14 +2794,19 @@ input:-webkit-autofill:active {
   font-size: 11px;
   color: var(--muted);
   text-align: center;
-  margin-top: -12px; /* Pull it closer to the input */
+  margin-top: -12px;
+  /* Pull it closer to the input */
   margin-bottom: 15px;
-  height: 14px; /* Reserve space to prevent layout shift */
+  height: 14px;
+  /* Reserve space to prevent layout shift */
 }
+
 .custom-alert.success {
-  background-color: rgba(47, 226, 122, 0.2); /* Greenish background */
+  background-color: rgba(47, 226, 122, 0.2);
+  /* Greenish background */
   border-color: var(--success);
 }
+
 /* --- Google Login Button & Separator --- */
 .separator {
   display: flex;
@@ -2701,15 +2816,18 @@ input:-webkit-autofill:active {
   font-size: 12px;
   margin: 20px 0;
 }
+
 .separator::before,
 .separator::after {
   content: "";
   flex: 1;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
+
 .separator:not(:empty)::before {
   margin-right: 0.5em;
 }
+
 .separator:not(:empty)::after {
   margin-left: 0.5em;
 }
@@ -2731,13 +2849,16 @@ input:-webkit-autofill:active {
   gap: 10px;
   transition: background-color 0.2s ease;
 }
+
 .google-login-btn:hover {
   background-color: rgba(255, 255, 255, 0.05);
 }
+
 .google-icon {
   width: 18px;
   height: 18px;
 }
+
 /* --- Auth Modal Success Screen --- */
 #successScreen {
   text-align: center;
@@ -2754,12 +2875,14 @@ input:-webkit-autofill:active {
 #finalEnterBtn {
   width: 100%;
 }
+
 /* --- User Profile Enhancements --- */
 .user-avatar-img {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  object-fit: cover; /* Ensures the image covers the area without distortion */
+  object-fit: cover;
+  /* Ensures the image covers the area without distortion */
 }
 
 .trial-status {
@@ -2767,16 +2890,19 @@ input:-webkit-autofill:active {
   opacity: 0.8;
   margin-top: 2px;
 }
+
 /* --- User Menu Position Fix --- */
 
 /* Default position for the COLLAPSED sidebar */
 .user-menu {
-  left: 70px; /* Position it to the right of the thin 60px sidebar */
+  left: 70px;
+  /* Position it to the right of the thin 60px sidebar */
 }
 
 /* New position for the EXPANDED sidebar */
 .nav-sidebar.expanded ~ .user-menu {
-  left: 15px; /* Move it back to the left edge inside the wide sidebar */
+  left: 15px;
+  /* Move it back to the left edge inside the wide sidebar */
 }
 
 /* --- User Profile Pop-up Menu --- */
@@ -2821,22 +2947,27 @@ input:-webkit-autofill:active {
   transition: all 0.2s ease;
 }
 
+/* ---  Positioning the User Profile to the Bottom --- */
+
 .nav-sidebar {
   position: fixed;
   top: 0;
   left: 0;
   height: 100%;
-  background: var(--bg1); /* Using your theme's background color */
+  background: var(--bg1);
+  /* Using your theme's background color */
   border-right: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
   z-index: 1100;
   transition: width 0.3s ease-in-out;
-  width: 50px; /* MODIFIED: Very thin collapsed width */
+  width: 50px;
+  /* MODIFIED: Very thin collapsed width */
 }
 
 .nav-sidebar.expanded {
-  width: 230px; /* Expanded width */
+  width: 230px;
+  /* Expanded width */
 }
 
 /* Header of the sidebar */
@@ -2845,7 +2976,8 @@ input:-webkit-autofill:active {
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  padding: 10px; /* MODIFIED: Adjusted padding */
+  padding: 10px;
+  /* MODIFIED: Adjusted padding */
   flex-shrink: 0;
 }
 
@@ -2858,17 +2990,20 @@ input:-webkit-autofill:active {
   border-radius: 8px;
   display: flex;
   align-items: center;
-  justify-content: center; /* MODIFIED: Center icon by default */
+  justify-content: center;
+  /* MODIFIED: Center icon by default */
   transition: all 0.2s ease;
   width: 100%;
   height: 40px;
   margin-bottom: 5px;
   box-sizing: border-box;
-  padding: 8px; /* MODIFIED: Simplified padding */
+  padding: 8px;
+  /* MODIFIED: Simplified padding */
 }
 
 .nav-sidebar.expanded .sidebar-toggle-btn {
-  justify-content: flex-start; /* Align left when expanded */
+  justify-content: flex-start;
+  /* Align left when expanded */
 }
 
 .sidebar-toggle-btn:hover {
@@ -2878,7 +3013,8 @@ input:-webkit-autofill:active {
 
 .sidebar-toggle-btn svg {
   transition: transform 0.3s ease-in-out;
-  flex-shrink: 0; /* ADDED: Prevents the icon from being squished */
+  flex-shrink: 0;
+  /* ADDED: Prevents the icon from being squished */
 }
 
 /* Rotate the icon when the sidebar is expanded */
@@ -2886,6 +3022,7 @@ input:-webkit-autofill:active {
 .nav-sidebar.expanded .sidebar-toggle-btn svg {
   transform: scaleX(-1);
 }
+
 /* --- END: Toggle Button Style --- */
 
 .new-chat-btn,
@@ -2898,25 +3035,31 @@ input:-webkit-autofill:active {
   cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: center; /* MODIFIED: Center icon by default */
-  padding: 12px; /* MODIFIED: Simplified padding */
+  justify-content: center;
+  /* MODIFIED: Center icon by default */
+  padding: 12px;
+  /* MODIFIED: Simplified padding */
   transition: all 0.2s ease;
   overflow: hidden;
   white-space: nowrap;
   box-sizing: border-box;
-  gap: 0; /* ADDED: No gap by default */
+  gap: 0;
+  /* ADDED: No gap by default */
 }
 
 .nav-sidebar.expanded .new-chat-btn,
 .nav-sidebar.expanded .search-btn {
   border: 1px solid rgba(255, 255, 255, 0.1);
-  justify-content: flex-start; /* Align left when expanded */
-  gap: 12px; /* ADDED: Add gap back when expanded */
+  justify-content: flex-start;
+  /* Align left when expanded */
+  gap: 12px;
+  /* ADDED: Add gap back when expanded */
 }
 
 .new-chat-btn svg,
 .search-btn svg {
-  flex-shrink: 0; /* ADDED: Prevents icon from squishing */
+  flex-shrink: 0;
+  /* ADDED: Prevents icon from squishing */
 }
 
 .new-chat-btn:hover,
@@ -2951,7 +3094,8 @@ input:-webkit-autofill:active {
 .user-profile {
   display: flex;
   align-items: center;
-  justify-content: center; /* MODIFIED: Center icon by default */
+  justify-content: center;
+  /* MODIFIED: Center icon by default */
   cursor: pointer;
   transition: background-color 0.2s ease;
   overflow: visible;
@@ -2961,18 +3105,23 @@ input:-webkit-autofill:active {
   color: #fff;
   border-radius: 8px;
   box-sizing: border-box;
-  padding: 8px; /* MODIFIED: Simplified padding */
-  gap: 0; /* ADDED: No gap by default */
+  padding: 8px;
+  /* MODIFIED: Simplified padding */
+  gap: 0;
+  /* ADDED: No gap by default */
 }
 
 .nav-sidebar.expanded .user-profile {
-  justify-content: flex-start; /* Align left when expanded */
-  gap: 10px; /* ADDED: Add gap back when expanded */
+  justify-content: flex-start;
+  /* Align left when expanded */
+  gap: 10px;
+  /* ADDED: Add gap back when expanded */
 }
 
 .user-profile:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
+
 /* end */
 
 .user-avatar {
@@ -2999,9 +3148,12 @@ input:-webkit-autofill:active {
 /* Main Chat Window styles */
 .chat {
   transition: margin-left 0.3s ease-in-out;
-  margin-left: 60px; /* MODIFIED: Match new collapsed width */
-  width: calc(100% - 60px); /* MODIFIED: Match new collapsed width */
+  margin-left: 60px;
+  /* MODIFIED: Match new collapsed width */
+  width: calc(100% - 60px);
+  /* MODIFIED: Match new collapsed width */
 }
+
 /* --- Enhanced User Menu --- */
 .user-menu-header {
   display: flex;
@@ -3030,9 +3182,11 @@ input:-webkit-autofill:active {
   color: var(--accent1);
   font-family: "Courier New", Courier, monospace;
 }
+
 /* --- Mobile Navigation Overrides --- */
 .mobile-nav-toggle {
-  display: none; /* Hidden on desktop */
+  display: none;
+  /* Hidden on desktop */
   background: transparent;
   border: none;
   color: var(--muted);
@@ -3040,24 +3194,28 @@ input:-webkit-autofill:active {
   padding: 8px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 640px) {
   /* Make the header a simple row */
   .header {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 10px; /*  Space between the toggle and the AILA title */
+    /* Aligned items to the left */
+    gap: 10px;
+    /* Space next to the toggle button and the title */
   }
 
-  /* Ensure the brand is displayed and aligned */
+  .header .header-allbtn {
+    display: absolute;
+    margin-left: auto;
+    justify-content: flex-end;
+  }
+
+  /* Make the header a simple row */
   .header .brand {
-    margin-left: 12px; /* Creates the small space next to the nav button */
-    gap: 0; /* Removes any internal gap */
-  }
-
-  /* This is the KEY: It targets the container of the right-side buttons */
-  .header > div:last-child {
-    margin-left: auto; /* Pushes this element all the way to the right */
+    margin-left: 5;
+    gap: 1;
+    /* FIX: Remove any internal gap */
   }
 
   /* Hide the large logo and the long subtitle on mobile */
@@ -3073,6 +3231,14 @@ input:-webkit-autofill:active {
   }
 
   /* --- Previous Mobile Rules --- */
+  .sidebar-toggle-btn {
+    display: none;
+  }
+
+  .mobile-nav-toggle {
+    display: flex;
+  }
+
   .nav-sidebar {
     transform: translateX(-100%);
     width: 260px !important;
@@ -3089,4 +3255,110 @@ input:-webkit-autofill:active {
     margin-left: 0 !important;
     width: 100% !important;
   }
+}
+
+/* --- Chat History Dropdown Styles --- */
+.your-chats-dropdown {
+  position: absolute;
+  /* For dropdown positioning */
+  width: 100%;
+  top: 20%;
+}
+
+.your-chats-btn {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Space out the text and arrow */
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.your-chats-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.your-chats-btn.active .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+/* --- Chat History Visibility --- */
+.chat-history-list {
+  display: flex;
+  /* Hidden by default */
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  border-radius: 8px;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.your-chats-dropdown.active .chat-history-list {
+  display: block;
+  /* Show when dropdown is active */
+}
+
+.chat-history-list.active {
+  display: block;
+}
+
+.history-item {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  padding: 10px 18px;
+  /* Consistent padding for icon alignment */
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* Adds "..." if the title is too long */
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.history-item:hover {
+  color: #fff;
+}
+
+.history-item.active {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* --- Force User Profile to Bottom --- */
+.nav-sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* --- Chat History Visibility --- */
+.your-chats-dropdown .chat-history-list {
+  display: none;
+  /* Hide by default */
+}
+
+.nav-sidebar.expanded .your-chats-dropdown .chat-history-list {
+  display: block;
+  /* Show when sidebar is expanded */
+}
+
+/* --- Hide Your Chats button when sidebar is collapsed --- */
+.nav-sidebar:not(.expanded) .your-chats-btn {
+  display: none;
 }

@@ -568,7 +568,8 @@ function useSuggestion(text) {
 
   // The rest of the function remains the same: append the new message and send it.
   appendMessage(text, "user");
-  sendToBackend(text, true);
+  saveMessage('user', text, text); //Save the user messages
+  sendToBackend(text, true, text);
 }
 function appendMessage(
   text,
@@ -674,9 +675,9 @@ async function loadConversation(conversationId) {
     });
 }
 
-    // Saves a message and handles creating a new conversation if needed
  // Saves a message and handles creating a new conversation if needed
-async function saveMessage(role, content, firstMessage) {
+    // Saves a message and handles creating a new conversation if needed
+    async function saveMessage(role, content, firstMessage = '') { // Added default value
         const { data: { user } } = await _supabase.auth.getUser();
         if (!user) return; // Can't save if not logged in
 
@@ -698,6 +699,8 @@ async function saveMessage(role, content, firstMessage) {
             conversationIdToUse = data.id;
             currentConversationId = data.id; // Set the new ID as active
             await loadChatHistoryList(); // Refresh the sidebar to show the new chat
+            loadConversation(conversationIdToUse); // Load the new conversation
+
         }
 
         // Now save the message to the database
@@ -715,7 +718,7 @@ async function saveMessage(role, content, firstMessage) {
                 console.error("Error saving message:", error);
             }
         }
-}
+    }
 
 const safe = (fn) => {
   try {
@@ -829,79 +832,78 @@ function hideTyping() {
 }
 /* send to backend; use offlineResponses if offline or network fails */
 function sendToBackend(text, askSuggestions = false, firstMessage = '') {
-  showTyping();
-  const payload = {
-    message: text,
-    sessionId: "guest_" + Date.now(),
-    name: "Guest",
-    email: null,
-    askForSuggestions: !!askSuggestions,
-  };
+    showTyping();
+    const payload = {
+        message: text,
+        sessionId: "guest_" + Date.now(),
+        name: "Guest",
+        email: null,
+        askForSuggestions: !!askSuggestions,
+    };
 
-  // This helper function will now ONLY be used when the connection completely fails.
-  function getOfflineAnswer(q) {
-    // Find all keywords from the offline responses that are present in the user's query as whole words.
-    const matchingKeys = Object.keys(offlineResponses).filter((k) => {
-      // We create a regular expression to match the keyword as a whole word, ignoring case.
-      const escapedKey = k.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
-      const regex = new RegExp(`\\b${escapedKey}\\b`, "i");
-      return regex.test(q);
-    });
+    // This helper function will now ONLY be used when the connection completely fails.
+    function getOfflineAnswer(q) {
+        // Find all keywords from the offline responses that are present in the user's query as whole words.
+        const matchingKeys = Object.keys(offlineResponses).filter((k) => {
+            // We create a regular expression to match the keyword as a whole word, ignoring case.
+            const escapedKey = k.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+            const regex = new RegExp(`\\b${escapedKey}\\b`, "i");
+            return regex.test(q);
+        });
 
-    // If any keywords were found, select the one with the most characters.
-    if (matchingKeys.length > 0) {
-      const bestMatch = matchingKeys.reduce((a, b) =>
-        a.length > b.length ? a : b
-      );
-      // Return the response for the best-matching (longest) keyword.
-      return offlineResponses[bestMatch];
+        // If any keywords were found, select the one with the most characters.
+        if (matchingKeys.length > 0) {
+            const bestMatch = matchingKeys.reduce((a, b) =>
+                a.length > b.length ? a : b
+            );
+            // Return the response for the best-matching (longest) keyword.
+            return offlineResponses[bestMatch];
+        }
+
+        // If no keywords were found, return the default offline message.
+        return `🔴OFFLINE: 
+          Kuys! tulog pa si AILA, click mo nalang yung button for more common questions.
+          \n<h5>We're still looking forward to the day that the already-prepared online version (GISING NA SI AILA), gets approved, even if it comes with a small fee, because it will allow us to help more LA and incoming trainees in the future.</h5>
+          \n- *AILA can still response in templated answers given below, CLICK THE BUTTON*
+          `;
     }
 
-    // If no keywords were found, return the default offline message.
-    return `🔴OFFLINE: 
-      Kuys! tulog pa si AILA, click mo nalang yung button for more common questions.
-      \n<h5>We're still looking forward to the day that the already-prepared online version (GISING NA SI AILA), gets approved, even if it comes with a small fee, because it will allow us to help more LA and incoming trainees in the future.</h5>
-      \n- *AILA can still response in templated answers given below, CLICK THE BUTTON*
-      `;
-  }
-
-  // N8N fetch url
-  fetch("https://levercrafter.app.n8n.cloud/webhook/aila-chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  })
-    .then(async (res) => {
-      hideTyping();
-      if (!res.ok) {
-        throw new Error(`...`);
-      }
-      const data = await res.json().catch(() => ({}));
-      const reply = data.reply;
-      //... inside the .then() block
-      saveMessage('bot', reply);
-      if (reply) {
-        playSound(SFX.receive, 0.7); // 70% volume, slightly quieter
-        appendMessage(reply, "bot");
-      }
-      //...
-      else {
-        appendMessage("...", "bot");
-      }
-      pulseLogoOnce();
-      updateStatus(true); // <-- ADD THIS LINE
+    // N8N fetch url
+    fetch("https://levercrafter.app.n8n.cloud/webhook/aila-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
     })
-    .catch((err) => {
-      hideTyping();
-      console.warn("Offline mode triggered:", err);
-      const offlineReply = getOfflineAnswer(text);
+        .then(async (res) => {
+            hideTyping();
+            if (!res.ok) {
+                throw new Error(`...`);
+            }
+            const data = await res.json().catch(() => ({}));
+            const reply = data.reply;
+            //... inside the .then() block
+            if (reply) {
+                playSound(SFX.receive, 0.7); // 70% volume, slightly quieter
+                appendMessage(reply, "bot");
+                saveMessage('bot', reply); // SAVE THE BOT RESPONSE
+            }
+            //...
+            else {
+                appendMessage("...", "bot");
+            }
+            pulseLogoOnce();
+            updateStatus(true); // <-- ADD THIS LINE
+        })
+        .catch((err) => {
+            hideTyping();
+            console.warn("Offline mode triggered:", err);
+            const offlineReply = getOfflineAnswer(text);
 
-      // THIS IS THE FIX: Play the receive sound for offline messages too.
-      playSound(SFX.receive, 0.7);
-
-      appendMessage(offlineReply, "bot", true);
-      updateStatus(false); // <-- ADD THIS LINE
-    });
+            // THIS IS THE FIX: Play the receive sound for offline messages too.
+            playSound(SFX.receive, 0.7);
+            appendMessage(offlineReply, "bot", true);
+            updateStatus(false); // <-- ADD THIS LINE
+        });
 }
 
 function sendMessage() {
@@ -924,7 +926,7 @@ function sendMessage() {
     input.dispatchEvent(new Event("input", { bubbles: true }));
   }, 50); // A 50ms delay is imperceptible to the user but fixes the bug.
   saveMessage('user', t);
-  sendToBackend(t, true, t);
+sendToBackend(t, true, t);
 }
 function pulseLogoOnce() {
   logoArea.classList.add("logo-glow");
@@ -1693,6 +1695,35 @@ async function updateUserInfo() {
     }
 }
 // --- END: User Info Update ---
+// Loads the messages for a specific conversation into the chat window
+    async function loadConversation(conversationId) {
+        if (!conversationId) return;
+
+        const { data, error } = await _supabase
+            .from('messages')
+            .select('role, content')
+            .eq('conversation_id', conversationId)
+            .order('created_at', { ascending: true });
+
+        if (error) {
+            console.error("Error fetching messages:", error);
+            return;
+        }
+
+        messagesEl.innerHTML = ''; // Clear the chat window
+        data.forEach(message => {
+            appendMessage(message.content, message.role);
+             saveMessage(message.role, message.content); // SAVE EACH MESSAGE
+        });
+
+        currentConversationId = conversationId;
+        loadChatHistoryList()
+
+        // Highlight the active conversation in the sidebar
+        document.querySelectorAll('.history-item').forEach(item => {
+            item.classList.toggle('active', item.dataset.id === conversationId);
+        });
+    }
 
 // --- START: Navigation Sidebar Logic ---
 function setupNavigation() {
@@ -1774,14 +1805,14 @@ function setupNavigation() {
             }
         }
     });
-    //Add Chat List Dropdown function
-    if (yourChatsBtn && chatHistoryListEl) {
-        yourChatsBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            chatHistoryListEl.classList.toggle("active");
-            yourChatsBtn.classList.toggle("active"); //For animated svg
-        });
-    }
+// --- Your Chats Dropdown Toggle ---
+if (yourChatsBtn && chatHistoryListEl) {
+    yourChatsBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        chatHistoryListEl.classList.toggle("active");
+        yourChatsBtn.classList.toggle("active"); //For animated svg
+    });
+}
 
 }
 // --- END: Navigation Sidebar Logic ---
