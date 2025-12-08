@@ -1620,16 +1620,27 @@ function setupAuthModal() {
 
       try {
         if (authState === "reset") {
-          // ... (reset password logic remains the same)
+          // This sends a password reset link to the user's email.
+          // The redirectTo URL is where the user will be sent after clicking the link.
           const { error } = await _supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: "https://ailearningassistant.edgeone.app/reset",
+            redirectTo: window.location.origin + "/reset.html",
           });
-          if (error) throw error;
+
+          if (error) {
+            // If Supabase returns an error (like user not found), show it.
+            throw error;
+          }
+
+          // Inform the user that the email has been sent successfully.
           showCustomAlert(
             "Password reset instructions sent to your email.",
             "success"
           );
-          setTimeout(() => setAuthState("login"), 3000);
+
+          // After 3 seconds, switch the form back to the login view.
+          setTimeout(() => {
+            setAuthState("login");
+          }, 3000);
         } else {
           const pin = getPinFromContainer(pinContainer);
           const pinConfirm = getPinFromContainer(pinConfirmContainer);
@@ -1950,65 +1961,6 @@ function setupNavigation() {
   });
 }
 // --- END: Navigation Sidebar Logic ---
-// --- START: Password Reset Page Logic ---
-
-window.addEventListener("DOMContentLoaded", () => {
-  // Check if the current URL path is '/reset'
-  if (window.location.pathname === "/reset") {
-    const newPinForm = document.getElementById("newPinForm");
-    const updatePinBtn = document.getElementById("updatePinBtn");
-    const newPinContainer = document.getElementById("newPinContainer");
-    const confirmNewPinContainer = document.getElementById(
-      "confirmNewPinContainer"
-    );
-
-    // Setup the auto-focusing for the PIN inputs on this page
-    setupPinInput(newPinContainer);
-    setupPinInput(confirmNewPinContainer);
-
-    if (newPinForm) {
-      newPinForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        updatePinBtn.classList.add("loading");
-        updatePinBtn.disabled = true;
-
-        const newPin = getPinFromContainer(newPinContainer);
-        const confirmNewPin = getPinFromContainer(confirmNewPinContainer);
-
-        try {
-          if (newPin.length !== 6)
-            throw new Error("PIN must be exactly 6 digits.");
-          if (newPin !== confirmNewPin)
-            throw new Error("The PINs you entered do not match.");
-
-          // Supabase automatically uses the token from the URL to authenticate this request
-          const { error } = await _supabase.auth.updateUser({
-            password: newPin,
-          });
-
-          if (error) throw error;
-
-          showCustomAlert(
-            "Your PIN has been successfully reset. Redirecting to login...",
-            "success"
-          );
-
-          // Redirect back to the main login page after a short delay
-          setTimeout(() => {
-            window.location.href = "/";
-          }, 3000);
-        } catch (error) {
-          showCustomAlert(error.message);
-        } finally {
-          updatePinBtn.classList.remove("loading");
-          updatePinBtn.disabled = false;
-        }
-      });
-    }
-  }
-});
-
-// --- END: Password Reset Page Logic ---
 // --- START: SECURE ADMIN FUNCTION ---
 // This function securely calls our Supabase Edge Function.
 async function adminSetTrialDays(targetEmail, days) {
