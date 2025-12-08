@@ -6,31 +6,27 @@ const AILA_URL = "https://ailearningassistant.edgone.app";
 const { createClient } = supabase;
 const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // --- END: Supabase Client Initialization ---
-// --- START: Supabase Auth State Listener ---
-// --- START: Supabase Auth State Listener ---
+// (This entire function replaces the old one at the top of your script.js file)
 _supabase.auth.onAuthStateChange(async (event, session) => {
-  if (event === "SIGNED_IN" && session) {
-    // This is a successful login (e.g., after Google redirect)
-
-    // Save the user's session to local storage
-    localStorage.setItem("loggedInUser", session.user.email);
-
-    // --- THIS IS THE FIX ---
-    // Check if the URL has the access token from the redirect.
-    // If it does, we need to clean the URL and reload the page.
-    if (window.location.hash.includes("access_token")) {
-      // Use replaceState to clean the URL without adding to browser history
-      window.history.replaceState(null, "", window.location.pathname);
-      // Now, reload the page. It will load with a clean URL.
-      window.location.reload();
+    // --- THIS IS THE FIX for the Google Login Redirect ---
+    // It listens for the moment the user is signed in from the redirect URL.
+    if (event === 'SIGNED_IN' && session && window.location.hash.includes('access_token')) {
+        // When this happens, we immediately redirect to the clean main URL.
+        // The browser will have stored the session, so the next page load will be logged in.
+        window.location.assign(AILA_URL);
+        return; // Stop further execution in this callback.
     }
-    // If the URL is already clean, initializeApp will handle showing the chat.
-  }
-});
-// --- END: Supabase Auth State Listener ---
 
-const SCRIPT_API_URL =
-  "https://script.google.com/macros/s/AKfycbxyBAMvcSxdV_Gbc8JIKB1yJRPw0ocQKpczfZ8KLp4Gln2LgWTTbFar3ugjODGrqjiE/exec";
+    // This part runs on normal page loads where the user is already logged in.
+    if (session) {
+        localStorage.setItem('loggedInUser', session.user.email);
+        const displayName = (session.user.user_metadata && session.user.user_metadata.full_name) 
+            ? session.user.user_metadata.full_name
+            : session.user.email.split('@')[0];
+        localStorage.setItem('loggedInUserName', displayName);
+    }
+});
+const SCRIPT_API_URL ="https://script.google.com/macros/s/AKfycbxyBAMvcSxdV_Gbc8JIKB1yJRPw0ocQKpczfZ8KLp4Gln2LgWTTbFar3ugjODGrqjiE/exec";
 const SFX = {
   loadingAmbient: "sfx/loading-ambient.mp3",
   glassBreak: "sfx/glass-break.mp3",
@@ -1092,24 +1088,24 @@ async function loadOfflineData() {
  */
 async function initializeApp() {
   // --- START: FIX FOR GOOGLE LOGIN REDIRECT ---
-  if (window.location.hash.includes("access_token")) {
+  if (window.location.hash.includes('access_token')) {
     // The page is handling a redirect from Google. We show a simple message
     // and stop execution. The 'onAuthStateChange' listener at the top of the script
     // will handle reloading the page cleanly.
     const loadingOverlay = document.getElementById("loading-overlay");
     const statusText = document.getElementById("loading-status-text");
     if (loadingOverlay && statusText) {
-      loadingOverlay.classList.remove("hidden"); // Ensure the overlay is visible
-      statusText.textContent = "Finalizing login...";
-      // Hide other distracting elements from the normal loading screen
-      const inProgress = document.getElementById("loading-in-progress");
-      const complete = document.getElementById("loading-complete");
-      if (inProgress) inProgress.style.display = "none";
-      if (complete) complete.style.display = "none";
+        loadingOverlay.classList.remove("hidden"); // Ensure the overlay is visible
+        statusText.textContent = "Finalizing login...";
+        // Hide other distracting elements from the normal loading screen
+        const inProgress = document.getElementById("loading-in-progress");
+        const complete = document.getElementById("loading-complete");
+        if (inProgress) inProgress.style.display = 'none';
+        if (complete) complete.style.display = 'none';
     }
     return; // <-- This is the crucial part. It stops the function here.
   }
-  // --- END: FIX FOR GOOGLE LOGIN REDIRECT ---
+  // --- END: FIX FOR GOOLE LOGIN REDIRECT ---
 
   // --- START: Check for an existing session ---
   const loggedInUserEmail = localStorage.getItem("loggedInUser");
