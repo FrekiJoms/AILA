@@ -1746,11 +1746,11 @@ window.addEventListener('DOMContentLoaded', () => {
 // This function securely calls our Supabase Edge Function.
 async function adminSetTrialDays(targetEmail, days) {
   if (!targetEmail || typeof days !== 'number') {
-    console.error("🛑 USAGE ERROR: Please provide a target email and the number of days. Example: adminSetTrialDays('user@example.com', 90)");
+    console.error("ADMIN: 🛑 USAGE ERROR: Please provide a target email and the number of days. Example: adminSetTrialDays('user@example.com', 90)");
     return;
   }
 
-  console.log(`⏳ Invoking secure function to set trial for ${targetEmail} to ${days} days...`);
+  console.log(`ADMIN: ⏳ Invoking secure function to set trial for ${targetEmail} to ${days} days...`);
 
   try {
     // This securely calls the 'set-trial-days' Edge Function.
@@ -1763,10 +1763,10 @@ async function adminSetTrialDays(targetEmail, days) {
 
     // The success or error message now comes directly from our secure function.
     if (data.error) {
-       console.error(`❌ FAILED: ${data.error}`);
+       console.error(`ADMIN: ❌ FAILED: ${data.error}`);
     } else {
        console.log(data.message);
-       console.log("👉 The user must log out and log back in to see the change take effect.");
+       console.log("ADMIN: 👉 The user must log out and log back in to see the change take effect.");
     }
 
   } catch (error) {
@@ -1783,11 +1783,11 @@ async function adminSetTrialDays(targetEmail, days) {
 // --- START: ADMIN IMPERSONATION FUNCTION (with better error handling) ---
 async function adminLoginAsUser(targetEmail) {
   if (!targetEmail) {
-    console.error("🛑 USAGE ERROR: Please provide the user's email. Example: adminLoginAsUser('user@example.com')");
+    console.error("ADMIN: 🛑 USAGE ERROR: Please provide the user's email. Example: adminLoginAsUser('user@example.com')");
     return;
   }
 
-  console.log(`⏳ Generating secure login link for ${targetEmail}...`);
+  console.log(`ADMIN: ⏳ Generating secure login link for ${targetEmail}...`);
 
   try {
     const { data, error } = await _supabase.functions.invoke('impersonate-user', {
@@ -1799,23 +1799,23 @@ async function adminLoginAsUser(targetEmail) {
 
     // This is for errors returned *from our function's code*.
     if (data.error) {
-       console.error(`❌ FUNCTION FAILED: ${data.error}`);
+       console.error(`ADMIN: ❌ FUNCTION FAILED: ${data.error}`);
     } else {
-       console.log("✅ SUCCESS! Click the link below to log in as the user.");
+       console.log("ADMIN:✅ SUCCESS! Click the link below to log in as the user.");
        console.log("👉 " + data.magicLink);
        console.log("To return to your admin account, simply log out from the user's session.");
     }
 
   } catch (error) {
     // This block catches the server errors (like the 400 Bad Request).
-    console.error("❌ INVOCATION FAILED: The server returned an error.");
+    console.error("ADMIN: ❌ INVOCATION FAILED: The server returned an error.");
     
     // The real error message from the server is inside 'error.context'.
     if (error.context && error.context.error) {
-        console.error("❗ SERVER SAYS:", error.context.error);
+        console.error("ADMIN: ❗ SERVER SAYS:", error.context.error);
     } else {
         // If the structure is weird, log the whole object for debugging.
-        console.error("❗ Raw error object:", error);
+        console.error("ADMIN: ❗ Raw error object:", error);
     }
   }
 }

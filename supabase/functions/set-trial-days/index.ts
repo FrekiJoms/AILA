@@ -2,7 +2,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 
-// List of authorized admin emails
 const ADMIN_EMAILS = [
   "narvasajoshua61@gmail.com",
   "levercrafter@gmail.com"
@@ -21,27 +20,31 @@ Deno.serve(async (req) => {
       Deno.env.get('SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Check if the user making the request is an admin
     const { data: { user: callingUser } } = await supabaseAdmin.auth.getUser(req.headers.get('Authorization')!.replace('Bearer ', ''));
     if (!callingUser || !ADMIN_EMAILS.includes(callingUser.email)) {
       throw new Error('🛑 SECURITY: You are not authorized to perform this action.');
     }
     
-    // Get the target user's email from the request
-    const { targetEmail } = await req.json();
-    if (!targetEmail) {
-      throw new Error('Invalid input: "targetEmail" is required.');
+    const { targetEmail, days } = await req.json();
+    if (!targetEmail || typeof days !== 'number') {
+      throw new Error('Invalid input: "targetEmail" and "days" are required.');
     }
 
-    // Generate a secure, one-time magic link for the target user
-    const { data, error } = await supabaseAdmin.auth.admin.generateLink({
-        type: 'magiclink',
-        email: targetEmail,
-    });
-    if (error) throw error;
+    const { data: { users }, error: listUsersError } = await supabaseAdmin.auth.admin.listUsers();
+    if (listUsersError) throw listUsersError;
 
-    // Return the link
-    return new Response(JSON.stringify({ magicLink: data.properties.action_link }), {
+    const targetUser = users.find(u => u.email === targetEmail);
+    if (!targetUser) {
+      throw new Error(`User with email "${targetEmail}" not found.`);
+    }
+
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+      targetUser.id,
+      { user_metadata: { custom_trial_days: days } }
+    );
+    if (updateError) throw updateError;
+
+    return new Response(JSON.stringify({ message: `✅ Success! Trial for ${targetEmail} has been set to ${days} days.` }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
