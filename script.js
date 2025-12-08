@@ -1561,9 +1561,18 @@ async function updateUserInfo() {
         menuUserAvatarEl.innerHTML = avatarContent;
 
 
-        // --- Real-time Trial Countdown Logic ---
+        // --- Real-time Trial Countdown Logic (WITH CUSTOM OVERRIDE) ---
         const createdAt = new Date(user.created_at);
-        let trialEndDate = new Date(createdAt.setDate(createdAt.getDate() + 30));
+        
+        // --- THIS IS THE NEW LOGIC ---
+        // Check for a custom trial duration in the user's metadata.
+        // You can set this value in your Supabase dashboard for each user.
+        const customTrialDays = user.user_metadata.custom_trial_days;
+        const trialDays = (typeof customTrialDays === 'number' && customTrialDays >= 0)
+            ? customTrialDays
+            : 30; // Default to 30 days if not set or invalid
+
+        let trialEndDate = new Date(new Date(user.created_at).setDate(new Date(user.created_at).getDate() + trialDays));
      
         trialInterval = setInterval(() => {
             const now = new Date();
@@ -1600,7 +1609,6 @@ async function updateUserInfo() {
         if (trialTimerEl) trialTimerEl.textContent = '--:--:--:--';
     }
 }
-// --- END: User Info Update ---
 // --- END: User Info Update ---
 
 // --- START: Navigation Sidebar Logic ---
@@ -1734,3 +1742,39 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // --- END: Password Reset Page Logic ---
+// --- START: SECURE ADMIN FUNCTION ---
+// This function securely calls our Supabase Edge Function.
+async function adminSetTrialDays(targetEmail, days) {
+  if (!targetEmail || typeof days !== 'number') {
+    console.error("🛑 USAGE ERROR: Please provide a target email and the number of days. Example: adminSetTrialDays('user@example.com', 90)");
+    return;
+  }
+
+  console.log(`⏳ Invoking secure function to set trial for ${targetEmail} to ${days} days...`);
+
+  try {
+    // This securely calls the 'set-trial-days' Edge Function.
+    // The user's authentication token is automatically sent to verify they are an admin.
+    const { data, error } = await _supabase.functions.invoke('set-trial-days', {
+      body: { targetEmail, days },
+    });
+
+    if (error) throw error;
+
+    // The success or error message now comes directly from our secure function.
+    if (data.error) {
+       console.error(`❌ FAILED: ${data.error}`);
+    } else {
+       console.log(data.message);
+       console.log("👉 The user must log out and log back in to see the change take effect.");
+    }
+
+  } catch (error) {
+    console.error("❌ INVOCATION FAILED:", error.message);
+    // This is the check for the project mismatch
+    if (error.message.includes("Function not found")) {
+        console.error("❗ CRITICAL: The function was not found. It might be deployed to the wrong Supabase project. Please redeploy to 'AILA-USERDATA'.");
+    }
+  }
+}
+// --- END: SECURE ADMIN FUNCTION ---
