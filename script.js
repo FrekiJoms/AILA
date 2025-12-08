@@ -1,7 +1,7 @@
 // --- START: Supabase Client Initialization ---
 const SUPABASE_URL = "https://woqlvcgryahmcejdlcqz.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvcWx2Y2dyeWFobWNlamRsY3F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3NDg5NTMsImV4cCI6MjA4MDMyNDk1M30.PXL0hJ-8Hv7BP21Fly3tHXonJoxfVL0GNCY7oWXDKRA";
-
+const AILA_URL = "https://ailearningassistant.edgone.app"
 const { createClient } = supabase;
 const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // --- END: Supabase Client Initialization ---
@@ -551,7 +551,7 @@ function showWelcomeScreen() {
         if (value) useSuggestion(value);
       }
     });
-    welcomeInput.focus();
+    //welcomeInput.focus(); disabled//
   }
 }
 
@@ -1088,6 +1088,26 @@ async function loadOfflineData() {
  * Initializes the app with a dynamic, multi-stage loading screen.
  */
 async function initializeApp() {
+    // --- START: FIX FOR GOOGLE LOGIN REDIRECT ---
+  if (window.location.hash.includes('access_token')) {
+    // The page is handling a redirect from Google. We show a simple message
+    // and stop execution. The 'onAuthStateChange' listener at the top of the script
+    // will handle reloading the page cleanly.
+    const loadingOverlay = document.getElementById("loading-overlay");
+    const statusText = document.getElementById("loading-status-text");
+    if (loadingOverlay && statusText) {
+        loadingOverlay.classList.remove("hidden"); // Ensure the overlay is visible
+        statusText.textContent = "Finalizing login...";
+        // Hide other distracting elements from the normal loading screen
+        const inProgress = document.getElementById("loading-in-progress");
+        const complete = document.getElementById("loading-complete");
+        if (inProgress) inProgress.style.display = 'none';
+        if (complete) complete.style.display = 'none';
+    }
+    return; // <-- This is the crucial part. It stops the function here.
+  }
+  // --- END: FIX FOR GOOGLE LOGIN REDIRECT ---
+
   // --- START: Check for an existing session ---
       const loggedInUserEmail = localStorage.getItem("loggedInUser");
       if (loggedInUserEmail) {
@@ -1234,7 +1254,7 @@ const ro = new MutationObserver(
 );
 ro.observe(messagesEl, { childList: true, subtree: true });
 
-window.addEventListener("load", () => setTimeout(() => input.focus(), 250));
+//window.addEventListener("load", () => setTimeout(() => input.focus(), 250)); disaabled//
 // Start the application by calling our new initializer function.
 initializeApp();
 // --- Cleanup sounds on page exit (Reliable Method) ---
@@ -1445,7 +1465,7 @@ function setAuthState(newState) {
                 provider: 'google',
                 options: {
                     // This is the fix: It tells Supabase where to return after a successful login.
-                    redirectTo: window.location.href
+                    redirectTo: AILA_URL
                 }
             });
             if (error) {
@@ -1621,6 +1641,41 @@ function setupNavigation() {
     const userProfileBtn = document.getElementById("userProfile");
     const userMenu = document.getElementById("userMenu");
     const logoutBtn = document.getElementById("logoutBtn");
+        // --- Mobile Swipe Gesture Logic ---
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const swipeThreshold = 10; // Min swipe distance in pixels
+    const edgeThreshold = 900;  // How close to the left edge the swipe must start
+    
+      function handleSwipeGesture() {
+        // Only run on mobile
+        if (window.innerWidth > 900) return;
+
+        // 1. SWIPE-TO-OPEN (Left to Right)
+        // Check if the sidebar is closed and the swipe started from the left edge
+        if (!navSidebar.classList.contains('expanded') && touchStartX < edgeThreshold) {
+            if (touchEndX - touchStartX > swipeThreshold) {
+                navSidebar.classList.add('expanded'); // Open sidebar
+            }
+        }
+
+        // 2. SWIPE-TO-CLOSE (Right to Left)
+        // Check if the sidebar is already open
+        if (navSidebar.classList.contains('expanded')) {
+            if (touchStartX - touchEndX > swipeThreshold) {
+                navSidebar.classList.remove('expanded'); // Close sidebar
+            }
+        }
+    }
+
+    document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    document.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipeGesture();
+    }, { passive: true });
 
     // --- Desktop Toggle Logic ---
     if (sidebarToggleBtn) {
