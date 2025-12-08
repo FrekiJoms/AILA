@@ -1,34 +1,36 @@
 // --- START: Supabase Client Initialization ---
 const SUPABASE_URL = "https://woqlvcgryahmcejdlcqz.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvcWx2Y2dyeWFobWNlamRsY3F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3NDg5NTMsImV4cCI6MjA4MDMyNDk1M30.PXL0hJ-8Hv7BP21Fly3tHXonJoxfVL0GNCY7oWXDKRA";
-const AILA_URL = "https://ailearningassistant.edgone.app"
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvcWx2Y2dyeWFobWNlamRsY3F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3NDg5NTMsImV4cCI6MjA4MDMyNDk1M30.PXL0hJ-8Hv7BP21Fly3tHXonJoxfVL0GNCY7oWXDKRA";
+const AILA_URL = "https://ailearningassistant.edgone.app";
 const { createClient } = supabase;
 const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // --- END: Supabase Client Initialization ---
 // --- START: Supabase Auth State Listener ---
 // --- START: Supabase Auth State Listener ---
 _supabase.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session) {
-        // This is a successful login (e.g., after Google redirect)
-        
-        // Save the user's session to local storage
-        localStorage.setItem('loggedInUser', session.user.email);
+  if (event === "SIGNED_IN" && session) {
+    // This is a successful login (e.g., after Google redirect)
 
-        // --- THIS IS THE FIX ---
-        // Check if the URL has the access token from the redirect.
-        // If it does, we need to clean the URL and reload the page.
-        if (window.location.hash.includes('access_token')) {
-            // Use replaceState to clean the URL without adding to browser history
-            window.history.replaceState(null, '', window.location.pathname);
-            // Now, reload the page. It will load with a clean URL.
-            window.location.reload();
-        }
-        // If the URL is already clean, initializeApp will handle showing the chat.
+    // Save the user's session to local storage
+    localStorage.setItem("loggedInUser", session.user.email);
+
+    // --- THIS IS THE FIX ---
+    // Check if the URL has the access token from the redirect.
+    // If it does, we need to clean the URL and reload the page.
+    if (window.location.hash.includes("access_token")) {
+      // Use replaceState to clean the URL without adding to browser history
+      window.history.replaceState(null, "", window.location.pathname);
+      // Now, reload the page. It will load with a clean URL.
+      window.location.reload();
     }
+    // If the URL is already clean, initializeApp will handle showing the chat.
+  }
 });
 // --- END: Supabase Auth State Listener ---
 
-const SCRIPT_API_URL ="https://script.google.com/macros/s/AKfycbxyBAMvcSxdV_Gbc8JIKB1yJRPw0ocQKpczfZ8KLp4Gln2LgWTTbFar3ugjODGrqjiE/exec";
+const SCRIPT_API_URL =
+  "https://script.google.com/macros/s/AKfycbxyBAMvcSxdV_Gbc8JIKB1yJRPw0ocQKpczfZ8KLp4Gln2LgWTTbFar3ugjODGrqjiE/exec";
 const SFX = {
   loadingAmbient: "sfx/loading-ambient.mp3",
   glassBreak: "sfx/glass-break.mp3",
@@ -519,7 +521,7 @@ function showWelcomeScreen() {
            style="width:100%; height:100%; object-fit:cover; border-radius:14px;">
     </div>
     <h1 class="welcome-title" style="margin-bottom: 5px">Welcome to AILA</h1>
-<p class="welcome-subtitle">Hi ${localStorage.getItem('menuUserName') || 'kuys'}! I'm AILA, your personal AI learning assistant.</p>
+<p class="welcome-subtitle">Hi ${localStorage.getItem("loggedInUserName") || "kuys"}! I'm AILA, your personal AI learning assistant.</p>
     <div class="welcome-actions">
       <button class="welcome-btn" onclick="useSuggestion('Overview')">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
@@ -632,37 +634,39 @@ safe(() => {
 });
 
 function setupFloatingExpander() {
-  const chat = document.querySelector('.chat');
-  const ta = document.getElementById('input');
-  const expander = document.getElementById('floating-expander');
-  
+  const chat = document.querySelector(".chat");
+  const ta = document.getElementById("input");
+  const expander = document.getElementById("floating-expander");
+
   if (!chat || !ta || !expander) {
-    console.error("Floating Expander setup failed: One or more required elements are missing.");
+    console.error(
+      "Floating Expander setup failed: One or more required elements are missing."
+    );
     return;
   }
 
   // A single helper div for measuring text width is created once.
-  let measurer = document.getElementById('text-measurer');
+  let measurer = document.getElementById("text-measurer");
   if (!measurer) {
-    measurer = document.createElement('div');
-    measurer.id = 'text-measurer';
+    measurer = document.createElement("div");
+    measurer.id = "text-measurer";
     document.body.appendChild(measurer);
   }
-  
+
   // *** THIS IS THE DEFINITIVE FIX ***
   // By setting position to 'fixed' and moving it far off-screen,
   // it is completely removed from the document's layout flow.
   // It can now become infinitely wide for measurement purposes
   // without ever stretching the body or causing a zoom-out.
   Object.assign(measurer.style, {
-    position: 'fixed',
-    top: '-9999px',
-    left: '-9999px',
+    position: "fixed",
+    top: "-9999px",
+    left: "-9999px",
     // It's still invisible, but the positioning is the key.
-    visibility: 'hidden',
-    height: 'auto',
-    width: 'auto',
-    whiteSpace: 'nowrap',
+    visibility: "hidden",
+    height: "auto",
+    width: "auto",
+    whiteSpace: "nowrap",
   });
 
   const handleInput = () => {
@@ -672,30 +676,29 @@ function setupFloatingExpander() {
     measurer.style.fontSize = getComputedStyle(ta).fontSize;
     measurer.style.fontFamily = getComputedStyle(ta).fontFamily;
     measurer.textContent = text;
-    
+
     // The overflow logic remains the same.
     const hasOverflow = measurer.clientWidth > ta.clientWidth;
-    const hasNewline = text.includes('\n');
+    const hasNewline = text.includes("\n");
 
-    if ((hasOverflow || hasNewline) && text.trim() !== '') {
+    if ((hasOverflow || hasNewline) && text.trim() !== "") {
       expander.textContent = text;
-      expander.classList.add('visible');
-      chat.classList.add('expander-visible');
+      expander.classList.add("visible");
+      chat.classList.add("expander-visible");
       expander.scrollTop = expander.scrollHeight;
     } else {
-      expander.classList.remove('visible');
-      chat.classList.remove('expander-visible');
+      expander.classList.remove("visible");
+      chat.classList.remove("expander-visible");
     }
   };
 
-  ta.addEventListener('input', handleInput);
-  window.addEventListener('resize', handleInput);
+  ta.addEventListener("input", handleInput);
+  window.addEventListener("resize", handleInput);
   handleInput(); // Run once on startup to set the initial state.
 }
 
 // Make sure you call this function once after the page loads.
 setupFloatingExpander();
-
 
 // google form feedback area
 // make sure header feedback opens new tab and doesn't break on mobile
@@ -1088,41 +1091,41 @@ async function loadOfflineData() {
  * Initializes the app with a dynamic, multi-stage loading screen.
  */
 async function initializeApp() {
-    // --- START: FIX FOR GOOGLE LOGIN REDIRECT ---
-  if (window.location.hash.includes('access_token')) {
+  // --- START: FIX FOR GOOGLE LOGIN REDIRECT ---
+  if (window.location.hash.includes("access_token")) {
     // The page is handling a redirect from Google. We show a simple message
     // and stop execution. The 'onAuthStateChange' listener at the top of the script
     // will handle reloading the page cleanly.
     const loadingOverlay = document.getElementById("loading-overlay");
     const statusText = document.getElementById("loading-status-text");
     if (loadingOverlay && statusText) {
-        loadingOverlay.classList.remove("hidden"); // Ensure the overlay is visible
-        statusText.textContent = "Finalizing login...";
-        // Hide other distracting elements from the normal loading screen
-        const inProgress = document.getElementById("loading-in-progress");
-        const complete = document.getElementById("loading-complete");
-        if (inProgress) inProgress.style.display = 'none';
-        if (complete) complete.style.display = 'none';
+      loadingOverlay.classList.remove("hidden"); // Ensure the overlay is visible
+      statusText.textContent = "Finalizing login...";
+      // Hide other distracting elements from the normal loading screen
+      const inProgress = document.getElementById("loading-in-progress");
+      const complete = document.getElementById("loading-complete");
+      if (inProgress) inProgress.style.display = "none";
+      if (complete) complete.style.display = "none";
     }
     return; // <-- This is the crucial part. It stops the function here.
   }
   // --- END: FIX FOR GOOGLE LOGIN REDIRECT ---
 
   // --- START: Check for an existing session ---
-      const loggedInUserEmail = localStorage.getItem("loggedInUser");
-      if (loggedInUserEmail) {
-        // --- THIS IS THE FIX ---
-        // Load offline data even when the user is already logged in.
-        await loadOfflineData(); 
-        
-        // If a user is already logged in, bypass the loading screen entirely.
-        const loadingOverlay = document.getElementById("loading-overlay");
-        loadingOverlay.classList.add("hidden");
-        showWelcomeScreen(); // Show the main chat interface
-        updateStatus("pending"); // Set the initial status
-        updateUserInfo();
-        return; // Stop the rest of the initializeApp function from running
-      }
+  const loggedInUserEmail = localStorage.getItem("loggedInUser");
+  if (loggedInUserEmail) {
+    // --- THIS IS THE FIX ---
+    // Load offline data even when the user is already logged in.
+    await loadOfflineData();
+
+    // If a user is already logged in, bypass the loading screen entirely.
+    const loadingOverlay = document.getElementById("loading-overlay");
+    loadingOverlay.classList.add("hidden");
+    showWelcomeScreen(); // Show the main chat interface
+    updateStatus("pending"); // Set the initial status
+    updateUserInfo();
+    return; // Stop the rest of the initializeApp function from running
+  }
   // --- 1. Define loading content & get elements ---
   const loadingStatuses = [
     "Initializing...",
@@ -1304,242 +1307,314 @@ messagesEl.addEventListener("click", (e) => {
 // This function will set up everything related to the auth modal.
 // We run it after the window loads to ensure all HTML elements are ready.
 function showConfirm(title, message) {
-    return new Promise((resolve) => {
-        const confirmModal = document.getElementById('confirmModal');
-        const confirmTitle = document.getElementById('confirmTitle');
-        const confirmMessage = document.getElementById('confirmMessage');
-        const confirmYesBtn = document.getElementById('confirmYesBtn');
-        const confirmNoBtn = document.getElementById('confirmNoBtn');
+  return new Promise((resolve) => {
+    const confirmModal = document.getElementById("confirmModal");
+    const confirmTitle = document.getElementById("confirmTitle");
+    const confirmMessage = document.getElementById("confirmMessage");
+    const confirmYesBtn = document.getElementById("confirmYesBtn");
+    const confirmNoBtn = document.getElementById("confirmNoBtn");
 
-        confirmTitle.textContent = title;
-        confirmMessage.textContent = message;
-        confirmModal.classList.remove('hidden');
+    confirmTitle.textContent = title;
+    confirmMessage.textContent = message;
+    confirmModal.classList.remove("hidden");
 
-        const resolveAndClose = (value) => {
-            confirmModal.classList.add('hidden');
-            resolve(value);
-        };
+    const resolveAndClose = (value) => {
+      confirmModal.classList.add("hidden");
+      resolve(value);
+    };
 
-        confirmYesBtn.onclick = () => resolveAndClose(true);
-        confirmNoBtn.onclick = () => resolveAndClose(false);
-    });
+    confirmYesBtn.onclick = () => resolveAndClose(true);
+    confirmNoBtn.onclick = () => resolveAndClose(false);
+  });
 }
 
 function handleSuccessfulLogin(email, isNewUser = false) {
-    localStorage.setItem('loggedInUser', email);
-    if (isNewUser) {
-        localStorage.setItem('trialStartDate', new Date().toISOString());
-    }
+  localStorage.setItem("loggedInUser", email);
+  if (isNewUser) {
+    localStorage.setItem("trialStartDate", new Date().toISOString());
+  }
 
-    const loadingOverlay = document.getElementById("loading-overlay");
+  const loadingOverlay = document.getElementById("loading-overlay");
 
-    // Hide all overlays and modals
-    if (loadingOverlay) loadingOverlay.classList.add("hidden");
-    closeModal(); 
+  // Hide all overlays and modals
+  if (loadingOverlay) loadingOverlay.classList.add("hidden");
+  closeModal();
 
-    // Now, show the main application screen and update user info
-    showWelcomeScreen();
-    updateUserInfo();
-    updateStatus("pending");
+  // Now, show the main application screen and update user info
+  showWelcomeScreen();
+  updateUserInfo();
+  updateStatus("pending");
 }
 
 function setupAuthModal() {
-    // 1. Get all elements from the DOM.
-    const authModal = document.getElementById("authModal");
-    const authCloseBtn = document.getElementById("authCloseBtn");
-    const authTitle = document.getElementById("authTitle");
-    const authActionBtn = document.getElementById("authActionBtn");
-    const authForm = document.getElementById("authForm");
-    const enterAppBtn = document.getElementById("enter-app-btn");
-    const customAlert = document.getElementById("customAlert");
-    const pinGroup = document.getElementById('pinGroup');
-    const pinContainer = document.getElementById("pinContainer");
-    const pinConfirmGroup = document.getElementById('pinConfirmGroup');
-    const pinConfirmContainer = document.getElementById('pinConfirmContainer');
-    
-    const successScreen = document.getElementById('successScreen');
-    const successMessage = document.getElementById('successMessage');
-    const finalEnterBtn = document.getElementById('finalEnterBtn');
+  // 1. Get all elements from the DOM.
+  const authModal = document.getElementById("authModal");
+  const authCloseBtn = document.getElementById("authCloseBtn");
+  const authTitle = document.getElementById("authTitle");
+  const authActionBtn = document.getElementById("authActionBtn");
+  const authForm = document.getElementById("authForm");
+  const enterAppBtn = document.getElementById("enter-app-btn");
+  const customAlert = document.getElementById("customAlert");
+  const pinGroup = document.getElementById("pinGroup");
+  const pinContainer = document.getElementById("pinContainer");
+  const pinConfirmGroup = document.getElementById("pinConfirmGroup");
+  const pinConfirmContainer = document.getElementById("pinConfirmContainer");
 
-    const registerLink = document.getElementById("registerLink");
-    const forgotPasswordLink = document.getElementById('forgotPasswordLink');
-    const backToLoginLink = document.getElementById('backToLoginLink');
-    const googleLoginBtn = document.getElementById('googleLoginBtn');
+  const successScreen = document.getElementById("successScreen");
+  const successMessage = document.getElementById("successMessage");
+  const finalEnterBtn = document.getElementById("finalEnterBtn");
 
-    let authState = 'login';
-    let alertTimeout;
+  const registerLink = document.getElementById("registerLink");
+  const forgotPasswordLink = document.getElementById("forgotPasswordLink");
+  const backToLoginLink = document.getElementById("backToLoginLink");
+  const googleLoginBtn = document.getElementById("googleLoginBtn");
 
-    // 2. Define all functions.
-// A reusable function to show a confirmation modal
+  let authState = "login";
+  let alertTimeout;
 
-    function showCustomAlert(message, type = 'error') {
-        clearTimeout(alertTimeout);
-        customAlert.textContent = message;
-        customAlert.classList.toggle('success', type === 'success');
-        customAlert.classList.remove('hidden');
-        alertTimeout = setTimeout(() => customAlert.classList.add('hidden'), 4000);
-    }
+  // 2. Define all functions.
+  // A reusable function to show a confirmation modal
 
-    function showAuthModal() {
-        setAuthState('login'); // Always default to login state when opening
-        authModal.classList.remove("hidden");
-    }
+  function showCustomAlert(message, type = "error") {
+    clearTimeout(alertTimeout);
+    customAlert.textContent = message;
+    customAlert.classList.toggle("success", type === "success");
+    customAlert.classList.remove("hidden");
+    alertTimeout = setTimeout(() => customAlert.classList.add("hidden"), 4000);
+  }
 
-    function closeAuthModal() {
-        authModal.classList.add("hidden");
-    }
+  function showAuthModal() {
+    setAuthState("login"); // Always default to login state when opening
+    authModal.classList.remove("hidden");
+  }
 
-// The new state manager for the modal
-function setAuthState(newState) {
+  function closeAuthModal() {
+    authModal.classList.add("hidden");
+  }
+
+  // (This entire function replaces the old setAuthState function)
+  function setAuthState(newState) {
     authState = newState;
-    const btnText = authActionBtn.querySelector('.btn-text');
+    const btnText = authActionBtn.querySelector(".btn-text");
 
-    // Show all links by default
-    registerLink.style.display = 'inline';
-    forgotPasswordLink.style.display = 'inline';
-    backToLoginLink.classList.remove('hidden');
+    // Get references to all the elements we need to toggle
+    const googleLoginBtn = document.getElementById("googleLoginBtn");
+    const separator = document.getElementById("authSeparator");
+    const usernameGroup = document.getElementById("usernameGroup");
+    const pinGroup = document.getElementById("pinGroup");
+    const pinConfirmGroup = document.getElementById("pinConfirmGroup");
+    const registerLink = document.getElementById("registerLink");
+    const forgotPasswordLink = document.getElementById("forgotPasswordLink");
+    const backToLoginLink = document.getElementById("backToLoginLink");
 
-    // Hide all optional components first
-    authForm.style.display = 'block';
-    successScreen.classList.add('hidden');
-    pinGroup.style.display = 'none';
-    pinConfirmGroup.classList.add('hidden');
+    // --- Reset to a default 'login' view ---
+    authTitle.textContent = "Login to AILA";
+    btnText.textContent = "Login";
+    authForm.style.display = "block";
+    successScreen.classList.add("hidden");
+    googleLoginBtn.style.display = "block";
+    separator.style.display = "block";
+    pinGroup.style.display = "block";
+    usernameGroup.classList.add("hidden");
+    pinConfirmGroup.classList.add("hidden");
+    registerLink.style.display = "inline";
+    forgotPasswordLink.style.display = "inline";
+    backToLoginLink.classList.add("hidden");
 
-    if (newState === 'login') {
-        authTitle.textContent = "Login to AILA";
-        btnText.textContent = "Login";
-        pinGroup.style.display = 'block';
-        backToLoginLink.classList.add('hidden'); // Hide "Back to Login" on the login screen
-    } else if (newState === 'register') {
-        authTitle.textContent = "Create an Account";
-        btnText.textContent = "Register";
-        pinGroup.style.display = 'block';
-        pinConfirmGroup.classList.remove('hidden');
-    } else if (newState === 'reset') {
-        authTitle.textContent = "Reset Password";
-        btnText.textContent = "Send Instructions";
+    // --- Apply changes for other states ---
+    if (newState === "register") {
+      authTitle.textContent = "Create an Account";
+      btnText.textContent = "Register";
+
+      // Hide Google login and show username field
+      googleLoginBtn.style.display = "none";
+      separator.style.display = "none";
+      usernameGroup.classList.remove("hidden");
+      pinConfirmGroup.classList.remove("hidden");
+
+      // Adjust links
+      registerLink.style.display = "none";
+      forgotPasswordLink.style.display = "none";
+      backToLoginLink.classList.remove("hidden");
+    } else if (newState === "reset") {
+      authTitle.textContent = "Reset Password";
+      btnText.textContent = "Send Instructions";
+
+      // Hide elements not needed for reset
+      pinGroup.style.display = "none";
+      googleLoginBtn.style.display = "none";
+      separator.style.display = "none";
+
+      // Adjust links
+      registerLink.style.display = "none";
+      forgotPasswordLink.style.display = "none";
+      backToLoginLink.classList.remove("hidden");
     }
-}
-    
-    function showWelcomeAndEnter(email, isNewUser) {
-        authForm.style.display = 'none'; // Hide the form
-        successScreen.classList.remove('hidden'); // Show the success screen
-        
-        const username = email.split('@')[0];
-        successMessage.textContent = isNewUser
-            ? `Welcome, ${username}!`
-            : `Welcome back, ${username}!`;
-    }
+  }
 
-    function setupPinInput(container) {
-      if (!container) return;
-      const inputs = [...container.querySelectorAll('.pin-digit')];
-      inputs.forEach((input, index) => {
-        input.addEventListener("input", () => {
-          input.value = input.value.replace(/\D/g, "");
-          if (input.value && index < inputs.length - 1) inputs[index + 1].focus();
-        });
-        input.addEventListener("keydown", (e) => {
-          if (e.key === "Backspace" && !input.value && index > 0) inputs[index - 1].focus();
-        });
+  function showWelcomeAndEnter(email, isNewUser) {
+    authForm.style.display = "none"; // Hide the form
+    successScreen.classList.remove("hidden"); // Show the success screen
+
+    const username = email.split("@")[0];
+    successMessage.textContent = isNewUser
+      ? `Welcome, ${username}!`
+      : `Welcome back, ${username}!`;
+  }
+
+  function setupPinInput(container) {
+    if (!container) return;
+    const inputs = [...container.querySelectorAll(".pin-digit")];
+    inputs.forEach((input, index) => {
+      input.addEventListener("input", () => {
+        input.value = input.value.replace(/\D/g, "");
+        if (input.value && index < inputs.length - 1) inputs[index + 1].focus();
       });
-    }
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace" && !input.value && index > 0)
+          inputs[index - 1].focus();
+      });
+    });
+  }
 
-    function getPinFromContainer(container) {
-      if (!container) return "";
-      return [...container.querySelectorAll('.pin-digit')].map(input => input.value).join("");
-    }
-    
-    // 3. Attach all event listeners.
-    
-    if (enterAppBtn) enterAppBtn.addEventListener("click", showAuthModal);
-    if (authCloseBtn) authCloseBtn.addEventListener("click", closeAuthModal);
-    if (registerLink) registerLink.addEventListener("click", (e) => { e.preventDefault(); setAuthState('register'); });
-    if (forgotPasswordLink) forgotPasswordLink.addEventListener("click", (e) => { e.preventDefault(); setAuthState('reset'); });
-    if (backToLoginLink) backToLoginLink.addEventListener("click", (e) => { e.preventDefault(); setAuthState('login'); });
+  function getPinFromContainer(container) {
+    if (!container) return "";
+    return [...container.querySelectorAll(".pin-digit")]
+      .map((input) => input.value)
+      .join("");
+  }
 
-    if (googleLoginBtn) {
-        googleLoginBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const { error } = await _supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    // This is the fix: It tells Supabase where to return after a successful login.
-                    redirectTo: AILA_URL
-                }
+  // 3. Attach all event listeners.
+
+  if (enterAppBtn) enterAppBtn.addEventListener("click", showAuthModal);
+  if (authCloseBtn) authCloseBtn.addEventListener("click", closeAuthModal);
+  if (registerLink)
+    registerLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      setAuthState("register");
+    });
+  if (forgotPasswordLink)
+    forgotPasswordLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      setAuthState("reset");
+    });
+  if (backToLoginLink)
+    backToLoginLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      setAuthState("login");
+    });
+
+  if (googleLoginBtn) {
+    googleLoginBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      const { error } = await _supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          // This is the fix: It tells Supabase where to return after a successful login.
+          redirectTo: AILA_URL,
+        },
+      });
+      if (error) {
+        showCustomAlert(error.message);
+      }
+    });
+  }
+
+  if (authForm) {
+    authForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      authActionBtn.classList.add("loading");
+      authActionBtn.disabled = true;
+
+      const email = document.getElementById("email").value;
+
+      try {
+        if (authState === "reset") {
+          const { error } = await _supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: "https://ailearningassistant.edgeone.app/reset",
+          });
+          if (error) throw error;
+          showCustomAlert(
+            "Password reset instructions sent to your email.",
+            "success"
+          );
+          setTimeout(() => setAuthState("login"), 3000);
+        } else {
+          const pin = getPinFromContainer(pinContainer);
+          const pinConfirm = getPinFromContainer(pinConfirmContainer);
+
+          if (pin.length !== 6)
+            throw new Error("PIN must be exactly 6 digits.");
+          if (authState === "register" && pin !== pinConfirm)
+            throw new Error("The PINs you entered do not match.");
+
+          if (authState === "register") {
+            const username = document.getElementById("username").value;
+            if (!username.trim()) {
+              throw new Error("Username cannot be empty.");
+            }
+
+            const { error } = await _supabase.auth.signUp({
+              email,
+              password: pin,
+              options: {
+                data: {
+                  // This saves the username to the user's metadata
+                  full_name: username,
+                },
+              },
             });
-            if (error) {
-                showCustomAlert(error.message);
-            }
-        });
-    }
 
-    if (authForm) {
-        authForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            authActionBtn.classList.add('loading');
-            authActionBtn.disabled = true;
+            if (error) throw error;
+            showCustomAlert("Registered successfully!", "success");
 
-            const email = document.getElementById("email").value;
+            // Save the new username to local storage immediately for the welcome message
+            localStorage.setItem("loggedInUserName", username);
 
-            try {
-                if (authState === 'reset') {
-                    const { error } = await _supabase.auth.resetPasswordForEmail(email, { redirectTo: 'https://ailearningassistant.edgeone.app/reset' });
-                    if (error) throw error;
-                    showCustomAlert("Password reset instructions sent to your email.", 'success');
-                    setTimeout(() => setAuthState('login'), 3000);
+            setTimeout(() => showWelcomeAndEnter(email, true), 1500);
+          } else {
+            // Login
 
-                } else {
-                    const pin = getPinFromContainer(pinContainer);
-                    const pinConfirm = getPinFromContainer(pinConfirmContainer);
-                    
-                    if (pin.length !== 6) throw new Error("PIN must be exactly 6 digits.");
-                    if (authState === 'register' && pin !== pinConfirm) throw new Error("The PINs you entered do not match.");
+            const { data, error } = await _supabase.auth.signInWithPassword({
+              email,
+              password: pin,
+            });
+            if (error) throw error;
 
-                    if (authState === 'register') {
-                        const { error } = await _supabase.auth.signUp({ email, password: pin });
-                        if (error) throw error;
-                        showCustomAlert("Registered successfully!", 'success');
-                        setTimeout(() => showWelcomeAndEnter(email, true), 1500);
+            // Proceed to success screen
+            handleSuccessfulLogin(email);
+          }
+        }
+      } catch (error) {
+        if (error.message.includes("User already registered")) {
+          showCustomAlert("User already registered. Please log in.");
+        } else if (error.message.includes("Invalid login credentials")) {
+          showCustomAlert("Email not registered or incorrect PIN.");
+        } else {
+          showCustomAlert(error.message);
+        }
+      } finally {
+        authActionBtn.classList.remove("loading");
+        authActionBtn.disabled = false;
+      }
+    });
+  }
 
-                    } else { // Login
-                        const { data, error } = await _supabase.auth.signInWithPassword({ email, password: pin });
-                        if (error) throw error;
-                        
-                        // Proceed to success screen
-                        handleSuccessfulLogin(email);
-                    }
-                }
-            } catch (error) {
-                if (error.message.includes("User already registered")) {
-                    showCustomAlert("User already registered. Please log in.");
-                } else if (error.message.includes("Invalid login credentials")) {
-                    showCustomAlert("Email not registered or incorrect PIN.");
-                } else {
-                    showCustomAlert(error.message);
-                }
-            } finally {
-                authActionBtn.classList.remove('loading');
-                authActionBtn.disabled = false;
-            }
-        });
-    }
-    
-    if (finalEnterBtn) {
-      finalEnterBtn.addEventListener("click", () => {
-        const email = localStorage.getItem('loggedInUser'); // Get the email we'll need
-        handleSuccessfulLogin(email);
-      });
-    }
+  if (finalEnterBtn) {
+    finalEnterBtn.addEventListener("click", () => {
+      const email = localStorage.getItem("loggedInUser"); // Get the email we'll need
+      handleSuccessfulLogin(email);
+    });
+  }
 
-    setupPinInput(pinContainer);
-    setupPinInput(pinConfirmContainer);
+  setupPinInput(pinContainer);
+  setupPinInput(pinConfirmContainer);
 }
 
 // Run the setup function after the page has fully loaded
-window.addEventListener('load', () => {
-    setupAuthModal();
-    setupNavigation();
+window.addEventListener("load", () => {
+  setupAuthModal();
+  setupNavigation();
 });
 
 // --- END: Authentication Modal Logic ---
@@ -1547,273 +1622,320 @@ window.addEventListener('load', () => {
 let trialInterval; // Keep a reference to the timer to clear it on logout
 
 async function updateUserInfo() {
-    // Clear any existing timer before starting a new one
-    if (trialInterval) clearInterval(trialInterval);
+  // Clear any existing timer before starting a new one
+  if (trialInterval) clearInterval(trialInterval);
 
-    // --- Get all DOM elements ---
-    const userEmailEl = document.getElementById('userEmail');
-    const userAvatarEl = document.getElementById('userAvatar');
-    const trialStatusEl = document.getElementById('trialStatus');
-    const menuUserAvatarEl = document.getElementById('menuUserAvatar');
-    const menuUserNameEl = document.getElementById('menuUserName');
-    const menuUserEmailEl = document.getElementById('menuUserEmail');
-    const trialTimerEl = document.getElementById('trialTimer');
+  // --- Get all DOM elements ---
+  const userEmailEl = document.getElementById("userEmail");
+  const userAvatarEl = document.getElementById("userAvatar");
+  const trialStatusEl = document.getElementById("trialStatus");
+  const menuUserAvatarEl = document.getElementById("menuUserAvatar");
+  const menuUserNameEl = document.getElementById("menuUserName");
+  const menuUserEmailEl = document.getElementById("menuUserEmail");
+  const trialTimerEl = document.getElementById("trialTimer");
 
-    // --- Fetch session from Supabase ---
-    const { data: { session } } = await _supabase.auth.getSession();
+  // --- Fetch session from Supabase ---
+  const {
+    data: { session },
+  } = await _supabase.auth.getSession();
 
-    if (session) {
-        const user = session.user;
+  if (session) {
+    const user = session.user;
 
-        // --- Populate user info in sidebar and menu header ---
-        const displayName = (user.app_metadata.provider === 'google' && user.user_metadata)
-            ? user.user_metadata.full_name
-            : user.email.split('@')[0];
-                // --- THIS IS THE FIX ---
-        // Save the correct display name to local storage for the welcome message
-        localStorage.setItem('loggedInUserName', displayName);
+    const displayName = (user.user_metadata && user.user_metadata.full_name)
+        ? user.user_metadata.full_name
+        : user.email.split('@')[0];
+    localStorage.setItem("loggedInUserName", displayName);
 
-        const avatarContent = (user.app_metadata.provider === 'google' && user.user_metadata)
-            ? `<img src="${user.user_metadata.avatar_url}" alt="User Avatar" class="user-avatar-img">`
-            : `<span id="userInitial">${displayName.charAt(0).toUpperCase()}</span>`;
+    const avatarContent =
+      user.app_metadata.provider === "google" && user.user_metadata
+        ? `<img src="${user.user_metadata.avatar_url}" alt="User Avatar" class="user-avatar-img">`
+        : `<span id="userInitial">${displayName
+            .charAt(0)
+            .toUpperCase()}</span>`;
 
-        userEmailEl.textContent = displayName;
-        userAvatarEl.innerHTML = avatarContent;
-        menuUserNameEl.textContent = displayName;
-        menuUserEmailEl.textContent = user.email;
-        menuUserAvatarEl.innerHTML = avatarContent;
+    userEmailEl.textContent = displayName;
+    userAvatarEl.innerHTML = avatarContent;
+    menuUserNameEl.textContent = displayName;
+    menuUserEmailEl.textContent = user.email;
+    menuUserAvatarEl.innerHTML = avatarContent;
 
+    // --- Real-time Trial Countdown Logic (WITH CUSTOM OVERRIDE) ---
+    const createdAt = new Date(user.created_at);
 
-        // --- Real-time Trial Countdown Logic (WITH CUSTOM OVERRIDE) ---
-        const createdAt = new Date(user.created_at);
-        
-        // --- THIS IS THE NEW LOGIC ---
-        // Check for a custom trial duration in the user's metadata.
-        // You can set this value in your Supabase dashboard for each user.
-        const customTrialDays = user.user_metadata.custom_trial_days;
-        const trialDays = (typeof customTrialDays === 'number' && customTrialDays >= 0)
-            ? customTrialDays
-            : 30; // Default to 30 days if not set or invalid
+    // --- THIS IS THE NEW LOGIC ---
+    // Check for a custom trial duration in the user's metadata.
+    // You can set this value in your Supabase dashboard for each user.
+    const customTrialDays = user.user_metadata.custom_trial_days;
+    const trialDays =
+      typeof customTrialDays === "number" && customTrialDays >= 0
+        ? customTrialDays
+        : 30; // Default to 30 days if not set or invalid
 
-        let trialEndDate = new Date(new Date(user.created_at).setDate(new Date(user.created_at).getDate() + trialDays));
-     
-        trialInterval = setInterval(() => {
-            const now = new Date();
-            const diffTime = trialEndDate - now;
+    let trialEndDate = new Date(
+      new Date(user.created_at).setDate(
+        new Date(user.created_at).getDate() + trialDays
+      )
+    );
 
-            if (diffTime <= 0) {
-                trialStatusEl.textContent = 'Trial Expired';
-                trialStatusEl.style.color = 'var(--danger)';
-                trialTimerEl.textContent = 'EXPIRED';
-                clearInterval(trialInterval);
-                return;
-            }
+    trialInterval = setInterval(() => {
+      const now = new Date();
+      const diffTime = trialEndDate - now;
 
-            const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diffTime % (1000 * 60)) / 1000);
+      if (diffTime <= 0) {
+        trialStatusEl.textContent = "Trial Expired";
+        trialStatusEl.style.color = "var(--danger)";
+        trialTimerEl.textContent = "EXPIRED";
+        clearInterval(trialInterval);
+        return;
+      }
 
-            // Update sidebar text (days only)
-            trialStatusEl.textContent = `Trial: ${days} days left`;
-             trialStatusEl.style.color = days < 7 ? '#FFC107' : 'var(--success)';
+      const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      const hours = Math.floor(
+        (diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      );
+      const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diffTime % (1000 * 60)) / 1000);
 
+      // Update sidebar text (days only)
+      trialStatusEl.textContent = `Trial: ${days} days left`;
+      trialStatusEl.style.color = days < 7 ? "#FFC107" : "var(--success)";
 
-            // Update menu timer (real-time)
-            trialTimerEl.textContent = `${String(days).padStart(2, '0')}:${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-
-        }, 1000);
-
-    } else {
-        // --- Handle logged out state ---
-        userEmailEl.textContent = 'Not logged in';
-        userAvatarEl.innerHTML = `<span id="userInitial">?</span>`;
-        trialStatusEl.textContent = '';
-        if (trialTimerEl) trialTimerEl.textContent = '--:--:--:--';
-    }
+      // Update menu timer (real-time)
+      trialTimerEl.textContent = `${String(days).padStart(2, "0")}:${String(
+        hours
+      ).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(
+        seconds
+      ).padStart(2, "0")}`;
+    }, 1000);
+  } else {
+    // --- Handle logged out state ---
+    userEmailEl.textContent = "Not logged in";
+    userAvatarEl.innerHTML = `<span id="userInitial">?</span>`;
+    trialStatusEl.textContent = "";
+    if (trialTimerEl) trialTimerEl.textContent = "--:--:--:--";
+  }
 }
 // --- END: User Info Update ---
 
 // --- START: Navigation Sidebar Logic ---
 function setupNavigation() {
-    // Get ALL elements from the DOM
-    const navSidebar = document.getElementById("navSidebar");
-    const sidebarToggleBtn = document.getElementById("sidebarToggleBtn");
-    const mobileNavToggle = document.getElementById("mobileNavToggle");
-    const newChatBtn = document.getElementById("newChatBtn");
-    const userProfileBtn = document.getElementById("userProfile");
-    const userMenu = document.getElementById("userMenu");
-    const logoutBtn = document.getElementById("logoutBtn");
-        // --- Mobile Swipe Gesture Logic ---
-    let touchStartX = 0;
-    let touchEndX = 0;
-    const swipeThreshold = 10; // Min swipe distance in pixels
-    const edgeThreshold = 900;  // How close to the left edge the swipe must start
-    
-      function handleSwipeGesture() {
-        // Only run on mobile
-        if (window.innerWidth > 900) return;
+  // Get ALL elements from the DOM
+  const navSidebar = document.getElementById("navSidebar");
+  const sidebarToggleBtn = document.getElementById("sidebarToggleBtn");
+  const mobileNavToggle = document.getElementById("mobileNavToggle");
+  const newChatBtn = document.getElementById("newChatBtn");
+  const userProfileBtn = document.getElementById("userProfile");
+  const userMenu = document.getElementById("userMenu");
+  const logoutBtn = document.getElementById("logoutBtn");
+  // --- Mobile Swipe Gesture Logic ---
+  let touchStartX = 0;
+  let touchEndX = 0;
+  const swipeThreshold = 10; // Min swipe distance in pixels
+  const edgeThreshold = 900; // How close to the left edge the swipe must start
 
-        // 1. SWIPE-TO-OPEN (Left to Right)
-        // Check if the sidebar is closed and the swipe started from the left edge
-        if (!navSidebar.classList.contains('expanded') && touchStartX < edgeThreshold) {
-            if (touchEndX - touchStartX > swipeThreshold) {
-                navSidebar.classList.add('expanded'); // Open sidebar
-            }
-        }
+  function handleSwipeGesture() {
+    // Only run on mobile
+    if (window.innerWidth > 900) return;
 
-        // 2. SWIPE-TO-CLOSE (Right to Left)
-        // Check if the sidebar is already open
-        if (navSidebar.classList.contains('expanded')) {
-            if (touchStartX - touchEndX > swipeThreshold) {
-                navSidebar.classList.remove('expanded'); // Close sidebar
-            }
-        }
+    // 1. SWIPE-TO-OPEN (Left to Right)
+    // Check if the sidebar is closed and the swipe started from the left edge
+    if (
+      !navSidebar.classList.contains("expanded") &&
+      touchStartX < edgeThreshold
+    ) {
+      if (touchEndX - touchStartX > swipeThreshold) {
+        navSidebar.classList.add("expanded"); // Open sidebar
+      }
     }
 
-    document.addEventListener('touchstart', e => {
-        touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
-
-    document.addEventListener('touchend', e => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipeGesture();
-    }, { passive: true });
-
-    // --- Desktop Toggle Logic ---
-    if (sidebarToggleBtn) {
-        sidebarToggleBtn.addEventListener("click", () => {
-            navSidebar.classList.toggle("expanded");
-        });
+    // 2. SWIPE-TO-CLOSE (Right to Left)
+    // Check if the sidebar is already open
+    if (navSidebar.classList.contains("expanded")) {
+      if (touchStartX - touchEndX > swipeThreshold) {
+        navSidebar.classList.remove("expanded"); // Close sidebar
+      }
     }
+  }
 
-    // --- Mobile Toggle Logic ---
-    function toggleMobileNav() {
-        navSidebar.classList.toggle("expanded");
-    }
+  document.addEventListener(
+    "touchstart",
+    (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    },
+    { passive: true }
+  );
 
-    if (mobileNavToggle) {
-        mobileNavToggle.addEventListener("click", toggleMobileNav);
-    }
+  document.addEventListener(
+    "touchend",
+    (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipeGesture();
+    },
+    { passive: true }
+  );
 
-    // --- Common Button Logic ---
-    if (newChatBtn) {
-        newChatBtn.addEventListener("click", () => {
-            showWelcomeScreen();
-            // If on mobile and sidebar is open, close it
-            if (window.innerWidth <= 900 && navSidebar.classList.contains('expanded')) {
-                toggleMobileNav();
-            }
-        });
-    }
-
-    // --- User Profile Menu Logic ---
-    if (userProfileBtn && userMenu) {
-        userProfileBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            userMenu.classList.toggle("hidden");
-        });
-    }
-
-    if (logoutBtn) {
-        logoutBtn.addEventListener("click", async () => {
-            const isConfirmed = await showConfirm("Confirm Logout", "Are you sure you want to log out?");
-            if (isConfirmed) {
-                await _supabase.auth.signOut();
-                localStorage.removeItem("loggedInUser");
-                window.location.reload();
-            }
-        });
-    }
-
-    // --- CONSOLIDATED "CLICK OUTSIDE" HANDLER ---
-    window.addEventListener('click', (e) => {
-        // 1. Close user menu if it's open and the click is outside
-        if (userMenu && !userMenu.classList.contains('hidden') && !userMenu.contains(e.target) && !userProfileBtn.contains(e.target)) {
-            userMenu.classList.add('hidden');
-        }
-
-        // 2. Close sidebar if it's open and the click is outside
-        if (navSidebar.classList.contains('expanded') && !navSidebar.contains(e.target)) {
-            const isMobile = window.innerWidth <= 900;
-            // Check if the click was on the mobile toggle button
-            const isMobileToggle = mobileNavToggle ? mobileNavToggle.contains(e.target) : false;
-            
-            if (isMobile && !isMobileToggle) {
-                toggleMobileNav(); // Close on mobile
-            } else if (!isMobile) {
-                navSidebar.classList.remove('expanded'); // Close on desktop
-            }
-        }
+  // --- Desktop Toggle Logic ---
+  if (sidebarToggleBtn) {
+    sidebarToggleBtn.addEventListener("click", () => {
+      navSidebar.classList.toggle("expanded");
     });
+  }
+
+  // --- Mobile Toggle Logic ---
+  function toggleMobileNav() {
+    navSidebar.classList.toggle("expanded");
+  }
+
+  if (mobileNavToggle) {
+    mobileNavToggle.addEventListener("click", toggleMobileNav);
+  }
+
+  // --- Common Button Logic ---
+  if (newChatBtn) {
+    newChatBtn.addEventListener("click", () => {
+      showWelcomeScreen();
+      // If on mobile and sidebar is open, close it
+      if (
+        window.innerWidth <= 900 &&
+        navSidebar.classList.contains("expanded")
+      ) {
+        toggleMobileNav();
+      }
+    });
+  }
+
+  // --- User Profile Menu Logic ---
+  if (userProfileBtn && userMenu) {
+    userProfileBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      userMenu.classList.toggle("hidden");
+    });
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+      const isConfirmed = await showConfirm(
+        "Confirm Logout",
+        "Are you sure you want to log out?"
+      );
+      if (isConfirmed) {
+        await _supabase.auth.signOut();
+        localStorage.removeItem("loggedInUser");
+        window.location.reload();
+      }
+    });
+  }
+
+  // --- CONSOLIDATED "CLICK OUTSIDE" HANDLER ---
+  window.addEventListener("click", (e) => {
+    // 1. Close user menu if it's open and the click is outside
+    if (
+      userMenu &&
+      !userMenu.classList.contains("hidden") &&
+      !userMenu.contains(e.target) &&
+      !userProfileBtn.contains(e.target)
+    ) {
+      userMenu.classList.add("hidden");
+    }
+
+    // 2. Close sidebar if it's open and the click is outside
+    if (
+      navSidebar.classList.contains("expanded") &&
+      !navSidebar.contains(e.target)
+    ) {
+      const isMobile = window.innerWidth <= 900;
+      // Check if the click was on the mobile toggle button
+      const isMobileToggle = mobileNavToggle
+        ? mobileNavToggle.contains(e.target)
+        : false;
+
+      if (isMobile && !isMobileToggle) {
+        toggleMobileNav(); // Close on mobile
+      } else if (!isMobile) {
+        navSidebar.classList.remove("expanded"); // Close on desktop
+      }
+    }
+  });
 }
 // --- END: Navigation Sidebar Logic ---
 // --- START: Password Reset Page Logic ---
 
-window.addEventListener('DOMContentLoaded', () => {
-    // Check if the current URL path is '/reset'
-    if (window.location.pathname === '/reset') {
-        
-        const newPinForm = document.getElementById('newPinForm');
-        const updatePinBtn = document.getElementById('updatePinBtn');
-        const newPinContainer = document.getElementById('newPinContainer');
-        const confirmNewPinContainer = document.getElementById('confirmNewPinContainer');
+window.addEventListener("DOMContentLoaded", () => {
+  // Check if the current URL path is '/reset'
+  if (window.location.pathname === "/reset") {
+    const newPinForm = document.getElementById("newPinForm");
+    const updatePinBtn = document.getElementById("updatePinBtn");
+    const newPinContainer = document.getElementById("newPinContainer");
+    const confirmNewPinContainer = document.getElementById(
+      "confirmNewPinContainer"
+    );
 
-        // Setup the auto-focusing for the PIN inputs on this page
-        setupPinInput(newPinContainer);
-        setupPinInput(confirmNewPinContainer);
+    // Setup the auto-focusing for the PIN inputs on this page
+    setupPinInput(newPinContainer);
+    setupPinInput(confirmNewPinContainer);
 
-        if (newPinForm) {
-            newPinForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                updatePinBtn.classList.add('loading');
-                updatePinBtn.disabled = true;
+    if (newPinForm) {
+      newPinForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        updatePinBtn.classList.add("loading");
+        updatePinBtn.disabled = true;
 
-                const newPin = getPinFromContainer(newPinContainer);
-                const confirmNewPin = getPinFromContainer(confirmNewPinContainer);
+        const newPin = getPinFromContainer(newPinContainer);
+        const confirmNewPin = getPinFromContainer(confirmNewPinContainer);
 
-                try {
-                    if (newPin.length !== 6) throw new Error("PIN must be exactly 6 digits.");
-                    if (newPin !== confirmNewPin) throw new Error("The PINs you entered do not match.");
+        try {
+          if (newPin.length !== 6)
+            throw new Error("PIN must be exactly 6 digits.");
+          if (newPin !== confirmNewPin)
+            throw new Error("The PINs you entered do not match.");
 
-                    // Supabase automatically uses the token from the URL to authenticate this request
-                    const { error } = await _supabase.auth.updateUser({ password: newPin });
-                    
-                    if (error) throw error;
+          // Supabase automatically uses the token from the URL to authenticate this request
+          const { error } = await _supabase.auth.updateUser({
+            password: newPin,
+          });
 
-                    showCustomAlert("Your PIN has been successfully reset. Redirecting to login...", 'success');
+          if (error) throw error;
 
-                    // Redirect back to the main login page after a short delay
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 3000);
+          showCustomAlert(
+            "Your PIN has been successfully reset. Redirecting to login...",
+            "success"
+          );
 
-                } catch (error) {
-                    showCustomAlert(error.message);
-                } finally {
-                    updatePinBtn.classList.remove('loading');
-                    updatePinBtn.disabled = false;
-                }
-            });
+          // Redirect back to the main login page after a short delay
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 3000);
+        } catch (error) {
+          showCustomAlert(error.message);
+        } finally {
+          updatePinBtn.classList.remove("loading");
+          updatePinBtn.disabled = false;
         }
+      });
     }
+  }
 });
 
 // --- END: Password Reset Page Logic ---
 // --- START: SECURE ADMIN FUNCTION ---
 // This function securely calls our Supabase Edge Function.
 async function adminSetTrialDays(targetEmail, days) {
-  if (!targetEmail || typeof days !== 'number') {
-    console.error("ADMIN: 🛑 USAGE ERROR: Please provide a target email and the number of days. Example: adminSetTrialDays('user@example.com', 90)");
+  if (!targetEmail || typeof days !== "number") {
+    console.error(
+      "ADMIN: 🛑 USAGE ERROR: Please provide a target email and the number of days. Example: adminSetTrialDays('user@example.com', 90)"
+    );
     return;
   }
 
-  console.log(`ADMIN: ⏳ Invoking secure function to set trial for ${targetEmail} to ${days} days...`);
+  console.log(
+    `ADMIN: ⏳ Invoking secure function to set trial for ${targetEmail} to ${days} days...`
+  );
 
   try {
     // This securely calls the 'set-trial-days' Edge Function.
     // The user's authentication token is automatically sent to verify they are an admin.
-    const { data, error } = await _supabase.functions.invoke('set-trial-days', {
+    const { data, error } = await _supabase.functions.invoke("set-trial-days", {
       body: { targetEmail, days },
     });
 
@@ -1821,17 +1943,20 @@ async function adminSetTrialDays(targetEmail, days) {
 
     // The success or error message now comes directly from our secure function.
     if (data.error) {
-       console.error(`ADMIN: ❌ FAILED: ${data.error}`);
+      console.error(`ADMIN: ❌ FAILED: ${data.error}`);
     } else {
-       console.log(data.message);
-       console.log("ADMIN: 👉 The user must log out and log back in to see the change take effect.");
+      console.log(data.message);
+      console.log(
+        "ADMIN: 👉 The user must log out and log back in to see the change take effect."
+      );
     }
-
   } catch (error) {
     console.error("❌ INVOCATION FAILED:", error.message);
     // This is the check for the project mismatch
     if (error.message.includes("Function not found")) {
-        console.error("❗ CRITICAL: The function was not found. It might be deployed to the wrong Supabase project. Please redeploy to 'AILA-USERDATA'.");
+      console.error(
+        "❗ CRITICAL: The function was not found. It might be deployed to the wrong Supabase project. Please redeploy to 'AILA-USERDATA'."
+      );
     }
   }
 }
@@ -1841,39 +1966,47 @@ async function adminSetTrialDays(targetEmail, days) {
 // --- START: ADMIN IMPERSONATION FUNCTION (with better error handling) ---
 async function adminLoginAsUser(targetEmail) {
   if (!targetEmail) {
-    console.error("ADMIN: 🛑 USAGE ERROR: Please provide the user's email. Example: adminLoginAsUser('user@example.com')");
+    console.error(
+      "ADMIN: 🛑 USAGE ERROR: Please provide the user's email. Example: adminLoginAsUser('user@example.com')"
+    );
     return;
   }
 
   console.log(`ADMIN: ⏳ Generating secure login link for ${targetEmail}...`);
 
   try {
-    const { data, error } = await _supabase.functions.invoke('impersonate-user', {
-      body: { targetEmail },
-    });
+    const { data, error } = await _supabase.functions.invoke(
+      "impersonate-user",
+      {
+        body: { targetEmail },
+      }
+    );
 
     // This error is for network issues or if the function doesn't exist.
     if (error) throw error;
 
     // This is for errors returned *from our function's code*.
     if (data.error) {
-       console.error(`ADMIN: ❌ FUNCTION FAILED: ${data.error}`);
+      console.error(`ADMIN: ❌ FUNCTION FAILED: ${data.error}`);
     } else {
-       console.log("ADMIN:✅ SUCCESS! Click the link below to log in as the user.");
-       console.log("👉 " + data.magicLink);
-       console.log("To return to your admin account, simply log out from the user's session.");
+      console.log(
+        "ADMIN:✅ SUCCESS! Click the link below to log in as the user."
+      );
+      console.log("👉 " + data.magicLink);
+      console.log(
+        "To return to your admin account, simply log out from the user's session."
+      );
     }
-
   } catch (error) {
     // This block catches the server errors (like the 400 Bad Request).
     console.error("ADMIN: ❌ INVOCATION FAILED: The server returned an error.");
-    
+
     // The real error message from the server is inside 'error.context'.
     if (error.context && error.context.error) {
-        console.error("ADMIN: ❗ SERVER SAYS:", error.context.error);
+      console.error("ADMIN: ❗ SERVER SAYS:", error.context.error);
     } else {
-        // If the structure is weird, log the whole object for debugging.
-        console.error("ADMIN: ❗ Raw error object:", error);
+      // If the structure is weird, log the whole object for debugging.
+      console.error("ADMIN: ❗ Raw error object:", error);
     }
   }
 }

@@ -104,7 +104,7 @@
                 />
                 <span>Continue with Google</span>
               </button>
-              <div class="separator">OR</div>
+<div class="separator" id="authSeparator">OR</div>
 
               <div id="emailGroup">
                 <input
@@ -115,6 +115,16 @@
                   required
                 />
               </div>
+                            <!-- ADD THIS BLOCK FOR THE USERNAME -->
+              <div id="usernameGroup" class="hidden">
+                 <input
+                  type="text"
+                  id="username"
+                  class="auth-input"
+                  placeholder="Choose a username"
+                />
+              </div>
+              <!-- END OF BLOCK TO ADD -->
 
               <div id="pinGroup">
                 <p class="pin-description">Enter your 6-digit PIN</p>
