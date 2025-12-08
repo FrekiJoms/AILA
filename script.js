@@ -8,16 +8,25 @@ const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // --- END: Supabase Client Initialization ---
 // (This entire function replaces the old one at the top of your script.js file)
 _supabase.auth.onAuthStateChange(async (event, session) => {
-    // --- THIS IS THE FIX for the Google Login Redirect ---
-    // It listens for the moment the user is signed in from the redirect URL.
     if (event === 'SIGNED_IN' && session && window.location.hash.includes('access_token')) {
-        // When this happens, we immediately redirect to the clean main URL.
-        // The browser will have stored the session, so the next page load will be logged in.
-        window.location.assign(AILA_URL);
-        return; // Stop further execution in this callback.
+        
+        const isNewUser = (new Date() - new Date(session.user.created_at)) < 60000;
+        const eventType = isNewUser ? 'Google Registration' : 'Google Login';
+
+        const displayName = (session.user.user_metadata && session.user.user_metadata.full_name) 
+            ? session.user.user_metadata.full_name
+            : session.user.email.split('@')[0];
+        
+        localStorage.setItem('loggedInUserName', displayName);
+        
+        // --- THIS IS THE FIX ---
+        // Call the new logger with all required info before redirecting.
+        await logUserEventToSheet(session.user.email, displayName, eventType);
+
+        window.location.assign('https://ailearningassistant.edgeone.app/');
+        return; 
     }
 
-    // This part runs on normal page loads where the user is already logged in.
     if (session) {
         localStorage.setItem('loggedInUser', session.user.email);
         const displayName = (session.user.user_metadata && session.user.user_metadata.full_name) 
@@ -26,7 +35,9 @@ _supabase.auth.onAuthStateChange(async (event, session) => {
         localStorage.setItem('loggedInUserName', displayName);
     }
 });
-const SCRIPT_API_URL ="https://script.google.com/macros/s/AKfycbxyBAMvcSxdV_Gbc8JIKB1yJRPw0ocQKpczfZ8KLp4Gln2LgWTTbFar3ugjODGrqjiE/exec";
+
+const SCRIPT_API_URL =
+  "https://script.google.com/macros/s/AKfycbxyBAMvcSxdV_Gbc8JIKB1yJRPw0ocQKpczfZ8KLp4Gln2LgWTTbFar3ugjODGrqjiE/exec";
 const SFX = {
   loadingAmbient: "sfx/loading-ambient.mp3",
   glassBreak: "sfx/glass-break.mp3",
@@ -517,7 +528,9 @@ function showWelcomeScreen() {
            style="width:100%; height:100%; object-fit:cover; border-radius:14px;">
     </div>
     <h1 class="welcome-title" style="margin-bottom: 5px">Welcome to AILA</h1>
-<p class="welcome-subtitle">Hi ${localStorage.getItem("loggedInUserName") || "kuys"}! I'm AILA, your personal AI learning assistant.</p>
+<p class="welcome-subtitle">Hi ${
+    localStorage.getItem("loggedInUserName") || "kuys"
+  }! I'm AILA, your personal AI learning assistant.</p>
     <div class="welcome-actions">
       <button class="welcome-btn" onclick="useSuggestion('Overview')">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
@@ -1062,6 +1075,48 @@ function updateStatus(status) {
   }
 }
 /**
+ * Sends user login/registration events to the Google Sheet, including IP address.
+ * @param {string} email - The user's email address.
+ * @param {string} username - The user's display name.
+ * @param {string} eventType - The type of event, e.g., 'PIN Registration', 'Google Login'.
+ */
+async function logUserEventToSheet(email, username, eventType) {
+  let ipAddress = 'not available';
+  try {
+    // Fetches the public IP address of the user.
+    const response = await fetch('https://api.ipify.org?format=json');
+    if (!response.ok) throw new Error('Response not OK');
+    const data = await response.json();
+    ipAddress = data.ip;
+  } catch (error) {
+    console.warn('Could not fetch IP address:', error);
+  }
+
+  // This payload is clear and contains all the info your script needs.
+  const payload = {
+    timestamp: new Date().toISOString(), // Standard ISO 8601 format
+    email: email,
+    username: username,
+    event: eventType,
+    ipAddress: ipAddress,
+  };
+
+  try {
+    // Send the data to your Google Apps Script.
+    await fetch(SCRIPT_API_URL, {
+      method: 'POST',
+      mode: 'no-cors', // Best for 'fire and forget' logging
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    console.log(`Successfully logged '${eventType}' for ${username} to sheet.`);
+  } catch (error) {
+    console.error('Error logging user event to Google Sheet:', error);
+  }
+}
+/**
  * Loads the offline responses from our Google Sheet API.
  */
 async function loadOfflineData() {
@@ -1088,20 +1143,20 @@ async function loadOfflineData() {
  */
 async function initializeApp() {
   // --- START: FIX FOR GOOGLE LOGIN REDIRECT ---
-  if (window.location.hash.includes('access_token')) {
+  if (window.location.hash.includes("access_token")) {
     // The page is handling a redirect from Google. We show a simple message
     // and stop execution. The 'onAuthStateChange' listener at the top of the script
     // will handle reloading the page cleanly.
     const loadingOverlay = document.getElementById("loading-overlay");
     const statusText = document.getElementById("loading-status-text");
     if (loadingOverlay && statusText) {
-        loadingOverlay.classList.remove("hidden"); // Ensure the overlay is visible
-        statusText.textContent = "Finalizing login...";
-        // Hide other distracting elements from the normal loading screen
-        const inProgress = document.getElementById("loading-in-progress");
-        const complete = document.getElementById("loading-complete");
-        if (inProgress) inProgress.style.display = 'none';
-        if (complete) complete.style.display = 'none';
+      loadingOverlay.classList.remove("hidden"); // Ensure the overlay is visible
+      statusText.textContent = "Finalizing login...";
+      // Hide other distracting elements from the normal loading screen
+      const inProgress = document.getElementById("loading-in-progress");
+      const complete = document.getElementById("loading-complete");
+      if (inProgress) inProgress.style.display = "none";
+      if (complete) complete.style.display = "none";
     }
     return; // <-- This is the crucial part. It stops the function here.
   }
@@ -1117,6 +1172,9 @@ async function initializeApp() {
     // If a user is already logged in, bypass the loading screen entirely.
     const loadingOverlay = document.getElementById("loading-overlay");
     loadingOverlay.classList.add("hidden");
+
+    playSound(SFX.whoosh, 0.7);
+
     showWelcomeScreen(); // Show the main chat interface
     updateStatus("pending"); // Set the initial status
     updateUserInfo();
@@ -1324,22 +1382,34 @@ function showConfirm(title, message) {
   });
 }
 
+// (This entire function replaces the old handleSuccessfulLogin function)
 function handleSuccessfulLogin(email, isNewUser = false) {
-  localStorage.setItem("loggedInUser", email);
-  if (isNewUser) {
-    localStorage.setItem("trialStartDate", new Date().toISOString());
-  }
+    localStorage.setItem('loggedInUser', email);
+    if (isNewUser) {
+        localStorage.setItem('trialStartDate', new Date().toISOString());
+    }
 
-  const loadingOverlay = document.getElementById("loading-overlay");
+    // --- START: FIX FOR LOGIN SOUNDS ---
+    // Stop the loading screen's ambient sound if it is running.
+    if (ambientSound) {
+        ambientSound.pause();
+        ambientSound.currentTime = 0;
+        ambientSound = null; // Dereference to allow garbage collection
+    }
+    // Play the "whoosh" sound effect to signal entering the app.
+    playSound(SFX.whoosh, 0.7);
+    // --- END: FIX FOR LOGIN SOUNDS ---
 
-  // Hide all overlays and modals
-  if (loadingOverlay) loadingOverlay.classList.add("hidden");
-  closeModal();
+    const loadingOverlay = document.getElementById("loading-overlay");
 
-  // Now, show the main application screen and update user info
-  showWelcomeScreen();
-  updateUserInfo();
-  updateStatus("pending");
+    // Hide all overlays and modals
+    if (loadingOverlay) loadingOverlay.classList.add("hidden");
+    closeModal(); 
+
+    // Now, show the main application screen and update user info
+    showWelcomeScreen();
+    updateUserInfo();
+    updateStatus("pending");
 }
 
 function setupAuthModal() {
@@ -1524,63 +1594,47 @@ function setupAuthModal() {
 
       const email = document.getElementById("email").value;
 
-      try {
-        if (authState === "reset") {
-          const { error } = await _supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: "https://ailearningassistant.edgeone.app/reset",
-          });
-          if (error) throw error;
-          showCustomAlert(
-            "Password reset instructions sent to your email.",
-            "success"
-          );
-          setTimeout(() => setAuthState("login"), 3000);
-        } else {
-          const pin = getPinFromContainer(pinContainer);
-          const pinConfirm = getPinFromContainer(pinConfirmContainer);
+     try {
+                if (authState === 'reset') {
+                    // ... (reset password logic remains the same)
+                    const { error } = await _supabase.auth.resetPasswordForEmail(email, { redirectTo: 'https://ailearningassistant.edgeone.app/reset' });
+                    if (error) throw error;
+                    showCustomAlert("Password reset instructions sent to your email.", 'success');
+                    setTimeout(() => setAuthState('login'), 3000);
 
-          if (pin.length !== 6)
-            throw new Error("PIN must be exactly 6 digits.");
-          if (authState === "register" && pin !== pinConfirm)
-            throw new Error("The PINs you entered do not match.");
+                } else {
+                    const pin = getPinFromContainer(pinContainer);
+                    const pinConfirm = getPinFromContainer(pinConfirmContainer);
+                    
+                    if (pin.length !== 6) throw new Error("PIN must be exactly 6 digits.");
 
-          if (authState === "register") {
-            const username = document.getElementById("username").value;
-            if (!username.trim()) {
-              throw new Error("Username cannot be empty.");
-            }
+                    if (authState === 'register') {
+                        const username = document.getElementById("username").value;
+                        if (!username.trim()) throw new Error("Username cannot be empty.");
+                        if (pin !== pinConfirm) throw new Error("The PINs you entered do not match.");
 
-            const { error } = await _supabase.auth.signUp({
-              email,
-              password: pin,
-              options: {
-                data: {
-                  // This saves the username to the user's metadata
-                  full_name: username,
-                },
-              },
-            });
+                        const { error } = await _supabase.auth.signUp({ email, password: pin, options: { data: { full_name: username } } });
+                        if (error) throw error;
+                        
+                        // --- THIS IS THE FIX ---
+                        await logUserEventToSheet(email, username, 'PIN Registration');
+                        
+                        showCustomAlert("Registered successfully!", 'success');
+                        localStorage.setItem('loggedInUserName', username);
+                        setTimeout(() => showWelcomeAndEnter(email, true), 1500);
 
-            if (error) throw error;
-            showCustomAlert("Registered successfully!", "success");
-
-            // Save the new username to local storage immediately for the welcome message
-            localStorage.setItem("loggedInUserName", username);
-
-            setTimeout(() => showWelcomeAndEnter(email, true), 1500);
-          } else {
-            // Login
-
-            const { data, error } = await _supabase.auth.signInWithPassword({
-              email,
-              password: pin,
-            });
-            if (error) throw error;
-
-            // Proceed to success screen
-            handleSuccessfulLogin(email);
-          }
-        }
+                    } else { // Login
+                        const { data, error } = await _supabase.auth.signInWithPassword({ email, password: pin });
+                        if (error) throw error;
+                        
+                        // --- THIS IS THE FIX ---
+                        const user = data.user;
+                        const displayName = (user.user_metadata && user.user_metadata.full_name) ? user.user_metadata.full_name : user.email.split('@')[0];
+                        await logUserEventToSheet(email, displayName, 'PIN Login');
+                        
+                        handleSuccessfulLogin(email);
+                    }
+                }
       } catch (error) {
         if (error.message.includes("User already registered")) {
           showCustomAlert("User already registered. Please log in.");
@@ -1638,9 +1692,10 @@ async function updateUserInfo() {
   if (session) {
     const user = session.user;
 
-    const displayName = (user.user_metadata && user.user_metadata.full_name)
+    const displayName =
+      user.user_metadata && user.user_metadata.full_name
         ? user.user_metadata.full_name
-        : user.email.split('@')[0];
+        : user.email.split("@")[0];
     localStorage.setItem("loggedInUserName", displayName);
 
     const avatarContent =
