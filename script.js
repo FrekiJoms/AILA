@@ -1734,6 +1734,22 @@ async function updateUserInfo() {
   const menuUserNameEl = document.getElementById("menuUserName");
   const menuUserEmailEl = document.getElementById("menuUserEmail");
   const trialTimerEl = document.getElementById("trialTimer");
+  
+  // --- THIS IS THE FIX (PART 1) ---
+  // Get chat form elements
+  const chatInput = document.getElementById("input");
+  const chatSendBtn = document.getElementById("sendBtn");
+  const voiceBtn = document.getElementById("voiceBtn");
+
+  // Re-enable the form by default when this function runs.
+  // This handles a user with an expired trial logging out and a new user logging in.
+  if (chatInput) {
+    chatInput.disabled = false;
+    chatInput.placeholder = "Ask AILA anything, or type ‘/’ for commands…";
+  }
+  if (chatSendBtn) chatSendBtn.disabled = false;
+  if (voiceBtn) voiceBtn.disabled = false;
+  // --- END OF FIX (PART 1) ---
 
   // --- Fetch session from Supabase ---
   const {
@@ -1762,17 +1778,12 @@ async function updateUserInfo() {
     menuUserEmailEl.textContent = user.email;
     menuUserAvatarEl.innerHTML = avatarContent;
 
-    // --- Real-time Trial Countdown Logic (WITH CUSTOM OVERRIDE) ---
-    const createdAt = new Date(user.created_at);
-
-    // --- THIS IS THE NEW LOGIC ---
-    // Check for a custom trial duration in the user's metadata.
-    // You can set this value in your Supabase dashboard for each user.
+    // --- Real-time Trial Countdown Logic ---
     const customTrialDays = user.user_metadata.custom_trial_days;
     const trialDays =
       typeof customTrialDays === "number" && customTrialDays >= 0
         ? customTrialDays
-        : 30; // Default to 30 days if not set or invalid
+        : 30; // Default to 30 days
 
     let trialEndDate = new Date(
       new Date(user.created_at).setDate(
@@ -1789,6 +1800,16 @@ async function updateUserInfo() {
         trialStatusEl.style.color = "var(--danger)";
         trialTimerEl.textContent = "EXPIRED";
         clearInterval(trialInterval);
+
+        // --- THIS IS THE FIX (PART 2) ---
+        // If the trial expires, disable the chat functionality.
+        if (chatInput) {
+            chatInput.disabled = true;
+            chatInput.placeholder = "Your trial has expired.";
+        }
+        if (chatSendBtn) chatSendBtn.disabled = true;
+        if (voiceBtn) voiceBtn.disabled = true;
+        // --- END OF FIX (PART 2) ---
         return;
       }
 
@@ -1799,11 +1820,8 @@ async function updateUserInfo() {
       const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diffTime % (1000 * 60)) / 1000);
 
-      // Update sidebar text (days only)
       trialStatusEl.textContent = `Trial: ${days} days left`;
       trialStatusEl.style.color = days < 7 ? "#FFC107" : "var(--success)";
-
-      // Update menu timer (real-time)
       trialTimerEl.textContent = `${String(days).padStart(2, "0")}:${String(
         hours
       ).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(
@@ -1818,7 +1836,6 @@ async function updateUserInfo() {
     if (trialTimerEl) trialTimerEl.textContent = "--:--:--:--";
   }
 }
-// --- END: User Info Update ---
 
 // --- START: Navigation Sidebar Logic ---
 function setupNavigation() {

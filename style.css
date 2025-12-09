@@ -3278,3 +3278,14 @@ textarea#input::-webkit-scrollbar-thumb:hover {
 #floating-expander::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.35);
 }
+/* --- Disabled Chat Form --- */
+.chat-form #input:disabled,
+.chat-form #sendBtn:disabled,
+.chat-form #voiceBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.chat-form #input:disabled {
+  background-color: rgba(0, 0, 0, 0.1);
+}
