@@ -1759,7 +1759,7 @@ async function updateUserInfo() {
   // Re-enable the form by default when this function runs.
   if (chatInput) {
     chatInput.disabled = false;
-    chatInput.placeholder = "Ask AILA anything, or type ‘/’ for commands…";
+    chatInput.placeholder = "Ask AILA anything…";
   }
   if (chatSendBtn) chatSendBtn.disabled = false;
   if (voiceBtn) voiceBtn.disabled = false;
