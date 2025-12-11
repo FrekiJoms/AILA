@@ -415,7 +415,7 @@ function playSound(url, volume = 1.0) {
   } catch (error) {
     console.warn(`Could not play sound effect: ${url}`, error);
   }
-}
+} 
 // N8N chat webhook link constant
 const CHAT_WEBHOOK = "https://levercrafter.app.n8n.cloud/webhook/ictworkflow";
 const OFFLINE_DATA_URL =
