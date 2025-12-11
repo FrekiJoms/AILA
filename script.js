@@ -802,13 +802,21 @@ function hideTyping() {
 /* send to backend; use offlineResponses if offline or network fails */
 function sendToBackend(text, askSuggestions = false) {
   showTyping();
+
+  // --- THIS IS THE FIX ---
+  // Get user info from localStorage, with fallbacks.
+  const userName = localStorage.getItem("loggedInUserName") || "Guest";
+  const userEmail = localStorage.getItem("loggedInUser"); // This will be null if not logged in
+
   const payload = {
     message: text,
-    sessionId: "guest_" + Date.now(),
-    name: "Guest",
-    email: null,
+    // Create a consistent session ID for logged-in users, or a unique one for guests.
+    sessionId: userEmail ? `${userName}_${userEmail}` : `guest_${Date.now()}`,
+    name: userName,
+    email: userEmail,
     askForSuggestions: !!askSuggestions,
   };
+  // --- END OF FIX ---
 
   // This helper function will now ONLY be used when the connection completely fails.
   function getOfflineAnswer(q) {
