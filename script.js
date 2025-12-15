@@ -8,16 +8,17 @@ const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let isTrialExpired = false;
 
 // --- END: Supabase Client Initialization ---
-// (This entire function replaces the old one at the top of your script.js file)
 _supabase.auth.onAuthStateChange(async (event, session) => {
   if (
     event === "SIGNED_IN" &&
     session &&
     window.location.hash.includes("access_token")
   ) {
+    // 1. Determine if it's a brand new user or a returning user
     const isNewUser = new Date() - new Date(session.user.created_at) < 60000;
     const eventType = isNewUser ? "Google Registration" : "Google Login";
 
+    // 2. Get the user's name from their Google profile
     const displayName =
       session.user.user_metadata && session.user.user_metadata.full_name
         ? session.user.user_metadata.full_name
@@ -25,11 +26,11 @@ _supabase.auth.onAuthStateChange(async (event, session) => {
 
     localStorage.setItem("loggedInUserName", displayName);
 
-    // --- THIS IS THE FIX ---
-    // Call the new logger with all required info before redirecting.
+    // 3. THIS IS THE FIX: Log the event to your Google Sheet before redirecting
     await logUserEventToSheet(session.user.email, displayName, eventType);
 
-    window.location.assign("https://ailearningassistant.edgeone.app/");
+    // 4. Cleanly reload the page to start the app
+    window.location.assign("https://ailearningassistant.edgeone.app/",);
     return;
   }
 
@@ -1166,170 +1167,122 @@ async function loadOfflineData() {
 /**
  * Initializes the app with a dynamic, multi-stage loading screen.
  */
+// --- START: Updated initializeApp Function ---
 async function initializeApp() {
-  // --- START: FIX FOR GOOGLE LOGIN REDIRECT ---
-  if (window.location.hash.includes("access_token")) {
-    // The page is handling a redirect from Google. We show a simple message
-    // and stop execution. The 'onAuthStateChange' listener at the top of the script
-    // will handle reloading the page cleanly.
+  // --- THIS IS THE FIX (Part 2): Check for the double-reload flag ---
+  if (sessionStorage.getItem('justLoggedIn') === 'true') {
+    // Clear the flag immediately to prevent loops
+    sessionStorage.removeItem('justLoggedIn');
+
+    // Show a message while we wait
     const loadingOverlay = document.getElementById("loading-overlay");
     const statusText = document.getElementById("loading-status-text");
     if (loadingOverlay && statusText) {
-      loadingOverlay.classList.remove("hidden"); // Ensure the overlay is visible
-      statusText.textContent = "Finalizing login...";
-      // Hide other distracting elements from the normal loading screen
-      const inProgress = document.getElementById("loading-in-progress");
-      const complete = document.getElementById("loading-complete");
-      if (inProgress) inProgress.style.display = "none";
-      if (complete) complete.style.display = "none";
+      loadingOverlay.classList.remove("hidden");
+      statusText.textContent = "Syncing account...";
+      // Ensure other loading elements are not visible
+      document.getElementById("loading-complete").classList.add("hidden");
+      document.getElementById('enter-app-btn').classList.add('hidden');
     }
-    return; // <-- This is the crucial part. It stops the function here.
-  }
-  // --- END: FIX FOR GOOLE LOGIN REDIRECT ---
 
-  // --- START: Check for an existing session ---
-  const loggedInUserEmail = localStorage.getItem("loggedInUser");
-  if (loggedInUserEmail) {
-    // --- THIS IS THE FIX ---
-    // Load offline data even when the user is already logged in.
-    await loadOfflineData();
-
-    // If a user is already logged in, bypass the loading screen entirely.
-    const loadingOverlay = document.getElementById("loading-overlay");
-    loadingOverlay.classList.add("hidden");
-
-    playSound(SFX.whoosh, 0.7);
-
-    showWelcomeScreen(); // Show the main chat interface
-    updateStatus("pending"); // Set the initial status
-    updateUserInfo();
-    return; // Stop the rest of the initializeApp function from running
-  }
-  // --- 1. Define loading content & get elements ---
-  const loadingStatuses = [
-    "Initializing...",
-    "Loading resources...",
-    "Connecting to APIs...",
-    "Connecting to the server...",
-    "Connecting to the server...1",
-    "Connecting to the server...2",
-    "Connecting to the server...3",
-    "Finalizing setup...",
-  ];
-  const loadingTips = [
-    "Ask about specific topics like MRP, BOM, PO, Inventory, or MPS.",
-    "Ask AILA about pivot table or dashboard.",
-    "AILA was originally a floating embedded chat inside the ICT website.",
-    "AILA can understand and display formatted tables and also codes and formulas.",
-    "Navigate the Tool icon 🔧 to access Modules, Orientation, and Learning Materials.",
-    "You can find learning materials by clicking Tool icon > Materials.",
-    "Aila was envisioned on the 9th of October, later created on 26th of October",
-    "Dyk, AILA's main developer was, N. Joshua.",
-    "Dyk, Mr. Kaiser is the one who envissioned AILA.",
-  ];
-  const loadingOverlay = document.getElementById("loading-overlay");
-  const logoContainer = document.getElementById("loading-logo-container");
-  const mainLogo = document.getElementById("loading-logo");
-  const inProgressDiv = document.getElementById("loading-in-progress");
-  const completeDiv = document.getElementById("loading-complete");
-  const statusText = document.getElementById("loading-status-text");
-  const tipText = document.getElementById("loading-tip");
-  const enterBtn = document.getElementById("enter-app-btn");
-  const clickMeText = document.getElementById("click-me-text");
-
-  // --- 2. Set up and attempt to play ambient sound ---
-  ambientSound = new Audio(SFX.loadingAmbient);
-  ambientSound.loop = true;
-  ambientSound.volume = 0.3;
-  let ambientNeedsInteraction = false;
-  ambientSound.play().catch((e) => {
-    console.warn(
-      "Ambient sound autoplay was blocked. It will start on the first click."
-    );
-    ambientNeedsInteraction = true;
-  });
-
-  // --- 3. Set up interactive logo with sound fix ---
-  if (logoContainer && mainLogo) {
-    let isShattered = false;
-    logoContainer.addEventListener("click", () => {
-      if (ambientNeedsInteraction) {
-        ambientSound.play();
-        ambientNeedsInteraction = false;
-      }
-      if (isShattered) return;
-      if (clickMeText) clickMeText.style.opacity = "0";
-      playSound(SFX.glassBreak);
-      isShattered = true;
-      mainLogo.style.opacity = "0";
-      for (let i = 0; i < 16; i++) {
-        const piece = document.createElement("div");
-        piece.className = "shatter-piece";
-        const row = Math.floor(i / 4);
-        const col = i % 4;
-        piece.style.left = `${col * 25}%`;
-        piece.style.top = `${row * 25}%`;
-        piece.style.backgroundPosition = `-${col * 20}px -${row * 20}px`;
-        logoContainer.appendChild(piece);
-        setTimeout(() => {
-          const randomX = (Math.random() - 0.5) * 300;
-          const randomY = (Math.random() - 0.5) * 300;
-          const randomRot = (Math.random() - 0.5) * 720;
-          piece.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRot}deg)`;
-          piece.style.opacity = "0";
-        }, 10);
-      }
-
-      // --- THIS IS THE FIX ---
-      setTimeout(() => {
-        // Remove only the shatter pieces, leaving the other elements intact.
-        logoContainer
-          .querySelectorAll(".shatter-piece")
-          .forEach((p) => p.remove());
-
-        // Restore the opacity of the main elements.
-        mainLogo.style.opacity = "1";
-        if (clickMeText) clickMeText.style.opacity = "1";
-
-        isShattered = false;
-      }, 900);
-    });
-  }
-
-  // --- 4. Start the dynamic text animations ---
-  let tipIndex = 0;
-  tipText.textContent = "Tip: " + loadingTips[tipIndex];
-  const tipInterval = setInterval(() => {
-    tipIndex = (tipIndex + 1) % loadingTips.length;
-    tipText.style.opacity = "0";
+    // Wait 1 second, then perform the second and final reload.
     setTimeout(() => {
-      tipText.textContent = "Tip: " + loadingTips[tipIndex];
-      tipText.style.opacity = "1";
-    }, 300);
-  }, 3000);
-  let statusIndex = 0;
-  const cycleStatus = () => {
-    if (statusIndex < loadingStatuses.length) {
-      statusText.textContent = loadingStatuses[statusIndex++];
-      setTimeout(cycleStatus, 900);
+        window.location.reload();
+    }, 1000);
+
+    // Stop further execution, as the page is about to reload again
+    return;
+  }
+  // --- End of Double-Reload Logic ---
+
+  // --- START: FIX FOR GOOGLE LOGIN REDIRECT ---
+  if (window.location.hash.includes("access_token")) {
+    // The page is handling the initial redirect. We show a message and stop.
+    // The 'onAuthStateChange' listener will handle the first reload.
+    const loadingOverlay = document.getElementById("loading-overlay");
+    const statusText = document.getElementById("loading-status-text");
+    if (loadingOverlay && statusText) {
+      loadingOverlay.classList.remove("hidden");
+      statusText.textContent = "Finalizing login...";
+      // Hide other distracting elements
+      document.getElementById("loading-in-progress").style.display = 'block';
+      document.getElementById("loading-complete").classList.add("hidden");
+      document.getElementById("loading-logo-container").style.display = 'flex';
+      document.getElementById('enter-app-btn').classList.add('hidden');
     }
-  };
-  cycleStatus();
+    return; // Stop execution
+  }
+  // --- END: FIX FOR GOOGLE LOGIN REDIRECT ---
 
-  // --- 5. Start the actual data loading ---
-  await loadOfflineData();
+  // ... (The rest of your original initializeApp function continues here)
+  const loadingLogo = document.getElementById("loading-logo");
+  const clickMeText = document.getElementById("click-me-text");
+  const statusText = document.getElementById("loading-status-text");
+  const loadingInProgress = document.getElementById("loading-in-progress");
+  const loadingComplete = document.getElementById("loading-complete");
+  const enterAppBtn = document.getElementById("enter-app-btn");
 
-  // --- 6. Handle the completion state ---
-  // Keep animations running, but hide the "Click Me" text
+  if (!loadingLogo || !statusText || !loadingComplete || !enterAppBtn) {
+    console.error("AILA Error: A critical loading element is missing.");
+    return;
+  }
 
-  // THIS IS THE FIX: Swap the "in-progress" div for the "complete" div
-  inProgressDiv.classList.add("hidden");
-  completeDiv.classList.remove("hidden");
+  // --- Stage 1: Initial Animation & Setup ---
+  loadingLogo.classList.add("restoring");
+  if (clickMeText) clickMeText.style.opacity = "0";
 
-  // Show the enter button
-  enterBtn.classList.remove("hidden");
-  playSound(SFX.success, 0.8);
+  let stage = 1;
+  const stages = [
+    "Connecting to AILA's Network...",
+    "Waking Up AILA...",
+    "Almost there...",
+  ];
+
+  function updateStatusText() {
+    if (stage <= stages.length) {
+      statusText.textContent = stages[stage - 1];
+      stage++;
+      setTimeout(updateStatusText, 800); // Update every 0.8 seconds
+    }
+  }
+
+  setTimeout(updateStatusText, 200);
+
+  // --- Stage 2: Simulating the Loading Process ---
+  setTimeout(async () => {
+    loadingInProgress.classList.add("hidden");
+    loadingComplete.classList.remove("hidden");
+
+    // --- Check login status and show the right button ---
+    const {
+      data: { session },
+    } = await _supabase.auth.getSession();
+    if (session) {
+      const email = session.user.email;
+      const username = email.split("@")[0];
+      const welcomeContainer = document.getElementById(
+        "welcome-message-container"
+      );
+      const welcomeText = document.getElementById("welcome-message-text");
+      const finalEnterBtn = document.getElementById("final-enter-btn");
+
+      if (welcomeContainer && welcomeText && finalEnterBtn) {
+        welcomeText.textContent = `Welcome back, ${username}!`;
+        document.getElementById("enter-app-btn").classList.add("hidden");
+        welcomeContainer.classList.remove("hidden");
+        finalEnterBtn.addEventListener("click", () =>
+          handleSuccessfulLogin(email)
+        );
+      }
+    } else {
+      enterAppBtn.classList.remove("hidden");
+    }
+  }, stages.length * 800 + 400); // Wait until all status texts have been shown
+
+  // --- Setup other app functions in the background ---
+  setupAllEventListeners();
 }
+// --- END: Updated initializeApp Function ---
 
 const ro = new MutationObserver(
   () => (messagesEl.scrollTop = messagesEl.scrollHeight)
