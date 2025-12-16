@@ -30,7 +30,7 @@ _supabase.auth.onAuthStateChange(async (event, session) => {
     await logUserEventToSheet(session.user.email, displayName, eventType);
 
     // 4. Cleanly reload the page to start the app
-    window.location.assign("https://ailearningassistant.edgeone.app/",);
+    window.location.assign("https://ailearningassistant.edgeone.app/");
     return;
   }
 
@@ -416,11 +416,10 @@ function playSound(url, volume = 1.0) {
   } catch (error) {
     console.warn(`Could not play sound effect: ${url}`, error);
   }
-} 
+}
 // N8N chat webhook link constant
 const CHAT_WEBHOOK = "https://levercrafter.app.n8n.cloud/webhook/ictworkflow";
-const OFFLINE_DATA_URL =
-  "https://script.google.com/macros/s/AKfycbxyBAMvcSxdV_Gbc8JIKB1yJRPw0ocQKpczfZ8KLp4Gln2LgWTTbFar3ugjODGrqjiE/exec";
+const OFFLINE_DATA_URL ="https://script.google.com/macros/s/AKfycbxyBAMvcSxdV_Gbc8JIKB1yJRPw0ocQKpczfZ8KLp4Gln2LgWTTbFar3ugjODGrqjiE/exec";
 document.addEventListener("click", (e) => {
   if (!e.target.closest(".dropdown")) {
     const allDropdowns = document.querySelectorAll(".dropdown");
@@ -580,7 +579,10 @@ function useSuggestion(text) {
   // and stop the function from doing anything else.
   if (isTrialExpired) {
     messagesEl.innerHTML = ""; // Clear the welcome screen or any other content
-    appendMessage("Your trial is over. Please contact the developer to renew your trial.", "bot");
+    appendMessage(
+      "Your trial is over. Please contact the developer to renew your trial.",
+      "bot"
+    );
     return; // <-- This is the crucial part that stops the query.
   }
   // --- END OF FIX ---
@@ -596,7 +598,6 @@ function useSuggestion(text) {
   // The rest of the function remains the same: append the new message and send it.
   appendMessage(text, "user");
   sendToBackend(text, true);
-
 }
 function appendMessage(
   text,
@@ -1144,96 +1145,129 @@ async function logUserEventToSheet(email, username, eventType) {
 }
 /**
  * Loads the offline responses from our Google Sheet API.
+ * This version includes more robust error handling to help with debugging.
  */
 async function loadOfflineData() {
+  // First, check if the URL has been set.
+  // --- THIS IS THE FIX (Part 1): Corrected the condition ---
+  if (!OFFLINE_DATA_URL || OFFLINE_DATA_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
+    console.error("Critical Error: OFFLINE_DATA_URL is not configured in script.js.");
+    offlineResponses = {
+      Error: "Offline responses are not configured. Please contact the administrator.",
+    };
+    return; // Stop if the URL is missing.
+  }
+
   try {
     const response = await fetch(OFFLINE_DATA_URL);
+
+    // Check if the network response itself was successful. A 404 or 500 error will be caught here.
     if (!response.ok) {
-      throw new Error("Failed to load offline data");
+      throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
     }
+
+    // Try to parse the response as JSON. This will fail if your script returns an HTML error page or plain text.
     const data = await response.json();
-    offlineResponses = data; // Populate our variable with the fetched data
+    offlineResponses = data;
     console.log("Offline responses loaded successfully from Google Sheet.");
+
   } catch (error) {
-    console.error("Could not load offline data:", error);
-    // Optional: You could have a hardcoded fallback here if the sheet fails to load
+    console.error("Could not load offline data. This can happen for several reasons:", error);
+    console.info("Common issues are: \n1. The OFFLINE_DATA_URL is incorrect. \n2. The Google App Script is not deployed correctly (it must be set to 'Anyone' under 'Who has access'). \n3. The script has a bug and is returning an error page (HTML) instead of valid JSON.");
+
+    // Hardcoded fallback
     offlineResponses = {
       Error:
-        "Offline responses could not be loaded. Please check the connection.",
+        "Offline responses could not be loaded. Please check your connection or contact support.",
     };
   }
 }
-
-/**
- * Initializes the app with a dynamic, multi-stage loading screen.
- */
 // --- START: Updated initializeApp Function ---
 async function initializeApp() {
   // --- THIS IS THE FIX (Part 2): Check for the double-reload flag ---
-  if (sessionStorage.getItem('justLoggedIn') === 'true') {
-    // Clear the flag immediately to prevent loops
-    sessionStorage.removeItem('justLoggedIn');
-
-    // Show a message while we wait
+  if (sessionStorage.getItem("justLoggedIn") === "true") {
+    // ... (double-reload logic remains the same)
+    sessionStorage.removeItem("justLoggedIn");
     const loadingOverlay = document.getElementById("loading-overlay");
     const statusText = document.getElementById("loading-status-text");
     if (loadingOverlay && statusText) {
       loadingOverlay.classList.remove("hidden");
       statusText.textContent = "Syncing account...";
-      // Ensure other loading elements are not visible
       document.getElementById("loading-complete").classList.add("hidden");
-      document.getElementById('enter-app-btn').classList.add('hidden');
+      document.getElementById("enter-app-btn").classList.add("hidden");
     }
-
-    // Wait 1 second, then perform the second and final reload.
     setTimeout(() => {
         window.location.reload();
     }, 1000);
-
-    // Stop further execution, as the page is about to reload again
     return;
   }
   // --- End of Double-Reload Logic ---
 
-  // --- START: FIX FOR GOOGLE LOGIN REDIRECT ---
   if (window.location.hash.includes("access_token")) {
-    // The page is handling the initial redirect. We show a message and stop.
-    // The 'onAuthStateChange' listener will handle the first reload.
+    // ... (google login redirect logic remains the same)
     const loadingOverlay = document.getElementById("loading-overlay");
     const statusText = document.getElementById("loading-status-text");
     if (loadingOverlay && statusText) {
       loadingOverlay.classList.remove("hidden");
       statusText.textContent = "Finalizing login...";
-      // Hide other distracting elements
       document.getElementById("loading-in-progress").style.display = 'block';
       document.getElementById("loading-complete").classList.add("hidden");
       document.getElementById("loading-logo-container").style.display = 'flex';
       document.getElementById('enter-app-btn').classList.add('hidden');
     }
-    return; // Stop execution
+    return;
   }
-  // --- END: FIX FOR GOOGLE LOGIN REDIRECT ---
 
-  // ... (The rest of your original initializeApp function continues here)
   const loadingLogo = document.getElementById("loading-logo");
   const clickMeText = document.getElementById("click-me-text");
   const statusText = document.getElementById("loading-status-text");
   const loadingInProgress = document.getElementById("loading-in-progress");
   const loadingComplete = document.getElementById("loading-complete");
   const enterAppBtn = document.getElementById("enter-app-btn");
+  const loadingTip = document.getElementById("loading-tip");
 
-  if (!loadingLogo || !statusText || !loadingComplete || !enterAppBtn) {
+  if (!loadingLogo || !statusText || !loadingComplete || !enterAppBtn || !loadingTip) {
     console.error("AILA Error: A critical loading element is missing.");
     return;
   }
 
-  // --- Stage 1: Initial Animation & Setup ---
+  // --- THIS IS THE FIX (Part 2): Load the offline data right at the start ---
+  await loadOfflineData();
+  // --- END OF FIX ---
+
+  // ... (the rest of your tip cycling and loading animation logic remains the same)
+  const loadingTips = [
+      "AILA is made by a group of LA's from the ICTDp.",
+      "If AILA gets stuck, try starting a new chat from the sidebar.",
+      "You can ask AILA to explain complex topics in simple terms.",
+      "REFRESH The Site if it's not Loading.",
+      "AILA can remember the context of your current conversation.",
+      "Use the 'Contact Developer' button if you need help with your trial."
+  ];
+  let tipInterval;
+
+  function cycleLoadingTips() {
+    loadingTip.style.opacity = '0';
+    setTimeout(() => {
+        const randomTip = loadingTips[Math.floor(Math.random() * loadingTips.length)];
+        loadingTip.innerHTML = `<strong>TIP: </strong> ${randomTip}`;
+        loadingTip.style.opacity = '1';
+    }, 500);
+  }
+
+  const firstTip = loadingTips[Math.floor(Math.random() * loadingTips.length)];
+  loadingTip.innerHTML = `<strong>TIP: </strong> ${firstTip}`;
+  loadingTip.style.opacity = '1';
+
+  tipInterval = setInterval(cycleLoadingTips, 3000);
+
   loadingLogo.classList.add("restoring");
   if (clickMeText) clickMeText.style.opacity = "0";
 
   let stage = 1;
   const stages = [
     "Connecting to AILA's Network...",
+    "Loading Resources...",
     "Waking Up AILA...",
     "Almost there...",
   ];
@@ -1242,32 +1276,27 @@ async function initializeApp() {
     if (stage <= stages.length) {
       statusText.textContent = stages[stage - 1];
       stage++;
-      setTimeout(updateStatusText, 800); // Update every 0.8 seconds
+      setTimeout(updateStatusText, 800);
     }
   }
 
   setTimeout(updateStatusText, 200);
 
-  // --- Stage 2: Simulating the Loading Process ---
   setTimeout(async () => {
     loadingInProgress.classList.add("hidden");
     loadingComplete.classList.remove("hidden");
-
-    // --- Check login status and show the right button ---
     const {
       data: { session },
     } = await _supabase.auth.getSession();
     if (session) {
       const email = session.user.email;
-      const username = email.split("@")[0];
-      const welcomeContainer = document.getElementById(
-        "welcome-message-container"
-      );
+      const displayName = localStorage.getItem("loggedInUserName") || email.split("@")[0];
+      const welcomeContainer = document.getElementById("welcome-message-container");
       const welcomeText = document.getElementById("welcome-message-text");
       const finalEnterBtn = document.getElementById("final-enter-btn");
 
       if (welcomeContainer && welcomeText && finalEnterBtn) {
-        welcomeText.textContent = `Welcome back, ${username}!`;
+        welcomeText.textContent = `Welcome back, ${displayName}!`;
         document.getElementById("enter-app-btn").classList.add("hidden");
         welcomeContainer.classList.remove("hidden");
         finalEnterBtn.addEventListener("click", () =>
@@ -1277,9 +1306,8 @@ async function initializeApp() {
     } else {
       enterAppBtn.classList.remove("hidden");
     }
-  }, stages.length * 800 + 400); // Wait until all status texts have been shown
+  }, stages.length * 800 + 400);
 
-  // --- Setup other app functions in the background ---
   setupAllEventListeners();
 }
 // --- END: Updated initializeApp Function ---
@@ -1403,7 +1431,7 @@ function setupAuthModal() {
   const pinContainer = document.getElementById("pinContainer");
   const pinConfirmGroup = document.getElementById("pinConfirmGroup");
   const pinConfirmContainer = document.getElementById("pinConfirmContainer");
-  
+
   // --- START: PIN VISIBILITY ELEMENTS ---
   const togglePinBtn = document.getElementById("togglePinBtn");
   const togglePinConfirmBtn = document.getElementById("togglePinConfirmBtn");
@@ -1440,30 +1468,34 @@ function setupAuthModal() {
   function closeAuthModal() {
     authModal.classList.add("hidden");
   }
-  
-// --- START: NEW PIN TOGGLE FUNCTION ---
-function togglePinVisibility(container, button) {
-    const inputs = container.querySelectorAll('.pin-digit');
-    const eyeIcon = button.querySelector('.eye-icon'); // The REGULAR eye
-    const eyeOffIcon = button.querySelector('.eye-off-icon'); // The SLASHED eye
 
-    const isCurrentlyHidden = inputs[0].type === 'password';
+  // --- START: NEW PIN TOGGLE FUNCTION ---
+  function togglePinVisibility(container, button) {
+    const inputs = container.querySelectorAll(".pin-digit");
+    const eyeIcon = button.querySelector(".eye-icon"); // The REGULAR eye
+    const eyeOffIcon = button.querySelector(".eye-off-icon"); // The SLASHED eye
+
+    const isCurrentlyHidden = inputs[0].type === "password";
 
     if (isCurrentlyHidden) {
-        // It's hidden, so SHOW it
-        inputs.forEach(input => { input.type = 'text'; });
-        // And update icon to show the OPEN eye (representing the new "visible" state)
-        eyeIcon.style.display = 'block';
-        eyeOffIcon.style.display = 'none';
+      // It's hidden, so SHOW it
+      inputs.forEach((input) => {
+        input.type = "text";
+      });
+      // And update icon to show the OPEN eye (representing the new "visible" state)
+      eyeIcon.style.display = "block";
+      eyeOffIcon.style.display = "none";
     } else {
-        // It's visible, so HIDE it
-        inputs.forEach(input => { input.type = 'password'; });
-        // And update icon to show the SLASHED eye (representing the new "hidden" state)
-        eyeIcon.style.display = 'none';
-        eyeOffIcon.style.display = 'block';
+      // It's visible, so HIDE it
+      inputs.forEach((input) => {
+        input.type = "password";
+      });
+      // And update icon to show the SLASHED eye (representing the new "hidden" state)
+      eyeIcon.style.display = "none";
+      eyeOffIcon.style.display = "block";
     }
-}
-// --- END: NEW PIN TOGGLE FUNCTION ---
+  }
+  // --- END: NEW PIN TOGGLE FUNCTION ---
 
   // (This entire function replaces the old setAuthState function)
   function setAuthState(newState) {
@@ -1525,15 +1557,18 @@ function togglePinVisibility(container, button) {
     }
   }
 
-  function showWelcomeAndEnter(email, isNewUser) {
-    authForm.style.display = "none"; // Hide the form
-    successScreen.classList.remove("hidden"); // Show the success screen
+function showWelcomeAndEnter(email, isNewUser) {
+  authForm.style.display = "none"; // Hide the form
+  successScreen.classList.remove("hidden"); // Show the success screen
 
-    const username = email.split("@")[0];
-    successMessage.textContent = isNewUser
-      ? `Welcome, ${username}!`
-      : `Welcome back, ${username}!`;
-  }
+  // --- THIS IS THE FIX ---
+  // Get the user's full name from localStorage, with a fallback to the username.
+  const displayName = localStorage.getItem("loggedInUserName") || email.split("@")[0];
+
+  successMessage.textContent = isNewUser
+    ? `Welcome, ${displayName}!`
+    : `Welcome back, ${displayName}!`;
+}
 
   function setupPinInput(container) {
     if (!container) return;
@@ -1577,16 +1612,19 @@ function togglePinVisibility(container, button) {
       e.preventDefault();
       setAuthState("login");
     });
-  
+
   // --- START: ADD PIN VISIBILITY LISTENERS ---
   if (togglePinBtn) {
-      togglePinBtn.addEventListener("click", () => togglePinVisibility(pinContainer, togglePinBtn));
+    togglePinBtn.addEventListener("click", () =>
+      togglePinVisibility(pinContainer, togglePinBtn)
+    );
   }
   if (togglePinConfirmBtn) {
-      togglePinConfirmBtn.addEventListener("click", () => togglePinVisibility(pinConfirmContainer, togglePinConfirmBtn));
+    togglePinConfirmBtn.addEventListener("click", () =>
+      togglePinVisibility(pinConfirmContainer, togglePinConfirmBtn)
+    );
   }
   // --- END: ADD PIN VISIBILITY LISTENERS ---
-
 
   if (googleLoginBtn) {
     googleLoginBtn.addEventListener("click", async (e) => {
@@ -1677,7 +1715,10 @@ function togglePinVisibility(container, button) {
             // --- THIS IS THE FIX ---
             await logUserEventToSheet(email, username, "PIN Registration");
 
-            showCustomAlert("Registered successfully! Please check your email to verify your account.", "success");
+            showCustomAlert(
+              "Registered successfully! Please check your email to verify your account.",
+              "success"
+            );
             // No automatic login on register anymore
           } else {
             // Login
@@ -1818,8 +1859,8 @@ async function updateUserInfo() {
         // Set the global flag to true and disable the chat.
         isTrialExpired = true;
         if (chatInput) {
-            chatInput.disabled = true;
-            chatInput.placeholder = "Your trial has expired.";
+          chatInput.disabled = true;
+          chatInput.placeholder = "Your trial has expired.";
         }
         if (chatSendBtn) chatSendBtn.disabled = true;
         if (voiceBtn) voiceBtn.disabled = true;
@@ -1935,22 +1976,23 @@ function setupNavigation() {
       }
     });
   }
-  
-// --- START: CONTACT DEVELOPER BUTTON LOGIC ---
-if (contactDevBtn) {
-  contactDevBtn.addEventListener("click", () => {
-    const email = "narvasajoshua61@gmail.com";
-    const subject = "enter your concern here";
-    
-    // This creates a URL that opens a pre-filled Gmail compose window.
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${encodeURIComponent(subject)}`;
-    
-    // Open the URL in a new browser tab.
-    window.open(gmailUrl, "_blank");
-  });
-}
-// --- END: CONTACT DEVELOPER BUTTON LOGIC ---
 
+  // --- START: CONTACT DEVELOPER BUTTON LOGIC ---
+  if (contactDevBtn) {
+    contactDevBtn.addEventListener("click", () => {
+      const email = "narvasajoshua61@gmail.com";
+      const subject = "enter your concern here";
+
+      // This creates a URL that opens a pre-filled Gmail compose window.
+      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${encodeURIComponent(
+        subject
+      )}`;
+
+      // Open the URL in a new browser tab.
+      window.open(gmailUrl, "_blank");
+    });
+  }
+  // --- END: CONTACT DEVELOPER BUTTON LOGIC ---
 
   // --- User Profile Menu Logic ---
   if (userProfileBtn && userMenu) {

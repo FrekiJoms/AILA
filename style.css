@@ -132,16 +132,16 @@
 /* --- Loading Screen Tip --- */
 #loading-tip {
   text-align: center;
-  transition: opacity 0.3s ease;
-  text-align: center;
-  /* Dimmer color for the tip */
-  font-size: 14px;
-  max-width: 300px;
+  transition: opacity 0.5s ease; /* Animation for smooth appearance */
   color: var(--muted);
-  font-size: 14px;
-  padding-top: 4px;
-  margin-top: 3px;
-  text-align: center;
+  font-size: 13px;
+  max-width: 280px; /* Constrain width for better readability */
+  margin-top: 15px; /* Space above the tip */
+  opacity: 0; /* Start as invisible */
+}
+
+#loading-tip strong {
+  color: var(--accent1); /* Make the "TIP:" text stand out */
 }
 
 /* --- Status Overlay and Loader --- */
