@@ -1916,50 +1916,54 @@ function setupNavigation() {
   const userMenu = document.getElementById("userMenu");
   const logoutBtn = document.getElementById("logoutBtn");
 
-  // --- Mobile Swipe Gesture Logic ---
-  let touchStartX = 0;
-  let touchEndX = 0;
-  const swipeThreshold = 10; // Min swipe distance in pixels
-  const edgeThreshold = 900; // How close to the left edge the swipe must start
-
-  function handleSwipeGesture() {
-    // Only run on mobile
-    if (window.innerWidth > 900) return;
-
-    // 1. SWIPE-TO-OPEN (Left to Right)
-    if (
-      !navSidebar.classList.contains("expanded") &&
-      touchStartX < edgeThreshold
-    ) {
-      if (touchEndX - touchStartX > swipeThreshold) {
-        navSidebar.classList.add("expanded"); // Open sidebar
+    // --- Mobile Swipe Gesture Logic ---
+    let touchStartX = 0;
+    let touchEndX = 0;
+    // --- START: THIS IS THE FIX ---
+    // We increase the swipe distance required to 50px to prevent accidental swipes.
+    const swipeThreshold = 50; 
+    // We also restrict the swipe-to-open gesture to the first 40px of the screen edge.
+    const edgeThreshold = 40; 
+    // --- END: THIS IS THE FIX ---
+  
+    function handleSwipeGesture() {
+      // Only run on mobile
+      if (window.innerWidth > 900) return;
+  
+      // 1. SWIPE-TO-OPEN (Left to Right)
+      if (
+        !navSidebar.classList.contains("expanded") &&
+        touchStartX < edgeThreshold
+      ) {
+        if (touchEndX - touchStartX > swipeThreshold) {
+          navSidebar.classList.add("expanded"); // Open sidebar
+        }
+      }
+  
+      // 2. SWIPE-TO-CLOSE (Right to Left)
+      if (navSidebar.classList.contains("expanded")) {
+        if (touchStartX - touchEndX > swipeThreshold) {
+          navSidebar.classList.remove("expanded"); // Close sidebar
+        }
       }
     }
-
-    // 2. SWIPE-TO-CLOSE (Right to Left)
-    if (navSidebar.classList.contains("expanded")) {
-      if (touchStartX - touchEndX > swipeThreshold) {
-        navSidebar.classList.remove("expanded"); // Close sidebar
-      }
-    }
-  }
-
-  document.addEventListener(
-    "touchstart",
-    (e) => {
-      touchStartX = e.changedTouches[0].screenX;
-    },
-    { passive: true }
-  );
-
-  document.addEventListener(
-    "touchend",
-    (e) => {
-      touchEndX = e.changedTouches[0].screenX;
-      handleSwipeGesture();
-    },
-    { passive: true }
-  );
+  
+    document.addEventListener(
+      "touchstart",
+      (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      },
+      { passive: true }
+    );
+  
+    document.addEventListener(
+      "touchend",
+      (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipeGesture();
+      },
+      { passive: true }
+    );
 
   // --- Desktop Toggle Logic ---
   if (sidebarToggleBtn) {
