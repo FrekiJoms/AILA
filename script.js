@@ -1688,17 +1688,14 @@ function showWelcomeAndEnter(email, isNewUser) {
       try {
         if (authState === "reset") {
           // This sends a password reset link to the user's email.
-          // The redirectTo URL is where the user will be sent after clicking the link.
           const { error } = await _supabase.auth.resetPasswordForEmail(email, {
             redirectTo: window.location.origin + "/reset.html",
           });
 
           if (error) {
-            // If Supabase returns an error (like user not found), show it.
             throw error;
           }
 
-          // Inform the user that the email has been sent successfully.
           showCustomAlert(
             "Password reset instructions sent to your email.",
             "success"
@@ -1721,6 +1718,8 @@ function showWelcomeAndEnter(email, isNewUser) {
             if (pin !== pinConfirm)
               throw new Error("The PINs you entered do not match.");
 
+            // --- START: THIS IS THE FIX ---
+            // Step 1: Sign up the user. Supabase automatically signs them in on success.
             const { error } = await _supabase.auth.signUp({
               email,
               password: pin,
@@ -1728,23 +1727,22 @@ function showWelcomeAndEnter(email, isNewUser) {
             });
             if (error) throw error;
 
-            // --- THIS IS THE FIX ---
+            // Step 2: Log the registration event to your Google Sheet.
             await logUserEventToSheet(email, username, "PIN Registration");
 
-            showCustomAlert(
-              "Registered successfully! Please check your email to verify your account.",
-              "success"
-            );
-            // No automatic login on register anymore
+            // Step 3: Immediately handle the successful login and load the app.
+            // We pass 'true' to indicate this is a new user for the trial logic.
+            handleSuccessfulLogin(email, true);
+            // --- END: THIS IS THE FIX ---
+
           } else {
-            // Login
+            // This is the existing login logic, which remains the same.
             const { data, error } = await _supabase.auth.signInWithPassword({
               email,
               password: pin,
             });
             if (error) throw error;
 
-            // --- THIS IS THE FIX ---
             const user = data.user;
             const displayName =
               user.user_metadata && user.user_metadata.full_name
