@@ -1255,6 +1255,69 @@ async function initializeApp() {
     return;
   }
 
+  // --- START: FINAL Shatter & Reassemble Listener ---
+const logoContainer = document.getElementById("loading-logo-container");
+const mainLogo = document.getElementById("loading-logo");
+
+if (logoContainer && mainLogo) {
+  let isAnimating = false; // Use a single flag to prevent all clicks during the sequence
+
+  logoContainer.addEventListener("click", () => {
+    if (isAnimating) {
+      return; // Exit if the shatter/reassemble sequence is already running
+    }
+    isAnimating = true;
+
+    playSound(SFX.glassBreak, 0.7);
+
+    // --- Shatter Phase ---
+    mainLogo.style.opacity = "0";
+    const pieces = []; // Array to hold our shatter pieces
+
+    for (let i = 0; i < 16; i++) {
+      const piece = document.createElement("div");
+      piece.className = "shatter-piece";
+      const row = Math.floor(i / 4);
+      const col = i % 4;
+      piece.style.backgroundPosition = `-${col * 32.5}px -${row * 32.5}px`;
+      logoContainer.appendChild(piece);
+      pieces.push(piece); // Store the piece
+
+      // Animate the piece flying outwards
+      setTimeout(() => {
+        const randomX = (Math.random() - 0.5) * 400;
+        const randomY = (Math.random() - 0.5) * 400;
+        const randomRot = (Math.random() - 0.5) * 720;
+        piece.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRot}deg)`;
+        piece.style.opacity = "0";
+      }, 20);
+    }
+
+    // --- Reassemble Phase ---
+    // After a delay, start bringing the pieces back
+    setTimeout(() => {
+      pieces.forEach((piece, i) => {
+        // Stagger the return of each piece for the "piece by piece" effect
+        piece.style.transitionDelay = `${i * 25}ms`;
+        // Reset transform and opacity to fly the piece back to its original spot
+        piece.style.transform = 'translate(0, 0) rotate(0deg)';
+        piece.style.opacity = '1';
+      });
+
+      // --- Final Cleanup ---
+      // After the reassembly is complete, restore the original logo
+      setTimeout(() => {
+        logoContainer.innerHTML = ''; // Clear out all piece elements
+        logoContainer.appendChild(mainLogo); // Add the original logo back
+        mainLogo.style.opacity = "1";
+        isAnimating = false; // Allow clicks again
+      }, 1200); // Must be long enough for all pieces to return
+
+    }, 1000); // Delay between shattering and starting to reassemble
+  });
+}
+// --- END: FINAL Shatter & Reassemble Listener ---
+
   // --- THIS IS THE FIX (Part 2): Load the offline data right at the start ---
   await loadOfflineData();
   // --- END OF FIX ---

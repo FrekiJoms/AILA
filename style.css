@@ -1,29 +1,54 @@
-/* Prevent logos from being right-clicked, long-pressed, or dragged */
-#loading-logo,
-.logo-area img,
-.welcome-logo img {
-  pointer-events: none;
-}
-
-/* This class triggers the "break" animation */
-#loading-logo.broken {
-  transform: scale(1.5) rotate(20deg) !important;
-  /* Use !important to override the float */
-  opacity: 0;
-}
-
-/* This class triggers the "restore" animation */
-#loading-logo.restoring {
-  transition-duration: 0.5s;
-  /* Make the restore a bit slower and more satisfying */
-  transform: scale(1) rotate(0deg) !important;
-  opacity: 1;
-}
-
-.loading-text-container {
+ng-text-container {
   margin-top: 30px;
   text-align: center;
 }
+/* --- START: FINAL CSS for Shatter/Float Logo --- */
+
+/* 1. The container: Positions the logo and captures clicks. */
+#loading-logo-container {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10000; /* High z-index to stay on top */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 2. The main logo: Has the default floating animation. */
+#loading-logo {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 10px var(--accent1)) drop-shadow(0 0 25px var(--accent1));
+  animation: smoothFloat 4s ease-in-out infinite;
+  /* Use transition for smooth fade-in/out when JS changes opacity */
+  transition: opacity 0.2s ease-in-out; 
+  /* pointer-events are disabled on the parent in your original HTML */
+}
+
+/* 3. The SHATTER PIECES: Styled for a two-way animation. */
+.shatter-piece {
+  position: absolute;
+  width: 25%;  /* 1/4 of the container */
+  height: 25%; /* 1/4 of the container */
+  background-image: url("ailalogo.png"); 
+  background-size: 130px 130px; /* Match the logo's full size */
+  
+  /* A more robust transition that looks good for both shattering and reassembling */
+  transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1), 
+              opacity 0.7s cubic-bezier(0.5, 0, 1, 0.5);
+}
+
+
+/* 4. The keyframe animation for the default floating effect. */
+@keyframes smoothFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+/* --- END: FINAL CSS for Shatter/Float Logo --- */
 
 .loading-text-container p {
   margin: 0;
@@ -31,103 +56,6 @@
   /* Bright main text color */
   font-size: 16px;
 }
-
-/* --- Glowing, Floating Logo with Particle Aura --- */
-
-/* The container sets up the space for the particles */
-#loading-logo-container {
-  position: relative;
-  width: 80px;
-  padding-bottom: 20px;
-  height: 80px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* The main logo with its glow and smooth float */
-#loading-logo {
-  width: 130px;
-  height: 130px;
-  /* A powerful glow that respects the logo's transparent areas */
-  filter: drop-shadow(0 0 10px var(--accent1)) drop-shadow(0 0 25px var(--accent1));
-  /* A new, smoother up-and-down floating animation */
-  animation: smoothFloat 4s ease-in-out infinite;
-  transition: opacity 0.2s ease;
-}
-
-/* These are the two main orbiting particles */
-#loading-logo-container::before,
-#loading-logo-container::after {
-  content: "";
-  position: absolute;
-  border-radius: 50%;
-  background-color: var(--accent2);
-  /* Make the particles soft and blurry */
-  filter: blur(4px);
-  /* Use the orbit animation */
-  animation: orbit 8s linear infinite;
-}
-
-/* Style the first particle */
-#loading-logo-container::before {
-  width: 8px;
-  height: 8px;
-  box-shadow: 0 0 10px var(--accent2);
-}
-
-/* Style the second particle and give it a different speed and starting position */
-#loading-logo-container::after {
-  width: 5px;
-  height: 5px;
-  box-shadow: 0 0 8px var(--accent2);
-  animation-delay: -4s;
-  /* Start it halfway through the animation */
-}
-
-/* --- Keyframe Animations --- */
-
-/* A smooth up-and-down floating motion */
-@keyframes smoothFloat {
-  0% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-10px);
-  }
-
-  100% {
-    transform: translateY(0px);
-  }
-}
-
-/* An elliptical orbit for the particles */
-@keyframes orbit {
-  0% {
-    transform: rotate(0deg) translateX(55px) rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg) translateX(55px) rotate(-360deg);
-  }
-}
-
-/* --- Logo Shatter Effect --- */
-.shatter-piece {
-  position: absolute;
-  width: calc(100% / 4);
-  /* We will use a 4x4 grid */
-  height: calc(100% / 4);
-  background-image: url("ailalogo.png");
-  background-size: 80px 80px;
-  /* Match the logo size */
-  transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1),
-    opacity 0.8s ease-out;
-  border-radius: 2px;
-}
-
 /* --- Loading Screen Tip --- */
 #loading-tip {
   text-align: center;
@@ -577,9 +505,11 @@ body {
   max-width: 95vw;
   height: 100vh;
   max-height: 92vh;
-  background: linear-gradient(180deg,
-      var(--glass-2),
-      rgba(255, 255, 255, 0.006));
+  background: linear-gradient(
+    180deg,
+    var(--glass-2),
+    rgba(255, 255, 255, 0.006)
+  );
   border-radius: 14px;
   box-shadow: 0 20px 60px rgba(2, 8, 20, 0.75);
   display: flex;
@@ -929,9 +859,11 @@ body {
 }
 
 .faq-btn {
-  background: linear-gradient(180deg,
-      rgba(255, 255, 255, 0.015),
-      rgba(255, 255, 255, 0.01));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.015),
+    rgba(255, 255, 255, 0.01)
+  );
   border: 1px solid rgba(255, 255, 255, 0.03);
   color: #e6fbff;
   padding: 8px 12px;
@@ -972,9 +904,11 @@ body {
 }
 
 .sugg-btn {
-  background: linear-gradient(180deg,
-      rgba(255, 255, 255, 0.02),
-      rgba(44, 33, 33, 0.01));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(44, 33, 33, 0.01)
+  );
   border: 1px solid rgba(255, 255, 255, 0.03);
   color: #e6fbff;
   padding: 8px 12px;
@@ -991,9 +925,11 @@ body {
 }
 
 .orient-btn {
-  background: linear-gradient(180deg,
-      rgba(255, 255, 255, 0.025),
-      rgba(255, 255, 255, 0.015));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.025),
+    rgba(255, 255, 255, 0.015)
+  );
   border: 1px solid rgba(255, 255, 255, 0.05);
   color: #e6fbff;
   padding: 8px 12px;
@@ -1097,7 +1033,6 @@ body {
 }
 
 @keyframes wave {
-
   0%,
   100% {
     transform: scaleY(0.2);
@@ -1266,9 +1201,11 @@ textarea#input.voice-active {
 }
 
 .welcome-btn {
-  background: linear-gradient(180deg,
-      rgba(255, 255, 255, 0.015),
-      rgba(255, 255, 255, 0.01));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.015),
+    rgba(255, 255, 255, 0.01)
+  );
   border: 1px solid rgba(255, 255, 255, 0.03);
   color: #e6fbff;
   border-radius: 10px;
@@ -1457,9 +1394,11 @@ textarea#input.voice-active {
 
 .modal-content {
   scale: 0.95;
-  background: linear-gradient(160deg,
-      rgba(255, 255, 255, 0.05),
-      rgba(255, 255, 255, 0.01));
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.01)
+  );
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 14px;
   padding: 24px;
@@ -1649,7 +1588,7 @@ textarea#input.voice-active {
 }
 
 /* When the button is active, expand the content next to it */
-.module-dropdown-btn.active+.module-dropdown-content {
+.module-dropdown-btn.active + .module-dropdown-content {
   max-height: 500px;
   /* A height large enough for your content */
 }
@@ -1774,25 +1713,11 @@ textarea#input.voice-active {
     box-sizing: border-box;
     overflow-wrap: break-word;
   }
-
-  #loading-logo-container {
-    width: 100px;
-    height: 100px;
-  }
-
-  /* Adjust the particle animation to use a smaller orbit */
-  #loading-logo-container::before,
-  #loading-logo-container::after {
-    animation-name: orbit-mobile;
-    /* Use the new mobile-specific animation */
-  }
-
   /* A new keyframe rule for the smaller mobile orbit */
   @keyframes orbit-mobile {
     0% {
       transform: rotate(0deg) translateX(65px) rotate(0deg);
     }
-
     100% {
       transform: rotate(360deg) translateX(65px) rotate(-360deg);
     }
@@ -1986,9 +1911,11 @@ textarea#input.voice-active {
   }
 
   .welcome-btn {
-    background: linear-gradient(180deg,
-        rgba(255, 255, 255, 0.015),
-        rgba(255, 255, 255, 0.01));
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.015),
+      rgba(255, 255, 255, 0.01)
+    );
     border: 1px solid rgba(255, 255, 255, 0.03);
     color: #e6fbff;
     padding: 5px 15px;
@@ -2107,7 +2034,6 @@ textarea#input.voice-active {
 }
 
 @keyframes scale {
-
   0%,
   100% {
     transform: none;
@@ -2260,7 +2186,6 @@ textarea#input.voice-active {
 }
 
 @keyframes scale {
-
   0%,
   100% {
     transform: none;
@@ -2355,7 +2280,6 @@ textarea#input.voice-active {
 }
 
 @keyframes float-up-down {
-
   0%,
   100% {
     transform: translateY(0);
@@ -2434,9 +2358,11 @@ textarea#input.voice-active {
 }
 
 .auth-modal-content {
-  background: linear-gradient(160deg,
-      rgba(255, 255, 255, 0.05),
-      rgba(255, 255, 255, 0.02));
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.02)
+  );
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 14px;
   padding: 24px;
@@ -2546,8 +2472,7 @@ textarea#input.voice-active {
 
 #welcome-message-text {
   color: #e8fbff;
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 14px;
   margin-bottom: 15px;
 }
 
@@ -2555,9 +2480,12 @@ textarea#input.voice-active {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #e6fbff;
-  padding: 12px 24px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-right: 10px;
+  padding-left: 10px;
   border-radius: 10px;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -2818,7 +2746,7 @@ input:-webkit-autofill:active {
 }
 
 /* New position for the EXPANDED sidebar */
-.nav-sidebar.expanded~.user-menu {
+.nav-sidebar.expanded ~ .user-menu {
   left: 15px;
   /* Move it back to the left edge inside the wide sidebar */
 }
@@ -3107,7 +3035,6 @@ input:-webkit-autofill:active {
 }
 
 @media (max-width: 640px) {
-
   /* Make the header a simple row */
   .header {
     display: flex;

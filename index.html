@@ -23,7 +23,13 @@
     <!-- START: Lively Loading Overlay -->
     <div id="loading-overlay" class="status-overlay visible">
       <div id="loading-logo-container">
-        <img src="ailalogo.png" id="loading-logo" alt="AILA Logo" />
+        <img
+          src="ailalogo.png"
+          id="loading-logo"
+          alt="AILA Logo"
+          draggable="false"
+          oncontextmenu="return false;"
+        />
         <p id="click-me-text" class="click-me-text">Click Me!</p>
       </div>
 
@@ -65,7 +71,7 @@
       <!-- NEW: This container will appear after successful login -->
       <div id="welcome-message-container" class="hidden">
         <p id="welcome-message-text"></p>
-        <button id="final-enter-btn">Enter AILA</button>
+        <button id="final-enter-btn">Enter</button>
       </div>
 
       <!-- START: Consolidated Authentication Modal -->
@@ -112,55 +118,179 @@
               </div>
               <!-- END OF BLOCK TO ADD -->
 
-<!-- START: Updated PIN Group with Visibility Toggle -->
-<div id="pinGroup">
-  <div class="pin-header">
-    <p class="pin-description">Enter your 6-digit PIN</p>
-    <button type="button" id="togglePinBtn" class="pin-visibility-btn" title="Show/Hide PIN">
-      <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-        <circle cx="12" cy="12" r="3"></circle>
-      </svg>
-      <svg class="eye-off-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07l-2.28-2.28"></path>
-        <line x1="1" y1="1" x2="23" y2="23"></line>
-      </svg>
-    </button>
-  </div>
-  <div id="pinContainer" class="pin-digit-container">
-    <input type="password" class="pin-digit" maxlength="1" autocomplete="new-password" />
-    <input type="password" class="pin-digit" maxlength="1" autocomplete="new-password" />
-    <input type="password" class="pin-digit" maxlength="1" autocomplete="new-password" />
-    <input type="password" class="pin-digit" maxlength="1" autocomplete="new-password" />
-    <input type="password" class="pin-digit" maxlength="1" autocomplete="new-password" />
-    <input type="password" class="pin-digit" maxlength="1" autocomplete="new-password" />
-  </div>
-</div>
+              <!-- START: Updated PIN Group with Visibility Toggle -->
+              <div id="pinGroup">
+                <div class="pin-header">
+                  <p class="pin-description">Enter your 6-digit PIN</p>
+                  <button
+                    type="button"
+                    id="togglePinBtn"
+                    class="pin-visibility-btn"
+                    title="Show/Hide PIN"
+                  >
+                    <svg
+                      class="eye-icon"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      style="display: none"
+                    >
+                      <path
+                        d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                      ></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <svg
+                      class="eye-off-icon"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07l-2.28-2.28"
+                      ></path>
+                      <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                  </button>
+                </div>
+                <div id="pinContainer" class="pin-digit-container">
+                  <input
+                    type="password"
+                    class="pin-digit"
+                    maxlength="1"
+                    autocomplete="new-password"
+                  />
+                  <input
+                    type="password"
+                    class="pin-digit"
+                    maxlength="1"
+                    autocomplete="new-password"
+                  />
+                  <input
+                    type="password"
+                    class="pin-digit"
+                    maxlength="1"
+                    autocomplete="new-password"
+                  />
+                  <input
+                    type="password"
+                    class="pin-digit"
+                    maxlength="1"
+                    autocomplete="new-password"
+                  />
+                  <input
+                    type="password"
+                    class="pin-digit"
+                    maxlength="1"
+                    autocomplete="new-password"
+                  />
+                  <input
+                    type="password"
+                    class="pin-digit"
+                    maxlength="1"
+                    autocomplete="new-password"
+                  />
+                </div>
+              </div>
 
-<div id="pinConfirmGroup" class="hidden">
-  <div class="pin-header">
-    <p class="pin-description">Confirm your PIN</p>
-    <button type="button" id="togglePinConfirmBtn" class="pin-visibility-btn" title="Show/Hide PIN">
-      <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-        <circle cx="12" cy="12" r="3"></circle>
-      </svg>
-      <svg class="eye-off-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07l-2.28-2.28"></path>
-        <line x1="1" y1="1" x2="23" y2="23"></line>
-      </svg>
-    </button>
-  </div>
-  <div id="pinConfirmContainer" class="pin-digit-container">
-    <input type="password" class="pin-digit" maxlength="1" autocomplete="new-password" />
-    <input type="password" class="pin-digit" maxlength="1" autocomplete="new-password" />
-    <input type="password" class="pin-digit" maxlength="1" autocomplete="new-password" />
-    <input type="password" class="pin-digit" maxlength="1" autocomplete="new-password" />
-    <input type="password" class="pin-digit" maxlength="1" autocomplete="new-password" />
-    <input type="password" class="pin-digit" maxlength="1" autocomplete="new-password" />
-  </div>
-</div>
-<!-- END: Updated PIN Group -->
+              <div id="pinConfirmGroup" class="hidden">
+                <div class="pin-header">
+                  <p class="pin-description">Confirm your PIN</p>
+                  <button
+                    type="button"
+                    id="togglePinConfirmBtn"
+                    class="pin-visibility-btn"
+                    title="Show/Hide PIN"
+                  >
+                    <svg
+                      class="eye-icon"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      style="display: none"
+                    >
+                      <path
+                        d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                      ></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <svg
+                      class="eye-off-icon"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07l-2.28-2.28"
+                      ></path>
+                      <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                  </button>
+                </div>
+                <div id="pinConfirmContainer" class="pin-digit-container">
+                  <input
+                    type="password"
+                    class="pin-digit"
+                    maxlength="1"
+                    autocomplete="new-password"
+                  />
+                  <input
+                    type="password"
+                    class="pin-digit"
+                    maxlength="1"
+                    autocomplete="new-password"
+                  />
+                  <input
+                    type="password"
+                    class="pin-digit"
+                    maxlength="1"
+                    autocomplete="new-password"
+                  />
+                  <input
+                    type="password"
+                    class="pin-digit"
+                    maxlength="1"
+                    autocomplete="new-password"
+                  />
+                  <input
+                    type="password"
+                    class="pin-digit"
+                    maxlength="1"
+                    autocomplete="new-password"
+                  />
+                  <input
+                    type="password"
+                    class="pin-digit"
+                    maxlength="1"
+                    autocomplete="new-password"
+                  />
+                </div>
+              </div>
+              <!-- END: Updated PIN Group -->
 
               <button type="submit" id="authActionBtn" class="auth-action-btn">
                 <span class="btn-text">Login</span>
@@ -510,9 +640,13 @@
           AILA can make mistakes. Always ask the LA in charge.
         </div>
         <div class="footer-links">
-          <a href="privacy.html" target="_blank" class="footer-link">Privacy Policy</a>
+          <a href="privacy.html" target="_blank" class="footer-link"
+            >Privacy Policy</a
+          >
           <span class="footer-separator">|</span>
-          <a href="data-deletion.html" target="_blank" class="footer-link">Data Deletion</a>
+          <a href="data-deletion.html" target="_blank" class="footer-link"
+            >Data Deletion</a
+          >
         </div>
         <!-- END: This is the updated footer -->
       </div>
@@ -557,5 +691,12 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
+    <!-- Cloudflare Web Analytics -->
+    <script
+      defer
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon='{"token": "07fb4be7fa8448cd9173695886b82c25"}'
+    ></script>
+    <!-- End Cloudflare Web Analytics -->
   </body>
 </html>
