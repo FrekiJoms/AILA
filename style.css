@@ -2,8 +2,31 @@ ng-text-container {
   margin-top: 30px;
   text-align: center;
 }
-/* --- START: FINAL CSS for Shatter/Float Logo --- */
+/* --- Controlled User Selection --- */
 
+/* 1. Globally disable text selection for a cleaner UI. */
+body {
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* IE10+/Edge */
+  user-select: none;         /* Standard */
+}
+
+/* 2. Re-enable text selection ONLY for message bubbles. */
+/* This allows users to copy text from user and bot messages. */
+.msg {
+  -webkit-user-select: text; /* Safari */
+  -moz-user-select: text;    /* Firefox */
+  -ms-user-select: text;     /* IE10+/Edge */
+  user-select: text;         /* Standard */
+}
+
+/* --- START: FINAL CSS for Shatter/Float Logo --- */
+#loading-logo,
+.logo-area img,
+.welcome-logo img {
+  pointer-events: none;
+}
 /* 1. The container: Positions the logo and captures clicks. */
 #loading-logo-container {
   position: relative;
@@ -32,7 +55,7 @@ ng-text-container {
   position: absolute;
   width: 25%;  /* 1/4 of the container */
   height: 25%; /* 1/4 of the container */
-  background-image: url("ailalogo.png"); 
+  background-image: url("icons/ailalogo.png"); 
   background-size: 130px 130px; /* Match the logo's full size */
   
   /* A more robust transition that looks good for both shattering and reassembling */

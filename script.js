@@ -1,20 +1,8 @@
-// BACK_END LINKS AND API KEY
-
-
 // SUPABASE URL
 const SUPABASE_URL = "https://woqlvcgryahmcejdlcqz.supabase.co";
 const SUPABASE_ANON_KEY ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvcWx2Y2dyeWFobWNlamRsY3F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3NDg5NTMsImV4cCI6MjA4MDMyNDk1M30.PXL0hJ-8Hv7BP21Fly3tHXonJoxfVL0GNCY7oWXDKRA";
 // domain URL
 const AILA_URL = "https://ailearningassistant.edgone.app";
-// APPSCRIPT URL
-const SCRIPT_API_URL ="https://script.google.com/macros/s/AKfycbxyBAMvcSxdV_Gbc8JIKB1yJRPw0ocQKpczfZ8KLp4Gln2LgWTTbFar3ugjODGrqjiE/exec";
-// N8N PRODUCTION URL
-const CHAT_WEBHOOK = "http://localhost:5678/webhook/ictworkflow";
-// OFFLINE RESPONSE APPSCRIPT URL
-const OFFLINE_DATA_URL ="https://script.google.com/macros/s/AKfycbxyBAMvcSxdV_Gbc8JIKB1yJRPw0ocQKpczfZ8KLp4Gln2LgWTTbFar3ugjODGrqjiE/exec";
-// FEEDBACK FORM URL
-const FEEDBACK_FORM_URL = "https://forms.gle/cNRtaUZBwDuPoUk77";
-
 // --- START: Supabase Client Initialization ---
 const { createClient } = supabase;
 const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -99,7 +87,6 @@ function getIconForUrl(url) {
   return defaultIcon;
 }
 // =================================================================
-// =================================================================
 // ============== CENTRALIZED MODAL QUESTIONS ======================
 // == To edit questions/links, just edit them here. ==============
 // =================================================================
@@ -109,36 +96,36 @@ const modalQuestions = {
     //    "navigation title here": "output here", << put a ( , ) every end
     //  },
     "Spreadsheet Navigation & Data Familiarization": {
-      _DESC_3_: "➡ Module 1",
-      "Information Sheet": "Module 1 Information Sheet",
-      "Activity Sheet": "Module 1 Activity Sheet",
+      _DESC_3_: "➡ Activity 1",
+      "Information Sheet": "Activity 1 Information Sheet",
+      "Activity Sheet": "Activity 1 Activity Sheet",
       _DESC_1_: "➡ This is the tool for the LA's",
-      "Performance Checklist": "Module 1 Performance Checklist",
+      "Performance Checklist": "Activity 1 Performance Checklist",
       _DESC_2_:
         "➡ Submit your completed MRP workbook, validate through oral questioning, and accomplish the self-check quiz here.",
-      "Module 1 Assessment Form":
+      "Activity 1 Assessment Form":
         "https://docs.google.com/forms/d/e/1FAIpQLSeIsO_7TlYWT8i6hXBVmTw6-3UFH8kYQ3ipll0lC9KxvOwOFg/viewform",
     },
     "Data Processing Using Spreadsheet Formulas and Tools": {
-      _DESC_3_: "➡ Module 2",
-      "Information Sheet": "Module 2 Information Sheet",
-      "Activity Sheet": "Module 2 Activity Sheet",
+      _DESC_3_: "➡ Activity 2",
+      "Information Sheet": "Activity 2 Information Sheet",
+      "Activity Sheet": "Activity 2 Activity Sheet",
       _DESC_1_: "➡ This is the tool for the LA's",
-      "Performance Checklist": "Module 2 Performance Checklist",
+      "Performance Checklist": "Activity 2 Performance Checklist",
       _DESC_2_:
         "➡ Submit your completed MRP workbook, validate through oral questioning, and accomplish the self-check quiz here.",
-      "Module 2 Assessment Form":
+      "Activity 2 Assessment Form":
         "https://docs.google.com/forms/d/e/1FAIpQLScMn2q_BgZrUmJdSQyRqhiHcKNmDY7uxbWg07CZ1G7zajyC8w/viewform?usp=header",
     },
     "Spreadsheet Data Analysis Using Pivot Tables and Charts": {
-      _DESC_3_: "➡ Module 3",
-      "Information Sheet": "Module 3 Information Sheet",
-      "Activity Sheet": "Module 3 Activity Sheet",
+      _DESC_3_: "➡ Activity 3",
+      "Information Sheet": "Activity 3 Information Sheet",
+      "Activity Sheet": "Activity 3 Activity Sheet",
       _DESC_1_: "➡ This is the tool for the LA's",
-      "Performance Checklist": "Module 3 Performance Checklist",
+      "Performance Checklist": "Activity 3 Performance Checklist",
       _DESC_2_:
         "➡ Submit your completed MRP workbook, validate through oral questioning, and accomplish the self-check quiz here.",
-      "Module 3 Assessment Form":
+      "Activity 3 Assessment Form":
         "https://docs.google.com/forms/d/e/1FAIpQLSexDGWOZ6CLnjh7WbItGeeShHdwzLGgUBa8m0B81_AeNSLOmw/viewform",
     },
   },
@@ -194,7 +181,7 @@ const modalTitle = document.getElementById("modalTitle");
 const modalBody = document.getElementById("modalBody");
 const modalCloseBtn = document.getElementById("modalCloseBtn");
 const toolsHeaderBtn = document.getElementById("toolsHeaderBtn");
-// Add event listener for module dropdowns inside the modal
+// Add event listener for Activity dropdowns inside the modal
 modalBody.addEventListener("click", function (e) {
   const clickedBtn = e.target.closest(".module-dropdown-btn");
   if (!clickedBtn) return; // Exit if the click wasn't on a dropdown button
@@ -451,30 +438,6 @@ document.addEventListener("keydown", (e) => {
     });
   }
 });
-
-// feedback button area functionality
-const feedbackBtn = document.getElementById("feedbackBtn");
-
-// click event to feedback button
-if (feedbackBtn) {
-  feedbackBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-
-    // Show brief loading animation
-    const originalText = feedbackBtn.innerHTML;
-    feedbackBtn.innerHTML = "⏳...";
-    feedbackBtn.disabled = true;
-
-    setTimeout(() => {
-      // feedback form link here
-      window.open(FEEDBACK_FORM_URL, "_blank"); // put your google form link here
-      setTimeout(() => {
-        feedbackBtn.innerHTML = originalText;
-        feedbackBtn.disabled = false;
-      }, 2000);
-    }, 300);
-  });
-}
 /*  show up button (pwede mo itong dagdagan or kukuhaan or e change)*/
 const faqs = [
   "Overview",
@@ -542,7 +505,7 @@ function showWelcomeScreen() {
   const welcomeHTML = `
   <div class="welcome-screen">
     <div class="welcome-logo">
-      <img src="ailalogo.png"
+      <img src="icons/ailalogo.png"
            alt="AILA Logo"
            style="width:100%; height:100%; object-fit:cover; border-radius:14px;">
     </div>
@@ -740,25 +703,6 @@ function setupFloatingExpander() {
 // Make sure you call this function once after the page loads.
 setupFloatingExpander();
 
-// google form feedback area
-// make sure header feedback opens new tab and doesn't break on mobile
-safe(() => {
-  const fb = document.getElementById("feedbackBtn");
-  if (fb) {
-    fb.addEventListener("click", (e) => {
-      e.preventDefault();
-      fb.setAttribute("aria-busy", "true");
-      const original = fb.innerHTML;
-      fb.innerHTML = "⏳";
-      window.open(FEEDBACK_FORM_URL, "_blank"); // put your google form link here
-      setTimeout(() => {
-        fb.innerHTML = original;
-        fb.removeAttribute("aria-busy");
-      }, 900);
-    });
-  }
-});
-
 safe(() => {
   document.addEventListener(
     "click",
@@ -829,88 +773,64 @@ function hideTyping() {
   document.getElementById('voiceBtn').disabled = false;
   // --- END OF FIX ---
 }
-/* send to backend; use offlineResponses if offline or network fails */
 function sendToBackend(text, askSuggestions = false) {
   showTyping();
 
-  // --- THIS IS THE FIX ---
-  // Get user info from localStorage, with fallbacks.
   const userName = localStorage.getItem("loggedInUserName") || "Guest";
-  const userEmail = localStorage.getItem("loggedInUser"); // This will be null if not logged in
+  const userEmail = localStorage.getItem("loggedInUser");
 
   const payload = {
     message: text,
-    // Create a consistent session ID for logged-in users, or a unique one for guests.
     sessionId: userEmail ? `${userName}_${userEmail}` : `guest_${Date.now()}`,
     name: userName,
     email: userEmail,
     askForSuggestions: !!askSuggestions,
   };
-  // --- END OF FIX ---
 
-  // This helper function will now ONLY be used when the connection completely fails.
-  function getOfflineAnswer(q) {
-    // Find all keywords from the offline responses that are present in the user's query as whole words.
-    const matchingKeys = Object.keys(offlineResponses).filter((k) => {
-      // We create a regular expression to match the keyword as a whole word, ignoring case.
+  async function getOfflineAnswer(q) {
+     const matchingKeys = Object.keys(offlineResponses).filter((k) => {
       const escapedKey = k.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
       const regex = new RegExp(`\\b${escapedKey}\\b`, "i");
       return regex.test(q);
     });
 
-    // If any keywords were found, select the one with the most characters.
     if (matchingKeys.length > 0) {
       const bestMatch = matchingKeys.reduce((a, b) =>
         a.length > b.length ? a : b
       );
-      // Return the response for the best-matching (longest) keyword.
       return offlineResponses[bestMatch];
     }
-
-    // If no keywords were found, return the default offline message.
-    return `🔴OFFLINE: 
-      Kuys! tulog pa si AILA, click mo nalang yung button for more common questions.
-      \n<h5>We're still looking forward to the day that the already-prepared online version (GISING NA SI AILA), gets approved, even if it comes with a small fee, because it will allow us to help more LA and incoming trainees in the future.</h5>
-      \n- *AILA can still response in templated answers given below, CLICK THE BUTTON*
-      `;
+    return `🔴SERVER ERROR`;
   }
 
-  // N8N fetch url
-  fetch(CHAT_WEBHOOK, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+  // This is the secure implementation
+  _supabase.functions.invoke('send-chat-message', {
     body: JSON.stringify(payload),
   })
-    .then(async (res) => {
-      hideTyping();
-      if (!res.ok) {
-        throw new Error(`...`);
-      }
-      const data = await res.json().catch(() => ({}));
-      const reply = data.reply;
-      //... inside the .then() block
-      if (reply) {
-        playSound(SFX.receive, 0.7); // 70% volume, slightly quieter
+  .then(response => {
+    hideTyping();
+    if (response.error) throw new Error(response.error.message);
+    
+    const data = response.data;
+    const reply = data.reply;
+
+    if (reply) {
+        playSound(SFX.receive, 0.7);
         appendMessage(reply, "bot");
-      }
-      //...
-      else {
+    } else {
         appendMessage("...", "bot");
-      }
-      pulseLogoOnce();
-      updateStatus(true); // <-- ADD THIS LINE
-    })
-    .catch((err) => {
+    }
+    pulseLogoOnce();
+    updateStatus(true);
+  })
+  .catch(async (err) => {
       hideTyping();
-      console.warn("Offline mode triggered:", err);
-      const offlineReply = getOfflineAnswer(text);
-
-      // THIS IS THE FIX: Play the receive sound for offline messages too.
+      console.warn("Backend connection failed. Falling back to offline mode.", err);
+      const offlineReply = await getOfflineAnswer(text);
       playSound(SFX.receive, 0.7);
-
       appendMessage(offlineReply, "bot", true);
-      updateStatus(false); // <-- ADD THIS LINE
-    });
+      updateStatus(false);
+  });
 }
 
 function sendMessage() {
@@ -1138,7 +1058,6 @@ function updateStatus(status) {
 async function logUserEventToSheet(email, username, eventType) {
   let ipAddress = "not available";
   try {
-    // Fetches the public IP address of the user.
     const response = await fetch("https://api.ipify.org?format=json");
     if (!response.ok) throw new Error("Response not OK");
     const data = await response.json();
@@ -1147,9 +1066,8 @@ async function logUserEventToSheet(email, username, eventType) {
     console.warn("Could not fetch IP address:", error);
   }
 
-  // This payload is clear and contains all the info your script needs.
   const payload = {
-    timestamp: new Date().toISOString(), // Standard ISO 8601 format
+    timestamp: new Date().toISOString(),
     email: email,
     username: username,
     event: eventType,
@@ -1157,51 +1075,34 @@ async function logUserEventToSheet(email, username, eventType) {
   };
 
   try {
-    // Send the data to your Google Apps Script.
-    await fetch(SCRIPT_API_URL, {
-      method: "POST",
-      mode: "no-cors", // Best for 'fire and forget' logging
-      headers: {
-        "Content-Type": "application/json",
-      },
+    // Securely invoke the 'log-event' Edge Function
+    const { error } = await _supabase.functions.invoke('log-event', {
       body: JSON.stringify(payload),
     });
+
+    if (error) throw error; // Rethrow Supabase-specific errors
+
     console.log(`Successfully logged '${eventType}' for ${username}.`);
   } catch (error) {
-    console.error("Error logging user event to Google Sheet:", error);
+    console.error("Error logging user event via Edge Function:", error);
   }
 }
-/**
- * Loads the offline responses from our Google Sheet API.
- * This version includes more robust error handling to help with debugging.
- */
 async function loadOfflineData() {
-  // First, check if the URL has been set.
-  // --- THIS IS THE FIX (Part 1): Corrected the condition ---
-  if (!OFFLINE_DATA_URL || OFFLINE_DATA_URL === SCRIPT_API_URL) {
-    console.error("Critical Error: OFFLINE_DATA_URL is not configured in script.js.");
-    offlineResponses = {
-      Error: "Offline responses are not configured. Please contact the administrator.",
-    };
-    return; // Stop if the URL is missing.
-  }
-
   try {
-    const response = await fetch(OFFLINE_DATA_URL);
+    // Securely invoke the 'get-offline-data' Edge Function
+    const { data, error } = await _supabase.functions.invoke('get-offline-data');
 
-    // Check if the network response itself was successful. A 404 or 500 error will be caught here.
-    if (!response.ok) {
-      throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+    if (error) throw error; // Rethrow Supabase-specific errors
+
+    if (data) {
+        offlineResponses = data;
+        console.log("Offline responses loaded successfully via Edge Function.");
+    } else {
+        throw new Error("Offline data from function was empty or invalid.");
     }
 
-    // Try to parse the response as JSON. This will fail if your script returns an HTML error page or plain text.
-    const data = await response.json();
-    offlineResponses = data;
-    console.log("Offline responses loaded successfully.");
-
   } catch (error) {
-    console.error("Could not load offline data. This can happen for several reasons:", error);
-
+    console.error("Could not load offline data via Edge Function. This can happen for several reasons:", error);
     // Hardcoded fallback
     offlineResponses = {
       Error:
@@ -1763,7 +1664,7 @@ function showWelcomeAndEnter(email, isNewUser) {
         if (authState === "reset") {
           // This sends a password reset link to the user's email.
           const { error } = await _supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: window.location.origin + "/reset.html",
+            redirectTo: window.location.origin + "pages/reset.html",
           });
 
           if (error) {
@@ -2073,7 +1974,7 @@ function setupNavigation() {
   if (contactDevBtn) {
     contactDevBtn.addEventListener("click", () => {
       // This now navigates the user to your new, dedicated contact form page.
-      window.location.href = 'form.html';
+      window.location.href = 'pages/form.html';
     });
   }
   // --- END: CONTACT DEVELOPER BUTTON LOGIC (Updated) ---
