@@ -24,7 +24,7 @@
     <div id="loading-overlay" class="status-overlay visible">
       <div id="loading-logo-container">
         <img
-          src="ailalogo.png"
+          src="icons/ailalogo.png"
           id="loading-logo"
           alt="AILA Logo"
           draggable="false"
@@ -468,12 +468,19 @@
           <!-- END OF ADDED BUTTON -->
           <div class="brand">
             <!--Header Logo-->
-            <div id="logo" class="logo-area" title="AILA logo">
-              <img
-                src="ailalogo.png"
-                alt="AILA Logo"
-                style="width: 100%; height: 100%; border-radius: 12px"
-              />
+            <div id="logo" class="logo-area" title="Right-click to download">
+              <a href="icons/ailalogo.png" download="AILA_Logo.png">
+                <img
+                  src="icons/ailalogo.png"
+                  alt="AILA Logo"
+                  style="
+                    width: 100%;
+                    height: 100%;
+                    border-radius: 12px;
+                    display: block;
+                  "
+                />
+              </a>
             </div>
             <!--HEADER AREA-->
             <div>
@@ -616,11 +623,11 @@
           AILA can make mistakes. Always ask the LA in charge.
         </div>
         <div class="footer-links">
-          <a href="privacy.html" target="_blank" class="footer-link"
+          <a href="pages/privacy.html" target="_blank" class="footer-link"
             >Privacy Policy</a
           >
           <span class="footer-separator">|</span>
-          <a href="data-deletion.html" target="_blank" class="footer-link"
+          <a href="pages/data-deletion.html" target="_blank" class="footer-link"
             >Data Deletion</a
           >
         </div>
@@ -666,6 +673,7 @@
     <div id="mobileNavOverlay" class="mobile-nav-overlay hidden"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script/config.js"></script>
     <script src="script.js"></script>
     <!-- Cloudflare Web Analytics -->
     <script
