@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Developer</title>
     <!-- Link to your main stylesheet to reuse variables and fonts -->
-    <link rel="stylesheet" href="stylesheets/style.css">
+    <link rel="stylesheet" href="style.css">
     <!-- Link to the new form-specific stylesheet -->
     <link rel="stylesheet" href="stylesheets/form.css">
 </head>
@@ -38,10 +38,10 @@
     </main>
 
     <!-- THIS IS THE NEW SUCCESS SCREEN, HIDDEN BY DEFAULT -->
-    <div id="success-container" style="display:none; text-align: center; color: #e8fbff; padding: 20px;">
+    <div id="success-container" style="display:none;">
         <h1>Message Sent!</h1>
-        <p style="color: var(--muted); font-size: 16px; line-height: 1.6;">Thank you for reaching out. I'll get back to you as soon as possible.</p>
-        <button id="resetFormBtn" class="submit-btn" style="margin-top: 20px; max-width: 300px;">Submit Another Message</button>
+        <p>Thank you for reaching out. I'll get back to you as soon as possible.</p>
+        <button id="resetFormBtn" class="submit-btn">Submit Another Message</button>
     </div>
 
     <!-- This script will handle the form submission -->

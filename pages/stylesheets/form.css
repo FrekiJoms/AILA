@@ -136,3 +136,20 @@ body {
         /* Make the main title slightly smaller */
     }
 }
+
+#success-container {
+    text-align: center; 
+    color: #e8fbff; 
+    padding: 20px;
+}
+
+#success-container p {
+    color: var(--muted); 
+    font-size: 16px; 
+    line-height: 1.6;
+}
+
+#resetFormBtn {
+    margin-top: 20px; 
+    max-width: 300px;
+}
