@@ -800,7 +800,7 @@ function sendToBackend(text, askSuggestions = false) {
       );
       return offlineResponses[bestMatch];
     }
-    return `🔴SERVER ERROR`;
+    return `🔴SERVER IS DOWN - PLEASE CONTACT DEVELOPER`;
   }
 
   // This is the secure implementation
