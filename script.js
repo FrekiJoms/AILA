@@ -92,85 +92,94 @@ function getIconForUrl(url) {
 // =================================================================
 const modalQuestions = {
   Modules: {
-    //  "module title here"{
-    //    "navigation title here": "output here", << put a ( , ) every end
-    //  },
-    "Spreadsheet Navigation & Data Familiarization": {
-      _DESC_3_: "➡ Activity 1",
-      "Information Sheet": "Activity 1 Information Sheet",
-      "Activity Sheet": "Activity 1 Activity Sheet",
-      _DESC_1_: "➡ This is the tool for the LA's",
-      "Performance Checklist": "Activity 1 Performance Checklist",
-      _DESC_2_:
-        "➡ Submit your completed MRP workbook, validate through oral questioning, and accomplish the self-check quiz here.",
-      "Activity 1 Assessment Form":
-        "https://docs.google.com/forms/d/e/1FAIpQLSeIsO_7TlYWT8i6hXBVmTw6-3UFH8kYQ3ipll0lC9KxvOwOFg/viewform",
-    },
-    "Data Processing Using Spreadsheet Formulas and Tools": {
-      _DESC_3_: "➡ Activity 2",
-      "Information Sheet": "Activity 2 Information Sheet",
-      "Activity Sheet": "Activity 2 Activity Sheet",
-      _DESC_1_: "➡ This is the tool for the LA's",
-      "Performance Checklist": "Activity 2 Performance Checklist",
-      _DESC_2_:
-        "➡ Submit your completed MRP workbook, validate through oral questioning, and accomplish the self-check quiz here.",
-      "Activity 2 Assessment Form":
-        "https://docs.google.com/forms/d/e/1FAIpQLScMn2q_BgZrUmJdSQyRqhiHcKNmDY7uxbWg07CZ1G7zajyC8w/viewform?usp=header",
-    },
-    "Spreadsheet Data Analysis Using Pivot Tables and Charts": {
-      _DESC_3_: "➡ Activity 3",
-      "Information Sheet": "Activity 3 Information Sheet",
-      "Activity Sheet": "Activity 3 Activity Sheet",
-      _DESC_1_: "➡ This is the tool for the LA's",
-      "Performance Checklist": "Activity 3 Performance Checklist",
-      _DESC_2_:
-        "➡ Submit your completed MRP workbook, validate through oral questioning, and accomplish the self-check quiz here.",
-      "Activity 3 Assessment Form":
-        "https://docs.google.com/forms/d/e/1FAIpQLSexDGWOZ6CLnjh7WbItGeeShHdwzLGgUBa8m0B81_AeNSLOmw/viewform",
-    },
-  },
-  Orientation: ["Orientation to Data Proccessing"],
-  "Learning Materials": [
-    {
-      "ICT/Data Proccessing Classroom":
-        "https://classroom.google.com/c/Nzk0ODMxMDI1Mzgx?cjc=xxlb4l3e",
-    },
-    {
-      "Google Sheets Get Started":
-        "https://www.w3schools.com/googlesheets/google_sheets_get_started.php",
-    },
-    {
-      "Google Sheets: Modifying Columns, Rows, and Cells":
-        "https://edu.gcfglobal.org/en/googlespreadsheets/modifying-columns-rows-and-cells/1/",
-    },
-    {
-      "Google Sheets: Understanding Number Formats":
-        "https://edu.gcfglobal.org/en/googlespreadsheets/understanding-number-formats/1/",
-    },
-    {
-      "Google Sheets Formulas":
-        "https://www.w3schools.com/googlesheets/google_sheets_formulas.php",
-    },
-    {
-      "Google Sheets IF Function":
-        "https://www.w3schools.com/googlesheets/google_sheets_if.php",
-    },
-    {
-      "The New XLOOKUP Function for Excel + Video Tutorial":
-        "https://www.excelcampus.com/functions/xlookup-explained/",
-    },
-    {
-      "MRP Workbooks": {
-        Material_Requirement_Planning_20251113_wk02:
-          "https://docs.google.com/spreadsheets/d/12-rQsdn698XDu1Fme0YR-LPHvFMLMcBKH3qtKOAQtEw/edit?usp=sharing",
-        Material_Requirement_Planning_20251113_wk03:
-          "https://docs.google.com/spreadsheets/d/1ITMJd_yMIDhqNEoRe0umfdOawu2eQsWK/edit?usp=drivesdk&ouid=101212779968196364079&rtpof=true&sd=true",
-        Material_Requirement_Planning_20251113_wk04:
-          "https://docs.google.com/spreadsheets/d/1UeVuVWZnXAty6ucR5vvUpqPB7f0iIw54J8G30cBGRAI/edit?usp=sharing",
+    title: "Activity",
+    content: {
+      "Spreadsheet Navigation & Data Familiarization": {
+        _DESC_3_: "➡ Activity 1",
+        "Information Sheet": "Activity 1 Information Sheet",
+        "Activity Sheet": "Activity 1 Activity Sheet",
+        _DESC_1_: "➡ This is the tool for the LA's",
+        "Performance Checklist": "Activity 1 Performance Checklist",
+        _DESC_2_:
+          "➡ Submit your completed MRP workbook, validate through oral questioning, and accomplish the self-check quiz here.",
+        "Activity 1 Assessment Form":
+          "https://docs.google.com/forms/d/e/1FAIpQLSeIsO_7TlYWT8i6hXBVmTw6-3UFH8kYQ3ipll0lC9KxvOwOFg/viewform",
+      },
+      "Data Processing Using Spreadsheet Formulas and Tools": {
+        _DESC_3_: "➡ Activity 2",
+        "Information Sheet": "Activity 2 Information Sheet",
+        "Activity Sheet": "Activity 2 Activity Sheet",
+        _DESC_1_: "➡ This is the tool for the LA's",
+        "Performance Checklist": "Activity 2 Performance Checklist",
+        _DESC_2_:
+          "➡ Submit your completed MRP workbook, validate through oral questioning, and accomplish the self-check quiz here.",
+        "Activity 2 Assessment Form":
+          "https://docs.google.com/forms/d/e/1FAIpQLScMn2q_BgZrUmJdSQyRqhiHcKNmDY7uxbWg07CZ1G7zajyC8w/viewform?usp=header",
+      },
+      "Spreadsheet Data Analysis Using Pivot Tables and Charts": {
+        _DESC_3_: "➡ Activity 3",
+        "Information Sheet": "Activity 3 Information Sheet",
+        "Activity Sheet": "Activity 3 Activity Sheet",
+        _DESC_1_: "➡ This is the tool for the LA's",
+        "Performance Checklist": "Activity 3 Performance Checklist",
+        _DESC_2_:
+          "➡ Submit your completed MRP workbook, validate through oral questioning, and accomplish the self-check quiz here.",
+        "Activity 3 Assessment Form":
+          "https://docs.google.com/forms/d/e/1FAIpQLSexDGWOZ6CLnjh7WbItGeeShHdwzLGgUBa8m0B81_AeNSLOmw/viewform",
       },
     },
-  ],
-}; // =================================================================
+  },
+  Orientation: {
+    title: "Orientation",
+    content: ["Orientation to Data Proccessing"],
+  },
+  "Learning Materials": {
+    title: "Learning Materials",
+    content: [
+      {
+        "ICT/Data Proccessing Classroom":
+          "https://classroom.google.com/c/Nzk0ODMxMDI1Mzgx?cjc=xxlb4l3e",
+      },
+      {
+        "Google Sheets Get Started":
+          "https://www.w3schools.com/googlesheets/google_sheets_get_started.php",
+      },
+      {
+        "Google Sheets: Modifying Columns, Rows, and Cells":
+          "https://edu.gcfglobal.org/en/googlespreadsheets/modifying-columns-rows-and-cells/1/",
+      },
+      {
+        "Google Sheets: Understanding Number Formats":
+          "https://edu.gcfglobal.org/en/googlespreadsheets/understanding-number-formats/1/",
+      },
+      {
+        "Google Sheets Formulas":
+          "https://www.w3schools.com/googlesheets/google_sheets_formulas.php",
+      },
+      {
+        "Google Sheets IF Function":
+          "https://www.w3schools.com/googlesheets/google_sheets_if.php",
+      },
+      {
+        "The New XLOOKUP Function for Excel + Video Tutorial":
+          "https://www.excelcampus.com/functions/xlookup-explained/",
+      },
+      {
+        "MRP Workbooks": {
+          Material_Requirement_Planning_20251113_wk02:
+            "https://docs.google.com/spreadsheets/d/12-rQsdn698XDu1Fme0YR-LPHvFMLMcBKH3qtKOAQtEw/edit?usp=sharing",
+          Material_Requirement_Planning_20251113_wk03:
+            "https://docs.google.com/spreadsheets/d/1ITMJd_yMIDhqNEoRe0umfdOawu2eQsWK/edit?usp=drivesdk&ouid=101212779968196364079&rtpof=true&sd=true",
+          Material_Requirement_Planning_20251113_wk04:
+            "https://docs.google.com/spreadsheets/d/1UeVuVWZnXAty6ucR5vvUpqPB7f0iIw54J8G30cBGRAI/edit?usp=sharing",
+      }
+    },  
+    ],
+  },
+  tools: {
+    title: "Tools & Resources",
+  },
+};
 
 // ============== START: MODAL SCRIPT ==============
 // This entire block handles the functionality for the new modal pop-ups.
@@ -301,7 +310,8 @@ function buildContentHTML(data) {
  */
 function getPlaceholderContent(sectionTitle) {
   const sectionData = modalQuestions[sectionTitle] || {};
-  const contentHTML = buildContentHTML(sectionData);
+  // This is the only line that changes in this function
+  const contentHTML = buildContentHTML(sectionData.content);
   return `<div class="placeholder-section">${
     contentHTML ||
     `<p>Coming soon...</p>
@@ -314,17 +324,17 @@ function getPlaceholderContent(sectionTitle) {
  * @param {string} contentType - The type of content to display ('tools', 'modules', etc.).
  */
 function openModal(contentType) {
-  let title = "";
+  const modalData = modalQuestions[contentType];
+  if (!modalData) return;
+
+  modalTitle.textContent = modalData.title;
   let bodyContent = "";
 
-  // Logic for the special "Tools" modal with internal navigation
   if (contentType === "tools") {
-    title = "Tools & Resources";
-    // THIS IS THE CORRECTED PART:
-    // We have added the missing <div> panes for "materials" and "other".
+    // Dynamically build the tools content HERE, now that modalQuestions is initialized.
     bodyContent = `
             <div class="tools-nav">
-                <button class="tools-nav-btn active" data-target="tools-Modules">Modules</button>
+                <button class="tools-nav-btn active" data-target="tools-Modules">Activities</button>
                 <button class="tools-nav-btn" data-target="tools-orientation">Orientation</button>
                 <button class="tools-nav-btn" data-target="tools-materials">Materials</button>
             </div>
@@ -341,28 +351,14 @@ function openModal(contentType) {
             </div>
         `;
   } else {
-    // This part handles the simpler modals and is already correct.
-    switch (contentType) {
-      case "modules":
-        title = "Modules";
-        bodyContent = getPlaceholderContent("Modules");
-        break;
-      case "orientation":
-        title = "Orientation";
-        bodyContent = getPlaceholderContent("Orientation");
-        break;
-      case "materials":
-        title = "Learning Materials";
-        bodyContent = getPlaceholderContent("Learning Materials");
-        break;
-    }
+    // For all other modals, generate the content as before.
+    bodyContent = getPlaceholderContent(contentType);
   }
 
-  // This part injects the content and adds the event listeners. It is already correct.
-  modalTitle.textContent = title;
   modalBody.innerHTML = bodyContent;
   modal.classList.add("visible");
 
+  // Re-attach the nav button logic specifically for the tools modal
   if (contentType === "tools") {
     const navButtons = modal.querySelectorAll(".tools-nav-btn");
     const panes = modal.querySelectorAll(".tools-pane");
@@ -401,7 +397,6 @@ document.addEventListener("keydown", (event) => {
 });
 // ============== END: MODAL SCRIPT ==============
 // --- Sound Effects ---
-// --- Sound Effects ---
 let typingSound = null; // To control the looping typing sound
 let ambientSound = null; // To control the looping ambient sound
 
@@ -438,23 +433,6 @@ document.addEventListener("keydown", (e) => {
     });
   }
 });
-/*  show up button (pwede mo itong dagdagan or kukuhaan or e change)*/
-const faqs = [
-  "Overview",
-  "Origin",
-  "What's in ICT?",
-  "What is MRP?",
-  "What is MPS?",
-  "What is BOM?",
-  "What is Inventory?",
-  "What is PO?",
-  "How to do dashboard?",
-  "Data connection between sheets",
-  "How can I prepare for oral validation",
-  "Three types of data ",
-  "References",
-  "Main developer of AILA?",
-];
 /* response area */
 /* dito mo e ccustomize if may babagohin or e dadagdag na template questions */
 let offlineResponses = {}; // This will be filled with data from our Google Sheet.
@@ -520,7 +498,7 @@ function showWelcomeScreen() {
       </button>
       <button class="welcome-btn" onclick="openModal('modules')">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-          <span>Modules</span>
+          <span>Activities</span>
       </button>
       <button class="welcome-btn" onclick="useSuggestion('orientation')">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
@@ -598,7 +576,7 @@ function appendMessage(
 
     const modulesBtn = document.createElement("button");
     modulesBtn.className = "sugg-btn";
-    modulesBtn.textContent = "📦 Modules";
+    modulesBtn.textContent = "📦 Activities";
 
     // This button now correctly opens the simple "Modules" modal
     modulesBtn.addEventListener("click", (e) => {
