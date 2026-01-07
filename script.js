@@ -1,3 +1,5 @@
+// Developer Emails
+const DEVELOPER_EMAILS = ["narvasajoshua61@gmail.com", "levercrafter@gmail.com"];
 // SUPABASE URL
 const SUPABASE_URL = "https://woqlvcgryahmcejdlcqz.supabase.co";
 const SUPABASE_ANON_KEY ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvcWx2Y2dyeWFobWNlamRsY3F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3NDg5NTMsImV4cCI6MjA4MDMyNDk1M30.PXL0hJ-8Hv7BP21Fly3tHXonJoxfVL0GNCY7oWXDKRA";
@@ -6,6 +8,7 @@ const AILA_URL = "https://ailearningassistant.edgeone.app";
 // --- START: Supabase Client Initialization ---
 const { createClient } = supabase;
 const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let isUserAuthenticated = false;
 let isTrialExpired = false;
 
 // --- END: Supabase Client Initialization ---
@@ -527,6 +530,19 @@ function showWelcomeScreen() {
 }
 
 function useSuggestion(text) {
+    // --- START: Authentication Check ---
+  if (!isUserAuthenticated) {
+    appendMessage(
+      "You must be logged in to use AILA.",
+      "bot"
+    );
+    // Show the login modal if it exists
+    const authModal = document.getElementById("authModal");
+    if (authModal) authModal.classList.remove("hidden");
+    return; // Stop the function
+  }
+  // --- END: Authentication Check ---
+
   // --- THIS IS THE FIX ---
   // If the trial is expired, clear the screen, show the expiry message,
   // and stop the function from doing anything else.
@@ -812,6 +828,15 @@ function sendToBackend(text, askSuggestions = false) {
 }
 
 function sendMessage() {
+    // --- START: Authentication Check ---
+  if (!isUserAuthenticated) {
+    appendMessage("You must be logged in to send messages.", "bot");
+    const authModal = document.getElementById("authModal");
+    if (authModal) authModal.classList.remove("hidden");
+    return; // Stop the function
+  }
+  // --- END: Authentication Check ---
+
   const t = input.value.trim();
   if (!t) return;
   playSound(SFX.send, 0.8); // 80% volume
@@ -877,6 +902,15 @@ if (SpeechRecognition) {
   };
 
   voiceBtn.addEventListener("click", () => {
+        // --- START: Authentication Check ---
+    if (!isUserAuthenticated) {
+      appendMessage("You must be logged in to use voice input.", "bot");
+      const authModal = document.getElementById("authModal");
+      if (authModal) authModal.classList.remove("hidden");
+      return; // Stop the function
+    }
+    // --- END: Authentication Check ---
+
     if (isListening) {
       playSound(SFX.micOff, 0.9);
       stopListening();
@@ -1360,6 +1394,7 @@ function showConfirm(title, message) {
 
 // (This entire function replaces the old handleSuccessfulLogin function)
 function handleSuccessfulLogin(email, isNewUser = false) {
+    isUserAuthenticated = true;
   localStorage.setItem("loggedInUser", email);
   if (isNewUser) {
     localStorage.setItem("trialStartDate", new Date().toISOString());
@@ -1799,6 +1834,17 @@ async function updateUserInfo() {
     menuUserNameEl.textContent = displayName;
     menuUserEmailEl.textContent = user.email;
     menuUserAvatarEl.innerHTML = avatarContent;
+        // --- START: Dev Tools Button Visibility ---
+    const devToolsBtn = document.getElementById("devToolsBtn");
+    if (devToolsBtn) {
+      if (DEVELOPER_EMAILS.includes(user.email)) {
+        devToolsBtn.classList.remove("hidden");
+      } else {
+        devToolsBtn.classList.add("hidden");
+      }
+    }
+    // --- END: Dev Tools Button Visibility ---
+
 
     // --- Real-time Trial Countdown Logic ---
     const customTrialDays = user.user_metadata.custom_trial_days;
@@ -1859,6 +1905,77 @@ async function updateUserInfo() {
     if (trialTimerEl) trialTimerEl.textContent = "--:--:--:--";
   }
 }
+// --- START: DEV TOOLS MODAL ---
+function openDevToolsModal() {
+  // Use the existing universal modal
+  const modalTitle = document.getElementById("modalTitle");
+  const modalBody = document.getElementById("modalBody");
+  const modal = document.getElementById("universalModal");
+
+  modalTitle.textContent = "Developer Tools";
+
+  // Create the form content for the modal body
+  modalBody.innerHTML = `
+    <div class="dev-tools-section">
+      <h3 class="dev-tools-title">Set User Trial Days</h3>
+      <form id="setTrialForm" class="dev-tools-form">
+        <div class="form-group">
+          <label for="targetEmail">User Email:</label>
+          <input type="email" id="targetEmail" required placeholder="user@example.com">
+        </div>
+        <div class="form-group">
+          <label for="trialDays">Trial Days:</label>
+          <input type="number" id="trialDays" required placeholder="e.g., 90">
+        </div>
+        <button type="submit" id="setTrialBtn" class="dev-tool-btn">Set Trial</button>
+      </form>
+      <div id="devToolsAlert" class="custom-alert hidden" style="margin-top: 15px;"></div>
+    </div>
+  `;
+
+  // Show the modal
+  modal.classList.add("visible");
+
+  // Add the logic for the form submission
+  const setTrialForm = document.getElementById("setTrialForm");
+  if (setTrialForm) {
+    setTrialForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const targetEmail = document.getElementById("targetEmail").value;
+      const days = parseInt(document.getElementById("trialDays").value, 10);
+      const setTrialBtn = document.getElementById("setTrialBtn");
+      const devToolsAlert = document.getElementById("devToolsAlert");
+
+      if (!targetEmail || isNaN(days)) {
+        devToolsAlert.textContent = "Please fill in all fields correctly.";
+        devToolsAlert.classList.remove("hidden", "success");
+        return;
+      }
+      
+      setTrialBtn.disabled = true;
+      setTrialBtn.textContent = "Setting...";
+
+      // We re-use the existing admin function!
+      await adminSetTrialDays(targetEmail, days);
+      
+      // Give feedback
+      devToolsAlert.textContent = "Successfully set trial for ${targetEmail} to ${days} days. User must log out and back in to see the change.";
+      devToolsAlert.classList.remove("hidden");
+      devToolsAlert.classList.add("success");
+
+
+      setTrialBtn.disabled = false;
+      setTrialBtn.textContent = "Set Trial";
+
+      // Close the modal after a short delay
+      setTimeout(() => {
+        closeModal();
+      }, 3000);
+    });
+  }
+}
+// --- END: DEV TOOLS MODAL ---
+
 function setupNavigation() {
   // Get ALL elements from the DOM
   const navSidebar = document.getElementById("navSidebar");
@@ -1957,6 +2074,12 @@ function setupNavigation() {
     });
   }
   // --- END: CONTACT DEVELOPER BUTTON LOGIC (Updated) ---
+  // --- START: DEV TOOLS BUTTON LOGIC ---
+  const devToolsBtn = document.getElementById("devToolsBtn");
+  if (devToolsBtn) {
+    devToolsBtn.addEventListener("click", openDevToolsModal);
+  }
+  // --- END: DEV TOOLS BUTTON LOGIC ---
 
   // --- User Profile Menu Logic ---
   if (userProfileBtn && userMenu) {
