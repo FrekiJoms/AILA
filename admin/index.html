@@ -13,6 +13,14 @@
             <div class="header-left">
                 <img src="../icons/ailalogo.png" alt="AILA Logo" class="aila-logo">
                 <h1>AILA Admin Dashboard</h1>
+                <div class="admin-profile-section">
+                    <span class="admin-divider">—</span>
+                    <div class="admin-profile-container">
+                        <img id="adminAvatar" src="" alt="Admin Avatar" class="admin-avatar">
+                        <span class="admin-badge">[ADMIN]</span>
+                        <span id="adminName" class="admin-name">Loading...</span>
+                    </div>
+                </div>
             </div>
             <a href="../index.html" class="back-link">← Back to App</a>
         </div>
@@ -79,17 +87,24 @@
                             </div>
                         </div>
                     </div>
-                    <button class="filter-btn sorted-btn">
+                    <button class="filter-btn sorted-btn" onclick="toggleSortDropdown()" id="sortBtn">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 12px; height: 12px; display: inline-block; margin-right: 4px;">
                             <path d="M12 5v14M19 12l-7 7-7-7"></path>
                         </svg>
-                        Sorted by user ID
+                        Sorted by <span id="sortLabel">user ID</span>
                     </button>
                     <button class="refresh-btn" onclick="location.reload()">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M1 4v6h6M23 20v-6h-6"></path>
                             <path d="M20.49 9A9 9 0 0 0 5.64 5.64M3.51 15A9 9 0 0 0 18.36 18.36"></path>
                         </svg>
+                    </button>
+                    <button class="filter-btn" onclick="openAdminSettings()" title="Manage admin accounts">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px; display: inline-block; margin-right: 4px;">
+                            <path d="M12 2a9 9 0 1 0 9 9"></path>
+                            <path d="M12 6v6l4 2"></path>
+                        </svg>
+                        Admins
                     </button>
                 </div>
             </div>
@@ -101,15 +116,15 @@
                         <thead>
                             <tr>
                                 <th class="freeze-col avatar-col" data-column="avatar">Avatar</th>
-                                <th class="uid-col" data-column="uid">UID</th>
-                                <th data-column="name">Display name</th>
-                                <th data-column="email">Email</th>
-                                <th data-column="phone">Phone</th>
-                                <th data-column="providers">Providers</th>
-                                <th data-column="provider_type">Provider type</th>
-                                <th data-column="trial">Trial Countdown</th>
-                                <th data-column="created_at" style="display:none;">Created at</th>
-                                <th data-column="last_signin" style="display:none;">Last sign in at</th>
+                                <th class="uid-col" data-column="uid" onclick="handleHeaderClick('uid')" style="cursor: pointer;">UID <span class="sort-icon"></span></th>
+                                <th data-column="name" onclick="handleHeaderClick('name')" style="cursor: pointer;">Display name <span class="sort-icon"></span></th>
+                                <th data-column="email" onclick="handleHeaderClick('email')" style="cursor: pointer;">Email <span class="sort-icon"></span></th>
+                                <th data-column="phone" onclick="handleHeaderClick('phone')" style="cursor: pointer;">Phone <span class="sort-icon"></span></th>
+                                <th data-column="providers" onclick="handleHeaderClick('providers')" style="cursor: pointer;">Providers <span class="sort-icon"></span></th>
+                                <th data-column="provider_type" onclick="handleHeaderClick('provider_type')" style="cursor: pointer;">Provider type <span class="sort-icon"></span></th>
+                                <th data-column="trial" onclick="handleHeaderClick('trial_end')" style="cursor: pointer;">Trial Countdown <span class="sort-icon"></span></th>
+                                <th data-column="created_at" onclick="handleHeaderClick('created_at')" style="cursor: pointer; display:none;">Created at <span class="sort-icon"></span></th>
+                                <th data-column="last_signin" onclick="handleHeaderClick('last_sign_in_at')" style="cursor: pointer; display:none;">Last sign in at <span class="sort-icon"></span></th>
                             </tr>
                         </thead>
                         <tbody id="userTableBody">
@@ -132,6 +147,39 @@
             </div>
         </div>
     </main>
+
+    <!-- Admin Settings Modal -->
+    <div id="adminSettingsModal" class="modal-backdrop hidden">
+        <div class="modal-content admin-settings-modal">
+            <div class="modal-header">
+                <h2>Admin Management</h2>
+                <button class="modal-close-btn" data-modal="adminSettingsModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Add Admin Section -->
+                <div class="admin-section">
+                    <h3>Add New Admin</h3>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input 
+                            type="email" 
+                            id="newAdminEmail" 
+                            placeholder="admin@example.com"
+                            style="flex: 1; padding: 0.6rem; border: 1px solid #444; border-radius: 4px; background: #1a1d1f; color: #fff;"
+                        >
+                        <button class="form-btn" onclick="addAdmin()" style="flex: 0 0 auto; padding: 0.6rem 1.2rem;">Add</button>
+                    </div>
+                </div>
+                
+                <!-- Current Admins List -->
+                <div class="admin-section">
+                    <h3>Current Admins</h3>
+                    <div id="adminsList" style="display: flex; flex-direction: column; gap: 0.6rem; max-height: 300px; overflow-y: auto;">
+                        <p style="color: #8b949e; font-size: 0.9rem;">Loading admins...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal for setting trial days -->
     <div id="trialModal" class="modal-backdrop hidden">

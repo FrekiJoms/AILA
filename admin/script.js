@@ -1,10 +1,12 @@
 // ========== Supabase Configuration ========== //
 const SUPABASE_URL = "https://woqlvcgryahmcejdlcqz.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvcWx2Y2dyeWFobWNlamRsY3p6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3NDg5NTMsImV4cCI6MjA4MDMyNDk1M30.PXL0hJ-8Hv7BP21Fly3tHXonJoxfVL0GNCY7oWXDKRA";
-const DEVELOPER_EMAILS = ["narvasajoshua61@gmail.com", "levercrafter@gmail.com"];
 
 const { createClient } = supabase;
 const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Admin list - will be fetched from database
+let adminEmails = [];
 
 // ========== User Table & Pop-up Logic ========== //
 
@@ -118,13 +120,19 @@ function renderUserTable(users) {
     table.innerHTML = '';
     totalCount.textContent = users.length > 0 ? `${users.length} of ${totalPages > 1 ? (currentPage - 1) * 30 + users.length + (totalPages - currentPage) * 30 : users.length}` : '0';
     
+    // Sort users
+    const sortedUsers = sortUsers(users);
+    
     // Update pagination UI
     document.getElementById('currentPageNum').textContent = currentPage;
     document.getElementById('totalPageNum').textContent = totalPages;
     document.getElementById('prevBtn').disabled = currentPage <= 1;
     document.getElementById('nextBtn').disabled = currentPage >= totalPages;
     
-    users.forEach((user, idx) => {
+    // Update sort indicator in headers
+    updateSortIndicators();
+    
+    sortedUsers.forEach((user, idx) => {
         const tr = document.createElement('tr');
         tr.dataset.userId = user.id;
         tr.dataset.userEmail = user.email;
@@ -156,6 +164,87 @@ function formatDate(dateStr) {
     if (!dateStr) return '';
     const d = new Date(dateStr);
     return d.toLocaleString();
+}
+
+// Sort users based on current sort column and direction
+function sortUsers(users) {
+  const sorted = [...users];
+  
+  sorted.sort((a, b) => {
+    let aVal = a[currentSortColumn];
+    let bVal = b[currentSortColumn];
+    
+    // Handle nested properties like user_metadata
+    if (currentSortColumn === 'name' && !aVal) {
+      aVal = a.user_metadata?.full_name || '';
+    }
+    if (currentSortColumn === 'name' && !bVal) {
+      bVal = b.user_metadata?.full_name || '';
+    }
+    
+    // Convert to lowercase for string comparison
+    if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+    if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+    
+    // Handle null/undefined
+    if (aVal == null) aVal = '';
+    if (bVal == null) bVal = '';
+    
+    // Compare
+    if (aVal < bVal) return currentSortDirection === 'asc' ? -1 : 1;
+    if (aVal > bVal) return currentSortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+  
+  return sorted;
+}
+
+// Update visual indicators for current sort
+function updateSortIndicators() {
+  const tableHead = document.querySelector('table thead');
+  if (!tableHead) return;
+  
+  tableHead.querySelectorAll('th[data-column]').forEach(th => {
+    const col = th.getAttribute('data-column');
+    const sortIcon = th.querySelector('.sort-icon');
+    
+    if (col === currentSortColumn) {
+      if (sortIcon) {
+        sortIcon.textContent = currentSortDirection === 'asc' ? ' ▲' : ' ▼';
+      }
+      th.style.opacity = '40';
+    } else {
+      if (sortIcon) {
+        sortIcon.textContent = '';
+      }
+      th.style.opacity = '0.6';
+    }
+  });
+}
+
+// Handle header click to sort
+function handleHeaderClick(column) {
+  if (column === 'avatar') return; // Don't sort by avatar
+  
+  if (currentSortColumn === column) {
+    // Toggle direction if same column
+    currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    // New column, default to ascending
+    currentSortColumn = column;
+    currentSortDirection = 'asc';
+  }
+  
+  // Re-render table with new sort
+  const users = allUsers.slice((currentPage - 1) * 30, currentPage * 30);
+  renderUserTable(users);
+  
+  // Re-apply column visibility preferences after sorting
+  const saved = localStorage.getItem('visibleColumns');
+  if (saved) {
+    const visibleColumns = JSON.parse(saved);
+    updateTableColumnVisibility(visibleColumns);
+  }
 }
 
 // Handle row click to show pop-up
@@ -367,11 +456,43 @@ let allUsers = [];
 window.addEventListener('DOMContentLoaded', async () => {
   const { data: { session } } = await _supabase.auth.getSession();
   
-  // Security check
-  if (!session || !DEVELOPER_EMAILS.includes(session.user.email)) {
+  if (!session) {
     window.location.replace('../index.html');
     return;
   }
+  
+  // Fetch admins from database
+  try {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/manage-admins`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ action: 'list' })
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      adminEmails = data.admins.map((admin: any) => admin.email);
+    } else {
+      // Fallback to local check if function fails
+      console.warn('Could not fetch admins from database');
+      adminEmails = [session.user.email];
+    }
+  } catch (error) {
+    console.error('Error fetching admins:', error);
+    adminEmails = [session.user.email];
+  }
+  
+  // Security check - user must be an admin
+  if (!adminEmails.includes(session.user.email)) {
+    window.location.replace('../index.html');
+    return;
+  }
+  
+  // Load admin profile
+  loadAdminProfile(session.user);
   
   allUsers = await fetchUsers();
   console.log('Loaded users:', allUsers);
@@ -379,6 +500,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   updateTrialCountdowns();
   setupSearchListener();
   loadColumnPreferences();
+  createSortDropdown();
+  loadAdminsList();
   
   // Setup column selection button
   const columnsBtn = document.getElementById('columnsBtn');
@@ -434,6 +557,80 @@ function openColumnsDropdown() {
 
 function closeColumnsDropdown() {
   document.getElementById('columnsDropdown').classList.add('hidden');
+}
+
+// Sort dropdown management
+function toggleSortDropdown() {
+  const dropdown = document.getElementById('sortDropdown');
+  if (!dropdown) createSortDropdown();
+  const existing = document.getElementById('sortDropdown');
+  existing?.classList.toggle('hidden');
+}
+
+function createSortDropdown() {
+  // Check if already exists
+  if (document.getElementById('sortDropdown')) return;
+  
+  const sortBtn = document.getElementById('sortBtn');
+  const dropdown = document.createElement('div');
+  dropdown.id = 'sortDropdown';
+  dropdown.className = 'sort-dropdown hidden';
+  dropdown.style.position = 'absolute';
+  dropdown.style.top = sortBtn.offsetHeight + 5 + 'px';
+  dropdown.style.right = '0';
+  dropdown.style.background = 'var(--card-bg, #1a1a1a)';
+  dropdown.style.border = '1px solid var(--border-color, #333)';
+  dropdown.style.borderRadius = '8px';
+  dropdown.style.padding = '8px';
+  dropdown.style.minWidth = '180px';
+  dropdown.style.zIndex = '100';
+  dropdown.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+  
+  const columns = [
+    { key: 'uid', label: 'User ID' },
+    { key: 'name', label: 'Display Name' },
+    { key: 'email', label: 'Email' },
+    { key: 'created_at', label: 'Created At' },
+    { key: 'trial_end', label: 'Trial End' }
+  ];
+  
+  columns.forEach(col => {
+    const option = document.createElement('div');
+    option.style.padding = '8px 12px';
+    option.style.cursor = 'pointer';
+    option.style.borderRadius = '4px';
+    option.style.fontSize = '14px';
+    option.textContent = col.label + (currentSortColumn === col.key ? (currentSortDirection === 'asc' ? ' ▲' : ' ▼') : '');
+    option.onmouseover = () => option.style.background = 'var(--hover-bg, #2a2a2a)';
+    option.onmouseout = () => option.style.background = 'transparent';
+    option.onclick = () => {
+      if (currentSortColumn === col.key) {
+        currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSortColumn = col.key;
+        currentSortDirection = 'asc';
+      }
+      updateSortLabel();
+      const users = allUsers.slice((currentPage - 1) * 30, currentPage * 30);
+      renderUserTable(users);
+      document.getElementById('sortDropdown').classList.add('hidden');
+    };
+    dropdown.appendChild(option);
+  });
+  
+  sortBtn.parentElement.style.position = 'relative';
+  sortBtn.parentElement.appendChild(dropdown);
+}
+
+function updateSortLabel() {
+  const columnNames = {
+    uid: 'User ID',
+    name: 'Display Name',
+    email: 'Email',
+    created_at: 'Created At',
+    trial_end: 'Trial End'
+  };
+  document.getElementById('sortLabel').textContent = columnNames[currentSortColumn] || 'User ID';
 }
 
 // Pagination functions
@@ -554,11 +751,238 @@ function loadColumnPreferences() {
 document.addEventListener('click', (e) => {
   const dropdown = document.getElementById('columnsDropdown');
   const columnsWrapper = document.querySelector('.columns-dropdown-wrapper');
+  const sortDropdown = document.getElementById('sortDropdown');
+  const sortBtn = document.getElementById('sortBtn');
   
   if (dropdown && columnsWrapper && !columnsWrapper.contains(e.target)) {
     dropdown.classList.add('hidden');
   }
+  
+  if (sortDropdown && sortBtn && !sortBtn.contains(e.target) && !sortDropdown.contains(e.target)) {
+    sortDropdown.classList.add('hidden');
+  }
 });
 
+// ========== Admin Profile Loading ========== //
+async function loadAdminProfile(user) {
+  try {
+    if (user) {
+      // Set admin name
+      const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Admin';
+      document.getElementById('adminName').textContent = displayName;
+      
+      // Set admin avatar if available
+      if (user.user_metadata?.avatar_url) {
+        document.getElementById('adminAvatar').src = user.user_metadata.avatar_url;
+      } else {
+        // Create a simple avatar with initials
+        const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase();
+        const canvas = document.createElement('canvas');
+        canvas.width = 40;
+        canvas.height = 40;
+        const ctx = canvas.getContext('2d');
+        
+        // Create avatar background color based on name
+        const colors = ['#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#ef4444'];
+        const colorIndex = displayName.length % colors.length;
+        ctx.fillStyle = colors[colorIndex];
+        ctx.fillRect(0, 0, 40, 40);
+        
+        // Draw text
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 18px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(initials, 20, 20);
+        
+        document.getElementById('adminAvatar').src = canvas.toDataURL();
+      }
+    }
+  } catch (error) {
+    console.error('Error loading admin profile:', error);
+  }
+}
+
+// ========== Admin Management ========== //
+
+async function loadAdminsList() {
+  try {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) return;
+
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/manage-admins`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ action: 'list' })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      renderAdminsList(data.admins, session.user.email);
+    }
+  } catch (error) {
+    console.error('Error loading admins:', error);
+  }
+}
+
+function renderAdminsList(admins, currentUserEmail) {
+  const adminsList = document.getElementById('adminsList');
+  if (!adminsList) return;
+
+  adminsList.innerHTML = '';
+
+  if (admins.length === 0) {
+    adminsList.innerHTML = '<p style="color: #8b949e; font-size: 0.9rem;">No admins found</p>';
+    return;
+  }
+
+  admins.forEach(admin => {
+    const adminItem = document.createElement('div');
+    adminItem.style.cssText = `
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.7rem;
+      background: #161b22;
+      border-radius: 6px;
+      border: 1px solid #30363d;
+    `;
+
+    const isCurrentUser = admin.email === currentUserEmail;
+
+    adminItem.innerHTML = `
+      <div>
+        <div style="font-weight: 500; color: #c9d1d9;">${admin.email}</div>
+        <div style="font-size: 0.75rem; color: #8b949e; margin-top: 0.2rem;">
+          Added: ${new Date(admin.created_at).toLocaleDateString()}
+          ${isCurrentUser ? '<span style="color: #238636; margin-left: 0.5rem;">(You)</span>' : ''}
+        </div>
+      </div>
+      ${!isCurrentUser ? `
+        <button 
+          onclick="removeAdmin('${admin.email}')"
+          style="
+            background: #da3633;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: background 0.2s;
+          "
+          onmouseover="this.style.background='#f85149'"
+          onmouseout="this.style.background='#da3633'"
+        >
+          Remove
+        </button>
+      ` : ''}
+    `;
+
+    adminsList.appendChild(adminItem);
+  });
+}
+
+function openAdminSettings() {
+  const modal = document.getElementById('adminSettingsModal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    loadAdminsList();
+  }
+}
+
+async function addAdmin() {
+  const emailInput = document.getElementById('newAdminEmail');
+  if (!emailInput) return;
+
+  const email = emailInput.value.trim();
+
+  if (!email) {
+    alert('Please enter an email address');
+    return;
+  }
+
+  if (!email.includes('@')) {
+    alert('Please enter a valid email address');
+    return;
+  }
+
+  try {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) {
+      alert('Session expired. Please refresh the page.');
+      return;
+    }
+
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/manage-admins`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ action: 'add', email: email.toLowerCase() })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert(`Admin added: ${email}`);
+      emailInput.value = '';
+      loadAdminsList();
+      // Update adminEmails array
+      if (!adminEmails.includes(email.toLowerCase())) {
+        adminEmails.push(email.toLowerCase());
+      }
+    } else {
+      alert(`Error: ${data.error || 'Failed to add admin'}`);
+    }
+  } catch (error) {
+    alert(`Error adding admin: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error(error);
+  }
+}
+
+async function removeAdmin(email) {
+  if (
+    !confirm(`Are you sure you want to remove ${email} as an admin?\n\nThis action cannot be undone.`)
+  ) {
+    return;
+  }
+
+  try {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) {
+      alert('Session expired. Please refresh the page.');
+      return;
+    }
+
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/manage-admins`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ action: 'remove', email: email })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert(`Admin removed: ${email}`);
+      loadAdminsList();
+      // Update adminEmails array
+      adminEmails = adminEmails.filter(e => e !== email);
+    } else {
+      alert(`Error: ${data.error || 'Failed to remove admin'}`);
+    }
+  } catch (error) {
+    alert(`Error removing admin: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error(error);
+  }
+}
 
 // ========== End User Table & Pop-up Logic ========== //

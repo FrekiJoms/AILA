@@ -1,5 +1,5 @@
-// Developer Emails
-const DEVELOPER_EMAILS = ["narvasajoshua61@gmail.com", "levercrafter@gmail.com"];
+// Admin Emails - will be fetched from database
+let adminEmails = [];
 // SUPABASE URL
 const SUPABASE_URL = "https://woqlvcgryahmcejdlcqz.supabase.co";
 const SUPABASE_ANON_KEY ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvcWx2Y2dyeWFobWNlamRsY3F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3NDg5NTMsImV4cCI6MjA4MDMyNDk1M30.PXL0hJ-8Hv7BP21Fly3tHXonJoxfVL0GNCY7oWXDKRA";
@@ -63,6 +63,40 @@ const SFX = {
   micOn: "sfx/mic-on.mp3",
   micOff: "sfx/mic-off.mp3",
 };
+
+// ========== Fetch Admins from Database ========== //
+async function loadAdminsFromDatabase() {
+  try {
+    const { data: { session } } = await _supabase.auth.getSession();
+    
+    if (!session) {
+      console.warn('No session available. Using empty admin list.');
+      adminEmails = [];
+      return;
+    }
+
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/manage-admins`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ action: 'list' })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      adminEmails = data.admins.map((admin) => admin.email);
+      console.log('✅ Admin list loaded from database:', adminEmails);
+    } else {
+      console.warn('Could not fetch admins from database. Using empty list.');
+      adminEmails = [];
+    }
+  } catch (error) {
+    console.error('Error fetching admins from database:', error);
+    adminEmails = [];
+  }
+}
 
 const iconMap = {
   "edu.gcfglobal.org": "icons/gcfglobal-color.png",
@@ -1123,6 +1157,9 @@ async function loadOfflineData() {
 }
 // --- START: Updated initializeApp Function ---
 async function initializeApp() {
+  // Load admins from database first
+  await loadAdminsFromDatabase();
+  
   // --- THIS IS THE FIX (Part 2): Check for the double-reload flag ---
   if (sessionStorage.getItem("justLoggedIn") === "true") {
     // ... (double-reload logic remains the same)
@@ -1837,7 +1874,7 @@ async function updateUserInfo() {
         // --- START: Dev Tools Button Visibility ---
     const devToolsBtn = document.getElementById("devToolsBtn");
     if (devToolsBtn) {
-      if (DEVELOPER_EMAILS.includes(user.email)) {
+      if (adminEmails.includes(user.email)) {
         devToolsBtn.classList.remove("hidden");
       } else {
         devToolsBtn.classList.add("hidden");
