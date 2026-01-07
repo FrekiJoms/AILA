@@ -474,7 +474,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     
     if (response.ok) {
       const data = await response.json();
-      adminEmails = data.admins.map((admin: any) => admin.email);
+      adminEmails = data.admins.map((admin) => admin.email);
     } else {
       // Fallback to local check if function fails
       console.warn('Could not fetch admins from database');

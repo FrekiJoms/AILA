@@ -808,7 +808,7 @@ main {
 }
 
 .form-btn {
-    width: 100%;
+    width: 100px;
     padding: 12px;
     background-color: #007BFF;
     color: white;
