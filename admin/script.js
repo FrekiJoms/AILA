@@ -5,17 +5,19 @@ const { createClient } = supabase;
 const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // --- START: Security Check ---
-// This is the list of authorized developers who can see this page.
 const DEVELOPER_EMAILS = ["narvasajoshua61@gmail.com", "levercrafter@gmail.com"];
+
+let allUsers = []; // Store all users for filtering/sorting
+let currentSort = { field: 'created', direction: 'desc' };
+let selectedUserEmail = null;
 
 _supabase.auth.onAuthStateChange(async (event, session) => {
     if (event === "SIGNED_IN") {
         if (!session || !DEVELOPER_EMAILS.includes(session.user.email)) {
-            // If not a developer, redirect them away immediately.
             window.location.replace("../index.html");
         } else {
-            // If they are a developer, load the user data.
             await loadAllUsers();
+            startGlobalTrialTimer();
         }
     } else if (event === "SIGNED_OUT") {
         window.location.replace("../index.html");
@@ -26,39 +28,31 @@ _supabase.auth.onAuthStateChange(async (event, session) => {
 async function loadAllUsers() {
     const loadingMessage = document.getElementById('loading-message');
     const userTableContainer = document.getElementById('user-table-container');
-    const userTableBody = document.querySelector('#user-table tbody');
 
     try {
         const { data, error } = await _supabase.functions.invoke('get-all-users');
 
         if (error) throw error;
-
         if (data.error) throw new Error(data.error);
 
-        userTableBody.innerHTML = ''; // Clear existing rows
-
-        data.users.forEach(user => {
+        allUsers = data.users.map(user => {
             const trialDays = user.user_metadata.custom_trial_days !== undefined ? user.user_metadata.custom_trial_days : 30;
             const trialEndDate = new Date(new Date(user.created_at).setDate(new Date(user.created_at).getDate() + trialDays));
             const isExpired = new Date() > trialEndDate;
-
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${user.email}</td>
-                <td>${user.user_metadata.full_name || 'N/A'}</td>
-                <td>${new Date(user.created_at).toLocaleDateString()}</td>
-                <td class="${isExpired ? 'expired' : 'active'}">${isExpired ? 'Expired' : 'Active'} (${trialDays} days)</td>
-                <td>
-                    <button class="action-btn set-trial-btn" data-email="${user.email}">Set Trial</button>
-                    <button class="action-btn login-as-btn" data-email="${user.email}">Login As</button>
-                </td>
-            `;
-            userTableBody.appendChild(row);
+            
+            return {
+                ...user,
+                trialDays,
+                trialEndDate,
+                isExpired,
+                displayName: user.user_metadata.full_name || 'N/A'
+            };
         });
 
+        renderTable();
         loadingMessage.classList.add('hidden');
         userTableContainer.classList.remove('hidden');
-        attachActionListeners();
+        attachEventListeners();
 
     } catch (error) {
         loadingMessage.textContent = `Error loading users: ${error.message}`;
@@ -66,75 +60,170 @@ async function loadAllUsers() {
     }
 }
 
-function attachActionListeners() {
-    const trialModal = document.getElementById('trialModal');
-    const modalCloseBtn = document.getElementById('modalCloseBtn');
-    const setTrialForm = document.getElementById('setTrialForm');
-    const modalUserEmail = document.getElementById('modalUserEmail');
-    const trialDaysInput = document.getElementById('trialDaysInput');
+function renderTable() {
+    const userTableBody = document.querySelector('#user-table tbody');
+    userTableBody.innerHTML = '';
 
-    document.querySelectorAll('.set-trial-btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const email = e.target.dataset.email;
-            modalUserEmail.textContent = email;
-            trialModal.classList.remove('hidden');
-        });
+    // Filter
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+
+    let filteredUsers = allUsers.filter(user => {
+        const matchesSearch = user.email.toLowerCase().includes(searchTerm) || 
+                              user.displayName.toLowerCase().includes(searchTerm);
+        const matchesStatus = statusFilter === 'all' || 
+                              (statusFilter === 'active' && !user.isExpired) || 
+                              (statusFilter === 'expired' && user.isExpired);
+        return matchesSearch && matchesStatus;
     });
 
-    document.querySelectorAll('.login-as-btn').forEach(button => {
-        button.addEventListener('click', async (e) => {
-            const email = e.target.dataset.email;
-            if (confirm(`Are you sure you want to log in as ${email}?`)) {
-                await adminLoginAsUser(email);
+    // Sort
+    filteredUsers.sort((a, b) => {
+        let valA, valB;
+        switch(currentSort.field) {
+            case 'email': valA = a.email; valB = b.email; break;
+            case 'name': valA = a.displayName; valB = b.displayName; break;
+            case 'created': valA = new Date(a.created_at); valB = new Date(b.created_at); break;
+            case 'status': valA = a.isExpired; valB = b.isExpired; break;
+            default: valA = new Date(a.created_at); valB = new Date(b.created_at);
+        }
+
+        if (valA < valB) return currentSort.direction === 'asc' ? -1 : 1;
+        if (valA > valB) return currentSort.direction === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    filteredUsers.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${user.email}</td>
+            <td>${user.displayName}</td>
+            <td>${new Date(user.created_at).toLocaleDateString()}</td>
+            <td class="${user.isExpired ? 'expired' : 'active'}">
+                ${user.isExpired ? 'Expired' : 'Active'} (${user.trialDays} days)
+            </td>
+            <td>
+                <button class="action-btn options-btn" data-email="${user.email}">Options</button>
+            </td>
+        `;
+        userTableBody.appendChild(row);
+    });
+
+    // Re-attach listeners for the new buttons
+    document.querySelectorAll('.options-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            selectedUserEmail = e.target.dataset.email;
+            openOptionsModal(selectedUserEmail);
+        });
+    });
+}
+
+function attachEventListeners() {
+    // Search & Filter
+    document.getElementById('searchInput').addEventListener('input', renderTable);
+    document.getElementById('statusFilter').addEventListener('change', renderTable);
+
+    // Sorting
+    document.querySelectorAll('th[data-sort]').forEach(th => {
+        th.addEventListener('click', () => {
+            const field = th.dataset.sort;
+            if (currentSort.field === field) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.field = field;
+                currentSort.direction = 'asc';
             }
+            renderTable();
         });
     });
-    
-    modalCloseBtn.addEventListener('click', () => trialModal.classList.add('hidden'));
-    
-    setTrialForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = modalUserEmail.textContent;
-        const days = parseInt(trialDaysInput.value, 10);
 
+    // Modal Close Buttons
+    document.querySelectorAll('.modal-close-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.getElementById(btn.dataset.modal).classList.add('hidden');
+        });
+    });
+
+    // Options Modal Buttons
+    document.getElementById('optSetTrial').addEventListener('click', () => {
+        document.getElementById('optionsModal').classList.add('hidden');
+        document.getElementById('modalUserEmail').textContent = selectedUserEmail;
+        document.getElementById('trialModal').classList.remove('hidden');
+    });
+
+    document.getElementById('optLoginAs').addEventListener('click', async () => {
+        if (confirm(`Login as ${selectedUserEmail}?`)) {
+            await adminLoginAsUser(selectedUserEmail);
+        }
+    });
+
+    document.getElementById('optBanUser').addEventListener('click', () => {
+        alert('Ban functionality coming soon!');
+    });
+
+    document.getElementById('optResetPwd').addEventListener('click', async () => {
+        if (confirm(`Send password reset email to ${selectedUserEmail}?`)) {
+            const { error } = await _supabase.auth.resetPasswordForEmail(selectedUserEmail);
+            if (error) alert('Error: ' + error.message);
+            else alert('Password reset email sent.');
+        }
+    });
+
+    document.getElementById('optSendEmail').addEventListener('click', () => {
+        window.location.href = `mailto:${selectedUserEmail}`;
+    });
+
+    // Set Trial Form
+    document.getElementById('setTrialForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const days = parseInt(document.getElementById('trialDaysInput').value, 10);
         if (!isNaN(days)) {
-            await adminSetTrialDays(email, days);
-            alert('Trial days updated successfully. The user table will now refresh.');
-            trialModal.classList.add('hidden');
-            loadAllUsers(); // Refresh table
-        } else {
-            alert('Please enter a valid number of days.');
+            await adminSetTrialDays(selectedUserEmail, days);
+            document.getElementById('trialModal').classList.add('hidden');
+            loadAllUsers(); // Refresh data
         }
     });
 }
 
+function openOptionsModal(email) {
+    document.getElementById('optionsUserEmail').textContent = email;
+    document.getElementById('optionsModal').classList.remove('hidden');
+}
+
+function startGlobalTrialTimer() {
+    const timerEl = document.getElementById('trial-timer');
+    
+    setInterval(() => {
+        // Just showing a simple running clock or aggregate stat for now
+        // as "remaining time left for all users" is ambiguous.
+        // Let's show the count of active users vs total.
+        if (allUsers.length > 0) {
+            const activeCount = allUsers.filter(u => !u.isExpired).length;
+            timerEl.textContent = `${activeCount} Active / ${allUsers.length} Total Users`;
+        }
+    }, 1000);
+}
+
+// --- Admin Actions ---
+
 async function adminSetTrialDays(targetEmail, days) {
-  if (!targetEmail || typeof days !== "number") {
-    console.error("ADMIN: 🛑 USAGE ERROR: Please provide a target email and the number of days.");
-    return;
-  }
-  console.log(`ADMIN: ⏳ Invoking secure function to set trial for ${targetEmail} to ${days} days...`);
   try {
     const { data, error } = await _supabase.functions.invoke("set-trial-days", {
       body: { targetEmail, days },
     });
     if (error) throw error;
     if (data.error) {
-      console.error(`ADMIN: ❌ FUNCTION FAILED: ${data.error}`);
+      alert(`Error: ${data.error}`);
     } else {
-      console.log(`ADMIN: ✅ SUCCESS: ${data.message}`);
+      alert(`Success: ${data.message}`);
     }
   } catch (error) {
-    console.error("ADMIN: ❌ INVOCATION FAILED: The server returned an error.", error);
+    console.error("Invocation failed:", error);
+    alert("Failed to update trial days.");
   }
 }
 
 async function adminLoginAsUser(targetEmail) {
-  if (!targetEmail) {
-    console.error("ADMIN: 🛑 USAGE ERROR: Please provide the user's email.");
-    return;
-  }
-  console.log(`ADMIN: ⏳ Generating secure login link for ${targetEmail}...`);
   try {
     const { data, error } = await _supabase.functions.invoke("impersonate-user", {
         body: { targetEmail },
@@ -142,22 +231,23 @@ async function adminLoginAsUser(targetEmail) {
     );
     if (error) throw error;
     if (data.error) {
-      console.error(`ADMIN: ❌ FUNCTION FAILED: ${data.error}`);
+      alert(`Error: ${data.error}`);
     } else {
-      console.log("ADMIN:✅ SUCCESS! Opening login link...");
       window.open(data.magicLink, '_blank');
     }
   } catch (error) {
-    console.error("ADMIN: ❌ INVOCATION FAILED: The server returned an error.", error);
+    console.error("Invocation failed:", error);
+    alert("Failed to generate login link.");
   }
 }
 
-// Initial check in case the user is already signed in when the page loads
+// Initial check
 (async () => {
     const { data: { session } } = await _supabase.auth.getSession();
     if (!session || !DEVELOPER_EMAILS.includes(session.user.email)) {
         window.location.replace("../index.html");
     } else {
         await loadAllUsers();
+        startGlobalTrialTimer();
     }
 })();

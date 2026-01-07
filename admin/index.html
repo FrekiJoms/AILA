@@ -11,20 +11,39 @@
     <header>
         <div class="header-content">
             <h1>AILA Admin Dashboard</h1>
-            <a href="../index.html" class="back-link">← Back to App</a>
+            <div class="header-right">
+                <div id="trial-timer-container">
+                    <span>Trial Time Left: </span>
+                    <span id="trial-timer">Loading...</span>
+                </div>
+                <a href="../index.html" class="back-link">← Back to App</a>
+            </div>
         </div>
     </header>
 
     <main>
+        <div class="controls-container">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search users...">
+            </div>
+            <div class="filter-box">
+                <select id="statusFilter">
+                    <option value="all">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="expired">Expired</option>
+                </select>
+            </div>
+        </div>
+
         <div id="loading-message">Loading user data...</div>
         <div id="user-table-container" class="hidden">
             <table id="user-table">
                 <thead>
                     <tr>
-                        <th>Email</th>
-                        <th>Display Name</th>
-                        <th>Created At</th>
-                        <th>Trial Status</th>
+                        <th data-sort="email">Email <span class="sort-icon">↕</span></th>
+                        <th data-sort="name">Display Name <span class="sort-icon">↕</span></th>
+                        <th data-sort="created">Created At <span class="sort-icon">↕</span></th>
+                        <th data-sort="status">Trial Status <span class="sort-icon">↕</span></th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -40,7 +59,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Set Trial Days</h2>
-                <button id="modalCloseBtn" class="modal-close-btn">&times;</button>
+                <button class="modal-close-btn" data-modal="trialModal">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="setTrialForm">
@@ -48,6 +67,36 @@
                     <input type="number" id="trialDaysInput" placeholder="Enter number of days" required>
                     <button type="submit" class="form-btn">Set Trial</button>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for User Options -->
+    <div id="optionsModal" class="modal-backdrop hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>User Options</h2>
+                <button class="modal-close-btn" data-modal="optionsModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Options for <strong id="optionsUserEmail"></strong>:</p>
+                <div class="options-grid">
+                    <button class="option-btn" id="optSetTrial">
+                        <span class="icon">⏳</span> Change Trial Time
+                    </button>
+                    <button class="option-btn" id="optLoginAs">
+                        <span class="icon">🔑</span> Login as User
+                    </button>
+                    <button class="option-btn danger" id="optBanUser">
+                        <span class="icon">🚫</span> Ban User
+                    </button>
+                    <button class="option-btn" id="optResetPwd">
+                        <span class="icon">🔄</span> Send Reset Password
+                    </button>
+                    <button class="option-btn" id="optSendEmail">
+                        <span class="icon">📧</span> Send Email
+                    </button>
+                </div>
             </div>
         </div>
     </div>
