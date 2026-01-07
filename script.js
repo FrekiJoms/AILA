@@ -581,7 +581,7 @@ function appendMessage(
     // This button now correctly opens the simple "Modules" modal
     modulesBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      openModal("modules");
+      openModal("tools");
     });
 
     actionWrap.appendChild(modulesBtn);
