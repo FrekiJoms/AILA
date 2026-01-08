@@ -11,7 +11,9 @@ AILA is a sophisticated system that integrates:
 - **N8N** - Live automation workflows and AI responses
 - **Google Apps Script** - Serverless offline-first fallback system
 - **Pinecone** - Vector storage for advanced AI context (RAG)
-- **HTML/CSS/JavaScript** - Clean, responsive frontend without heavy frameworks
+- **HTML/CSS/JavaScript** - Clean, responsive frontend without heavy 
+refer here to dive deeper ➡️ [AILA LEARNING MATERIALS](https://docs.google.com/document/d/1YElDF8WmDN3FyIrCwaitXKDU6qZyIr31dVGysxANtKw/edit?usp=sharing)
+frameworks
 
 ---
 
