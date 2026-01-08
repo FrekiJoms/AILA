@@ -3,6 +3,7 @@
   <head>
     <link rel="icon" href="icon.png" />
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="history-improvements.css" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>chataila</title>
@@ -416,7 +417,12 @@
         <div id="historySection" class="history-section hidden">
           <div class="history-header">
             <h3>Conversation History</h3>
-            <button id="newConversationBtn" class="history-new-btn" title="Start a new conversation">➕ New</button>
+            <div class="history-controls">
+              <select id="historyFilter" class="history-filter">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+              </select>
+            </div>
             <input 
               type="text" 
               id="historySearch" 
@@ -424,8 +430,10 @@
               placeholder="Search conversations..."
             >
           </div>
-          <div id="historyList" class="history-list">
-            <!-- Conversations will be loaded here -->
+          <div class="history-list-container">
+            <div id="historyList" class="history-list">
+              <!-- Conversations will be loaded here -->
+            </div>
           </div>
         </div>
         <!-- END: CONVERSATION HISTORY SECTION -->

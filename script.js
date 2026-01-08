@@ -2134,12 +2134,24 @@ function setupNavigation() {
   if (sidebarToggleBtn) {
     sidebarToggleBtn.addEventListener("click", () => {
       navSidebar.classList.toggle("expanded");
+      // Close history section whenever sidebar toggle is clicked
+      const historySection = document.getElementById("historySection");
+      if (historySection) {
+        historySection.classList.add("hidden");
+      }
     });
   }
 
   // --- Mobile Toggle Logic ---
   function toggleMobileNav() {
     navSidebar.classList.toggle("expanded");
+    // Close history section when collapsing sidebar
+    if (!navSidebar.classList.contains("expanded")) {
+      const historySection = document.getElementById("historySection");
+      if (historySection) {
+        historySection.classList.add("hidden");
+      }
+    }
   }
 
   if (mobileNavToggle) {
@@ -2181,12 +2193,19 @@ function setupNavigation() {
   const historyToggleBtn = document.getElementById("historyToggleBtn");
   const historySection = document.getElementById("historySection");
   const historySearch = document.getElementById("historySearch");
-
+  
   if (historyToggleBtn && historySection) {
     historyToggleBtn.addEventListener("click", () => {
       historySection.classList.toggle("hidden");
+      
+      // Auto-expand sidebar when history is clicked (if sidebar is compressed)
+      if (navSidebar && !navSidebar.classList.contains("expanded")) {
+        navSidebar.classList.add("expanded");
+      }
+      
       if (!historySection.classList.contains("hidden")) {
-        loadConversationHistory();
+        const sortBy = document.getElementById("historyFilter")?.value || "newest";
+        loadConversationHistory(sortBy);
       }
     });
   }
@@ -2197,9 +2216,11 @@ function setupNavigation() {
     });
   }
 
-  const newConversationBtn = document.getElementById("newConversationBtn");
-  if (newConversationBtn) {
-    newConversationBtn.addEventListener("click", startNewConversation);
+  const historyFilter = document.getElementById("historyFilter");
+  if (historyFilter) {
+    historyFilter.addEventListener("change", (e) => {
+      loadConversationHistory(e.target.value);
+    });
   }
   // --- END: CONVERSATION HISTORY BUTTON LOGIC ---
 
@@ -2413,7 +2434,7 @@ async function saveConversation(title = "") {
   }
 }
 
-async function loadConversationHistory() {
+async function loadConversationHistory(sortBy = "newest") {
   try {
     const { data: { session } } = await _supabase.auth.getSession();
     if (!session) return;
@@ -2430,7 +2451,14 @@ async function loadConversationHistory() {
     if (!response.ok) return;
 
     const data = await response.json();
-    renderConversationHistory(data.conversations || []);
+    let conversations = data.conversations || [];
+    
+    // Sort by date
+    if (sortBy === "oldest") {
+      conversations.reverse();
+    }
+    
+    renderConversationHistory(conversations);
   } catch (error) {
     console.error("Error loading conversation history:", error);
   }
@@ -2443,7 +2471,7 @@ function renderConversationHistory(conversations) {
   historyList.innerHTML = "";
 
   if (conversations.length === 0) {
-    historyList.innerHTML = '<p style="color: #8b949e; font-size: 12px; text-align: center;">No conversations yet</p>';
+    historyList.innerHTML = '<p style="color: #8b949e; font-size: 12px; text-align: center; padding: 16px;">No conversations yet</p>';
     return;
   }
 
@@ -2464,20 +2492,20 @@ function renderConversationHistory(conversations) {
 
     const renameBtn = document.createElement("button");
     renameBtn.className = "history-action-btn";
-    renameBtn.innerHTML = '✏️';
+    renameBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3"></path></svg>';
     renameBtn.title = "Rename";
     renameBtn.onclick = (e) => {
       e.stopPropagation();
-      renameConversation(conv.id, conv.title);
+      enableInlineEdit(title, conv.id, conv.title);
     };
 
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "history-action-btn delete";
-    deleteBtn.innerHTML = '🗑️';
+    deleteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>';
     deleteBtn.title = "Delete";
     deleteBtn.onclick = (e) => {
       e.stopPropagation();
-      deleteConversation(conv.id, conv.title);
+      showDeleteConfirmation(conv.id, conv.title);
     };
 
     actions.appendChild(renameBtn);
@@ -2579,35 +2607,102 @@ async function deleteConversation(conversationId, title) {
   }
 }
 
-async function renameConversation(conversationId, currentTitle) {
-  const newTitle = prompt("Enter new title:", currentTitle);
-  if (!newTitle || newTitle === currentTitle) return;
+// Custom confirmation modal for delete
+function showDeleteConfirmation(conversationId, title) {
+  const confirmModal = document.getElementById("confirmModal");
+  const confirmTitle = document.getElementById("confirmTitle");
+  const confirmMessage = document.getElementById("confirmMessage");
+  const confirmYesBtn = document.getElementById("confirmYesBtn");
+  const confirmNoBtn = document.getElementById("confirmNoBtn");
 
-  try {
-    const { data: { session } } = await _supabase.auth.getSession();
-    if (!session) return;
+  confirmTitle.textContent = "Delete Conversation";
+  confirmMessage.textContent = `Are you sure you want to delete "${title}"? This action cannot be undone.`;
+  confirmModal.classList.remove("hidden");
 
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/conversation-history`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${session.access_token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        action: "rename",
-        conversationId: conversationId,
-        title: newTitle,
-      }),
-    });
+  const handleYes = async () => {
+    confirmModal.classList.add("hidden");
+    confirmYesBtn.removeEventListener("click", handleYes);
+    confirmNoBtn.removeEventListener("click", handleNo);
+    await deleteConversation(conversationId, title);
+  };
 
-    if (!response.ok) throw new Error("Failed to rename");
+  const handleNo = () => {
+    confirmModal.classList.add("hidden");
+    confirmYesBtn.removeEventListener("click", handleYes);
+    confirmNoBtn.removeEventListener("click", handleNo);
+  };
 
-    loadConversationHistory();
-    console.log("✅ Conversation renamed");
-  } catch (error) {
-    console.error("Error renaming conversation:", error);
-    alert("Failed to rename conversation");
-  }
+  confirmYesBtn.addEventListener("click", handleYes);
+  confirmNoBtn.addEventListener("click", handleNo);
+}
+
+function enableInlineEdit(titleElement, conversationId, currentTitle) {
+  // Create an input field with the current title
+  const input = document.createElement("input");
+  input.type = "text";
+  input.className = "history-item-title-edit";
+  input.value = currentTitle;
+  input.maxLength = 100;
+
+  // Replace the title element with the input
+  titleElement.replaceWith(input);
+  input.focus();
+  input.select();
+
+  // Function to save the new title
+  const saveTitle = async (newTitle) => {
+    if (!newTitle || newTitle === currentTitle) {
+      // Restore original if no change
+      input.replaceWith(titleElement);
+      return;
+    }
+
+    try {
+      const { data: { session } } = await _supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/conversation-history`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "rename",
+          conversationId: conversationId,
+          title: newTitle,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to rename");
+
+      // Update the title element text
+      titleElement.textContent = newTitle;
+      titleElement.title = newTitle;
+      
+      // Replace input with updated title
+      input.replaceWith(titleElement);
+      
+      loadConversationHistory();
+      console.log("✅ Conversation renamed");
+    } catch (error) {
+      console.error("Error renaming conversation:", error);
+      // Restore original on error
+      input.replaceWith(titleElement);
+    }
+  };
+
+  // Save on Enter key
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      saveTitle(input.value.trim());
+    }
+  });
+
+  // Save on blur (clicking away)
+  input.addEventListener("blur", () => {
+    saveTitle(input.value.trim());
+  });
 }
 
 async function searchConversations(query) {

@@ -2878,6 +2878,7 @@ input:-webkit-autofill:active {
   transition: width 0.3s ease-in-out;
   width: 50px;
   /* MODIFIED: Very thin collapsed width */
+  overflow: hidden;
 }
 
 .nav-sidebar.expanded {
@@ -3375,8 +3376,6 @@ textarea#input::-webkit-scrollbar-thumb:hover {
 .history-section {
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   padding: 10px;
-  max-height: 400px;
-  overflow-y: auto;
 }
 
 .history-section.hidden {
@@ -3425,7 +3424,6 @@ textarea#input::-webkit-scrollbar-thumb:hover {
 }
 
 .history-search {
-  width: 100%;
   padding: 6px 8px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
