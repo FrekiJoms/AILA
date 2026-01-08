@@ -96,7 +96,7 @@ async function loadAdminsFromDatabase() {
     if (response.ok) {
       const data = await response.json();
       adminEmails = data.admins.map((admin) => admin.email);
-      console.log('✅ Admin list loaded from database:', adminEmails);
+      console.log('[ADMIN] Admin list loaded from database:', adminEmails);
     } else {
       console.warn('Could not fetch admins from database. Using empty list.');
       adminEmails = [];
@@ -1198,13 +1198,13 @@ async function loadOfflineData() {
     if (data && typeof data === 'object') {
       offlineResponses = data;
       isOfflineDataReady = true; // Mark offline data as ready
-      console.log("✅ Offline data loaded successfully.", Object.keys(data).length + ' entries');
+      console.log('[OFFLINE] Offline data loaded successfully. ' + Object.keys(data).length + ' entries');
     } else {
       throw new Error("Invalid data format from offline-data function");
     }
 
   } catch (error) {
-    console.error("❌ Could not load offline data:", error.message);
+    console.error('[OFFLINE] Could not load offline data:', error.message);
     // Hardcoded fallback
     offlineResponses = {
       Error: "Offline responses could not be loaded. Please check your connection or contact support."
@@ -1214,8 +1214,13 @@ async function loadOfflineData() {
 }
 // --- START: Updated initializeApp Function ---
 async function initializeApp() {
+  console.log('[INIT] AILA initializing - Loading offline data first...');
+  
   // Load offline data first - must be done before anything else
+  // This is CRITICAL: offline data must be available immediately
   await loadOfflineData();
+  
+  console.log('[INIT] Offline data ready - Loading admin configuration...');
   
   // Load admins from database
   await loadAdminsFromDatabase();
@@ -1453,11 +1458,11 @@ if (logoContainer && mainLogo) {
     if (stage <= stages.length) {
       statusText.textContent = stages[stage - 1];
       stage++;
-      setTimeout(updateStatusText, 800);
+      setTimeout(updateStatusText, 400);
     }
   }
 
-  setTimeout(updateStatusText, 200);
+  setTimeout(updateStatusText, 100);
 
   setTimeout(async () => {
     loadingInProgress.classList.add("hidden");
@@ -1483,7 +1488,7 @@ if (logoContainer && mainLogo) {
     } else {
       enterAppBtn.classList.remove("hidden");
     }
-  }, stages.length * 800 + 400);
+  }, stages.length * 400 + 200);
 
 }
 // --- END: Updated initializeApp Function ---
@@ -2621,7 +2626,7 @@ function startNewConversation() {
   // Update history UI to deselect current conversation
   updateHistoryActiveState();
   
-  console.log("✅ Started new conversation");
+  console.log('[CONVERSATION] New conversation started');
 }
 // --- END: NEW CONVERSATION FUNCTION ---
 
@@ -2668,7 +2673,7 @@ async function saveConversation(title = "") {
       await updateConversationPosition();
     }
     
-    console.log("✅ Conversation saved");
+    console.log('[CONVERSATION] Conversation saved');
   } catch (error) {
     console.error("Error saving conversation:", error);
   }
@@ -2839,7 +2844,7 @@ async function loadConversation(conversationId) {
     // Update UI to highlight current conversation (but don't move to top on just clicking)
     updateHistoryActiveState();
 
-    console.log("✅ Conversation loaded");
+    console.log('[CONVERSATION] Conversation loaded');
   } catch (error) {
     console.error("Error loading conversation:", error);
     isLoadingConversation = false;
@@ -2877,7 +2882,7 @@ async function deleteConversation(conversationId, title) {
     }
 
     loadConversationHistory();
-    console.log("✅ Conversation deleted successfully");
+    console.log('[CONVERSATION] Conversation deleted successfully');
   } catch (error) {
     console.error("Error deleting conversation:", error);
     // No alert - user will see it failed if conversation still appears
@@ -2961,7 +2966,7 @@ function enableInlineEdit(titleElement, conversationId, currentTitle) {
       input.replaceWith(titleElement);
       
       loadConversationHistory();
-      console.log("✅ Conversation renamed");
+      console.log('[CONVERSATION] Conversation renamed');
     } catch (error) {
       console.error("Error renaming conversation:", error);
       // Restore original on error
