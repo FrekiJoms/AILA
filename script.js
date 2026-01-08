@@ -16,6 +16,7 @@ const { createClient } = supabase;
 const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let isUserAuthenticated = false;
 let isTrialExpired = false;
+let isAdminUser = false;
 
 // --- END: Supabase Client Initialization ---
 _supabase.auth.onAuthStateChange(async (event, session) => {
@@ -1490,7 +1491,102 @@ function handleSuccessfulLogin(email, isNewUser = false) {
   showWelcomeScreen();
   updateUserInfo();
   updateStatus("pending");
+  
+  // --- START: Setup DevTools Blocker ---
+  // This will block devtools access for non-admins after a short delay
+  // to allow updateUserInfo to set the isAdminUser flag
+  setTimeout(() => {
+    setupDevToolsBlocker();
+  }, 100);
+  // --- END: Setup DevTools Blocker ---
 }
+
+// --- START: DEVTOOLS BLOCKER FOR NON-ADMINS ---
+function setupDevToolsBlocker() {
+  // Only block if user is NOT an admin
+  if (isAdminUser) {
+    console.log("🔓 Admin mode: Developer tools access enabled");
+    return;
+  }
+
+  console.log("🔒 Non-admin mode: Developer tools access restricted");
+
+  // Show friendly message
+  const showBlockMessage = () => {
+    console.warn(
+      "%c⚠️ Developer Tools are Restricted",
+      "color: #FFC107; font-size: 16px; font-weight: bold;"
+    );
+    console.log(
+      "%cThis application restricts developer tools access for non-admin users.\nIf you need assistance, please contact the developer.",
+      "color: #8b949e; font-size: 12px;"
+    );
+  };
+
+  // Block keyboard shortcuts
+  document.addEventListener("keydown", (e) => {
+    // F12 (DevTools)
+    if (e.key === "F12") {
+      e.preventDefault();
+      showBlockMessage();
+      return false;
+    }
+
+    // Ctrl+Shift+I (Chrome/Firefox DevTools)
+    if (e.ctrlKey && e.shiftKey && e.key === "I") {
+      e.preventDefault();
+      showBlockMessage();
+      return false;
+    }
+
+    // Ctrl+U (View Page Source)
+    if (e.ctrlKey && e.key === "u") {
+      e.preventDefault();
+      showBlockMessage();
+      return false;
+    }
+
+    // Ctrl+Shift+C (Inspect Element)
+    if (e.ctrlKey && e.shiftKey && e.key === "C") {
+      e.preventDefault();
+      showBlockMessage();
+      return false;
+    }
+
+    // Ctrl+Shift+J (Console on some browsers)
+    if (e.ctrlKey && e.shiftKey && e.key === "J") {
+      e.preventDefault();
+      showBlockMessage();
+      return false;
+    }
+
+    // F11 (Fullscreen)
+    if (e.key === "F11") {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  // Block right-click context menu
+  document.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    showBlockMessage();
+    return false;
+  });
+
+  // Detect if someone tries to open DevTools (this is a basic check)
+  const devtoolsCheck = setInterval(() => {
+    const threshold = 160; // Height threshold to detect DevTools opening
+    if (window.outerHeight - window.innerHeight > threshold ||
+        window.outerWidth - window.innerWidth > threshold) {
+      console.warn(
+        "%c⚠️ DevTools Detected - Access Restricted",
+        "color: #FF6B6B; font-size: 14px; font-weight: bold;"
+      );
+    }
+  }, 500);
+}
+// --- END: DEVTOOLS BLOCKER FOR NON-ADMINS ---
 
 function setupAuthModal() {
   // 1. Get all elements from the DOM.
@@ -1925,16 +2021,18 @@ async function updateUserInfo() {
     menuUserNameEl.textContent = displayName;
     menuUserEmailEl.textContent = user.email;
     menuUserAvatarEl.innerHTML = avatarContent;
-        // --- START: Dev Tools Button Visibility ---
+        // --- START: Dev Tools Button Visibility & Admin Status ---
     const devToolsBtn = document.getElementById("devToolsBtn");
+    isAdminUser = adminEmails.includes(user.email);
+    
     if (devToolsBtn) {
-      if (adminEmails.includes(user.email)) {
+      if (isAdminUser) {
         devToolsBtn.classList.remove("hidden");
       } else {
         devToolsBtn.classList.add("hidden");
       }
     }
-    // --- END: Dev Tools Button Visibility ---
+    // --- END: Dev Tools Button Visibility & Admin Status ---
 
 
     // --- Real-time Trial Countdown Logic ---
