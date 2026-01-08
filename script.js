@@ -364,45 +364,59 @@ function getPlaceholderContent(sectionTitle) {
 
 /**
  * Opens and populates the modal based on the content type.
- * @param {string} contentType - The type of content to display ('tools', 'modules', etc.).
+ * Supports composite types like 'tools-materials' to open tools modal at specific section.
+ * @param {string} contentType - The type of content to display ('tools', 'tools-materials', etc.).
  */
 function openModal(contentType) {
-  const modalData = modalQuestions[contentType];
+  // Parse composite content types like 'tools-materials' -> base='tools', section='materials'
+  let baseType = contentType;
+  let targetSection = null;
+  
+  if (contentType.includes("-")) {
+    const parts = contentType.split("-");
+    baseType = parts[0];
+    targetSection = contentType;
+  }
+
+  const modalData = modalQuestions[baseType];
   if (!modalData) return;
 
   modalTitle.textContent = modalData.title;
   let bodyContent = "";
 
-  if (contentType === "tools") {
-    // Dynamically build the tools content HERE, now that modalQuestions is initialized.
+  if (baseType === "tools") {
+    // Dynamically build the tools content with tabs
     bodyContent = `
             <div class="tools-nav">
-                <button class="tools-nav-btn active" data-target="tools-Modules">Activities</button>
-                <button class="tools-nav-btn" data-target="tools-orientation">Orientation</button>
-                <button class="tools-nav-btn" data-target="tools-materials">Materials</button>
+                <button class="tools-nav-btn ${!targetSection || targetSection === 'tools-Modules' ? 'active' : ''}" data-target="tools-Modules">Activities</button>
+                <button class="tools-nav-btn ${targetSection === 'tools-orientation' ? 'active' : ''}" data-target="tools-orientation">Orientation</button>
+                <button class="tools-nav-btn ${targetSection === 'tools-materials' ? 'active' : ''}" data-target="tools-materials">Materials</button>
             </div>
             <div class="tools-content">
-                <div id="tools-Modules" class="tools-pane active">${getPlaceholderContent(
+                <div id="tools-Modules" class="tools-pane ${!targetSection || targetSection === 'tools-Modules' ? 'active' : ''}">${getPlaceholderContent(
                   "Modules"
                 )}</div>
-                <div id="tools-orientation" class="tools-pane">${getPlaceholderContent(
+                <div id="tools-orientation" class="tools-pane ${targetSection === 'tools-orientation' ? 'active' : ''}">${getPlaceholderContent(
                   "Orientation"
                 )}</div>
-                <div id="tools-materials" class="tools-pane">${getPlaceholderContent(
+                <div id="tools-materials" class="tools-pane ${targetSection === 'tools-materials' ? 'active' : ''}">${getPlaceholderContent(
                   "Learning Materials"
                 )}</div>
             </div>
         `;
+  } else if (baseType === "Modules") {
+    // Handle Modules modal - it doesn't need tabs, just show the content
+    bodyContent = getPlaceholderContent("Modules");
   } else {
     // For all other modals, generate the content as before.
-    bodyContent = getPlaceholderContent(contentType);
+    bodyContent = getPlaceholderContent(baseType);
   }
 
   modalBody.innerHTML = bodyContent;
   modal.classList.add("visible");
 
   // Re-attach the nav button logic specifically for the tools modal
-  if (contentType === "tools") {
+  if (baseType === "tools") {
     const navButtons = modal.querySelectorAll(".tools-nav-btn");
     const panes = modal.querySelectorAll(".tools-pane");
 
@@ -539,7 +553,7 @@ function showWelcomeScreen() {
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
           <span>Overview</span>
       </button>
-      <button class="welcome-btn" onclick="openModal('modules')">
+      <button class="welcome-btn" onclick="openModal('tools')">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
           <span>Activities</span>
       </button>
@@ -547,7 +561,7 @@ function showWelcomeScreen() {
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
           <span>Orientation</span> 
       </button>
-      <button class="welcome-btn" onclick="openModal('materials')">
+      <button class="welcome-btn" onclick="openModal('tools-materials')">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           <span>Learning Materials</span>
       </button>
@@ -646,6 +660,12 @@ function appendMessage(
 
   messagesEl.appendChild(wrap);
   messagesEl.scrollTop = messagesEl.scrollHeight;
+
+  // Store message in conversation history for saving
+  conversationMessages.push({
+    role: who === "user" ? "user" : "assistant",
+    content: text
+  });
 
   // Auto-save conversation after each message
   setTimeout(() => {
@@ -2176,6 +2196,11 @@ function setupNavigation() {
       searchConversations(e.target.value);
     });
   }
+
+  const newConversationBtn = document.getElementById("newConversationBtn");
+  if (newConversationBtn) {
+    newConversationBtn.addEventListener("click", startNewConversation);
+  }
   // --- END: CONVERSATION HISTORY BUTTON LOGIC ---
 
   // --- User Profile Menu Logic ---
@@ -2326,26 +2351,37 @@ async function adminLoginAsUser(targetEmail) {
 }
 // ========== CONVERSATION HISTORY FUNCTIONS ========== //
 
+// --- START: NEW CONVERSATION FUNCTION ---
+function startNewConversation() {
+  // Clear current conversation
+  currentConversationId = null;
+  conversationMessages = [];
+  
+  // Clear messages display
+  const messagesContainer = document.getElementById("messages");
+  if (messagesContainer) {
+    messagesContainer.innerHTML = "";
+  }
+  
+  // Update history UI
+  loadConversationHistory();
+  
+  console.log("✅ Started new conversation");
+}
+// --- END: NEW CONVERSATION FUNCTION ---
+
 async function saveConversation(title = "") {
   try {
     const { data: { session } } = await _supabase.auth.getSession();
     if (!session) return;
 
-    const messagesContainer = document.getElementById("messages");
-    const messages = [];
-    
-    if (messagesContainer) {
-      messagesContainer.querySelectorAll(".msg").forEach((el) => {
-        const isUser = el.classList.contains("user");
-        const content = el.innerText || el.textContent;
-        messages.push({
-          role: isUser ? "user" : "assistant",
-          content: content.trim(),
-        });
-      });
-    }
+    // Use conversationMessages array instead of DOM scraping to avoid malformed data
+    if (!conversationMessages || conversationMessages.length === 0) return;
 
-    if (messages.length === 0) return;
+    const messages = conversationMessages.map(msg => ({
+      role: msg.role,
+      content: msg.content
+    }));
 
     const response = await fetch(`${SUPABASE_URL}/functions/v1/conversation-history`, {
       method: "POST",
@@ -2480,7 +2516,6 @@ async function loadConversation(conversationId) {
 
     const data = await response.json();
     currentConversationId = data.id;
-    conversationMessages = data.messages;
 
     // Clear current messages
     const messagesContainer = document.getElementById("messages");
@@ -2488,7 +2523,10 @@ async function loadConversation(conversationId) {
       messagesContainer.innerHTML = "";
     }
 
-    // Render loaded messages
+    // Reset conversation messages array
+    conversationMessages = [];
+
+    // Render loaded messages (appendMessage will populate conversationMessages)
     data.messages.forEach((msg) => {
       if (msg.role === "user") {
         appendMessage(msg.content, "user");

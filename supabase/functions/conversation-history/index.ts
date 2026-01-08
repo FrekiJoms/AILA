@@ -15,6 +15,33 @@ interface ConversationRequest {
   searchQuery?: string;
 }
 
+// Decode JWT token and extract user ID (without verification, since Supabase already verified it)
+function getUserIdFromToken(token: string): string {
+  try {
+    // JWT format: header.payload.signature
+    const parts = token.split(".");
+    if (parts.length !== 3) {
+      throw new Error("Invalid token format");
+    }
+
+    // Decode payload (add padding if needed)
+    const payload = parts[1];
+    const padded = payload + "=".repeat((4 - (payload.length % 4)) % 4);
+    const decoded = atob(padded);
+    const data = JSON.parse(decoded);
+
+    const userId = data.sub;
+    if (!userId) {
+      throw new Error("No user ID in token");
+    }
+
+    return userId;
+  } catch (error) {
+    console.error("Token decode error:", error);
+    throw new Error("Invalid token");
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -27,28 +54,17 @@ serve(async (req) => {
     }
 
     const token = authHeader.replace("Bearer ", "");
+    const userId = getUserIdFromToken(token);
+
+    // Create Supabase client with SERVICE_ROLE_KEY for database access
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") || "",
-      Deno.env.get("SUPABASE_ANON_KEY") || "",
-      {
-        global: {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      }
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""
     );
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    if (userError || !user) {
-      throw new Error("Unauthorized");
-    }
-
     const body: ConversationRequest = await req.json();
-    const userId = user.id;
+    
+    console.log(`Processing ${body.action} action for user ${userId}`);
 
     // List conversations
     if (body.action === "list") {
@@ -67,12 +83,14 @@ serve(async (req) => {
 
     // Save conversation
     if (body.action === "save") {
-      if (!body.title || !body.messages) {
-        throw new Error("Title and messages are required");
+      console.log("Save request body:", JSON.stringify(body));
+      
+      if (!body.messages || !Array.isArray(body.messages) || body.messages.length === 0) {
+        throw new Error("Messages array is required and cannot be empty");
       }
 
       // Auto-generate title from first user message if empty
-      let finalTitle = body.title.trim();
+      let finalTitle = (body.title || "").trim();
       if (!finalTitle) {
         const firstUserMsg = body.messages.find((m) => m.role === "user");
         if (firstUserMsg) {
@@ -198,9 +216,13 @@ serve(async (req) => {
 
     throw new Error("Unknown action");
   } catch (error) {
-    console.error(error);
+    console.error("Edge function error:", error);
+    
+    const isValidationError = error.message.includes("required") || error.message.includes("Unknown action");
+    const statusCode = isValidationError ? 400 : 500;
+    
     return new Response(JSON.stringify({ error: error.message }), {
-      status: 400,
+      status: statusCode,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
