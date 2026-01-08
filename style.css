@@ -3057,11 +3057,18 @@ input:-webkit-autofill:active {
 
 /* Main Chat Window styles */
 .chat {
-  transition: margin-left 0.3s ease-in-out;
+  transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   margin-left: 60px;
   /* MODIFIED: Match new collapsed width */
   width: calc(100% - 60px);
   /* MODIFIED: Match new collapsed width */
+}
+
+/* Adjust chat area when sidebar is expanded */
+.nav-sidebar.expanded ~ .chat,
+body.sidebar-expanded .chat {
+  margin-left: 240px;
+  width: calc(100% - 240px);
 }
 
 /* --- Enhanced User Menu --- */

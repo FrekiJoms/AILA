@@ -42,11 +42,7 @@ _supabase.auth.onAuthStateChange(async (event, session) => {
     // 3. THIS IS THE FIX: Log the event to your Google Sheet before redirecting
     await logUserEventToSheet(session.user.email, displayName, eventType);
     
-    window.location.assign(AILA_URL);
-    
-    setTimeout(() => {
-  }, 2000);
-    // 4. Cleanly reload the page to start the app
+    // Redirect to app after logging the event
     window.location.assign(AILA_URL);
     return;
   }
@@ -2161,6 +2157,14 @@ async function updateUserInfo() {
         ? customTrialDays
         : 30; // Default is 30 days
 
+    // Check if unlimited (5+ digits = 99999+ days)
+    if (trialDays >= 99999) {
+      trialStatusEl.textContent = "Unlimited Trial";
+      trialStatusEl.style.color = "var(--success)";
+      trialTimerEl.textContent = "♾️ Unlimited";
+      return; // Exit early, no countdown needed
+    }
+
     let trialEndDate = new Date(
       new Date(user.created_at).setDate(
         new Date(user.created_at).getDate() + trialDays
@@ -2301,32 +2305,41 @@ function setupNavigation() {
     // --- Mobile Swipe Gesture Logic ---
     let touchStartX = 0;
     let touchEndX = 0;
-    // --- START: THIS IS THE FIX ---
-    // We increase the swipe distance required to 50px to prevent accidental swipes.
-    const swipeThreshold = 50; 
-    // We also restrict the swipe-to-open gesture to the first 40px of the screen edge.
-    const edgeThreshold = 100; 
-    // --- END: THIS IS THE FIX ---
+    let touchStartTime = 0;
+    
+    const swipeThreshold = 40;  // Minimum swipe distance (reduced from 50)
+    const edgeThreshold = 80;   // Left edge zone for opening (reduced from 100)
+    const maxSwipeTime = 500;   // Max time for a swipe (milliseconds)
   
     function handleSwipeGesture() {
       // Only run on mobile
       if (window.innerWidth > 900) return;
   
+      const swipeDuration = Date.now() - touchStartTime;
+      const swipeDistance = Math.abs(touchEndX - touchStartX);
+      const swipeVelocity = swipeDistance / swipeDuration; // pixels per ms
+      
+      // Check if swipe is fast enough or far enough
+      const isValidSwipe = swipeDuration <= maxSwipeTime && 
+                          (swipeDistance >= swipeThreshold || swipeVelocity > 0.3);
+      
+      if (!isValidSwipe) return;
+  
       // 1. SWIPE-TO-OPEN (Left to Right)
       if (
         !navSidebar.classList.contains("expanded") &&
-        touchStartX < edgeThreshold
+        touchStartX < edgeThreshold &&
+        touchEndX > touchStartX
       ) {
-        if (touchEndX - touchStartX > swipeThreshold) {
-          navSidebar.classList.add("expanded"); // Open sidebar
-        }
+        navSidebar.classList.add("expanded");
       }
   
       // 2. SWIPE-TO-CLOSE (Right to Left)
-      if (navSidebar.classList.contains("expanded")) {
-        if (touchStartX - touchEndX > swipeThreshold) {
-          navSidebar.classList.remove("expanded"); // Close sidebar
-        }
+      if (
+        navSidebar.classList.contains("expanded") &&
+        touchEndX < touchStartX
+      ) {
+        navSidebar.classList.remove("expanded");
       }
     }
   
@@ -2334,6 +2347,7 @@ function setupNavigation() {
       "touchstart",
       (e) => {
         touchStartX = e.changedTouches[0].screenX;
+        touchStartTime = Date.now();
       },
       { passive: true }
     );
