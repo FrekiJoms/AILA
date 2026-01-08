@@ -1190,6 +1190,9 @@ async function loadOfflineData() {
 }
 // --- START: Updated initializeApp Function ---
 async function initializeApp() {
+  // Setup DevTools blocker immediately (blocks everyone by default)
+  setupDevToolsBlocker();
+  
   // Load admins from database first
   await loadAdminsFromDatabase();
   
@@ -1491,25 +1494,18 @@ function handleSuccessfulLogin(email, isNewUser = false) {
   showWelcomeScreen();
   updateUserInfo();
   updateStatus("pending");
-  
-  // --- START: Setup DevTools Blocker ---
-  // This will block devtools access for non-admins after a short delay
-  // to allow updateUserInfo to set the isAdminUser flag
-  setTimeout(() => {
-    setupDevToolsBlocker();
-  }, 100);
-  // --- END: Setup DevTools Blocker ---
 }
 
 // --- START: DEVTOOLS BLOCKER FOR NON-ADMINS ---
 function setupDevToolsBlocker() {
-  // Only block if user is NOT an admin
-  if (isAdminUser) {
+  // GUARD: Only ALLOW if user is authenticated AND is an admin
+  // Block everyone else by default
+  if (isUserAuthenticated && isAdminUser) {
     console.log("🔓 Admin mode: Developer tools access enabled");
     return;
   }
 
-  console.log("🔒 Non-admin mode: Developer tools access restricted");
+  console.log("🔒 Developer tools access restricted");
 
   // Show friendly message
   const showBlockMessage = () => {
@@ -1518,7 +1514,7 @@ function setupDevToolsBlocker() {
       "color: #FFC107; font-size: 16px; font-weight: bold;"
     );
     console.log(
-      "%cThis application restricts developer tools access for non-admin users.\nIf you need assistance, please contact the developer.",
+      "%cThis application restricts developer tools access.\nOnly admins can access developer tools. If you need assistance, please contact the developer.",
       "color: #8b949e; font-size: 12px;"
     );
   };
@@ -2337,6 +2333,10 @@ function setupNavigation() {
         "Are you sure you want to log out?"
       );
       if (isConfirmed) {
+        // --- START: Reset admin status on logout ---
+        isUserAuthenticated = false;
+        isAdminUser = false;
+        // --- END: Reset admin status on logout ---
         await _supabase.auth.signOut();
         localStorage.removeItem("loggedInUser");
         window.location.reload();
@@ -2540,6 +2540,9 @@ async function saveConversation(title = "") {
       currentConversationId = data.id;
     }
     
+    // Move this conversation to the top of history AFTER saving a new message
+    await updateConversationPosition();
+    
     console.log("✅ Conversation saved");
   } catch (error) {
     console.error("Error saving conversation:", error);
@@ -2576,6 +2579,31 @@ async function loadConversationHistory(sortBy = "newest") {
   }
 }
 
+// Only updates the active state without reordering the list
+function updateHistoryActiveState() {
+  const historyItems = document.querySelectorAll(".history-item");
+  historyItems.forEach((item) => {
+    item.classList.remove("active");
+  });
+  
+  // Find and highlight the current conversation
+  historyItems.forEach((item) => {
+    if (item.dataset.conversationId === currentConversationId) {
+      item.classList.add("active");
+    }
+  });
+}
+
+// Move conversation to the top of the history list after a new message is sent
+async function updateConversationPosition() {
+  try {
+    // Reload history with newest first to put this conversation at the top
+    await loadConversationHistory("newest");
+  } catch (error) {
+    console.error("Error updating conversation position:", error);
+  }
+}
+
 function renderConversationHistory(conversations) {
   const historyList = document.getElementById("historyList");
   if (!historyList) return;
@@ -2590,6 +2618,7 @@ function renderConversationHistory(conversations) {
   conversations.forEach((conv) => {
     const item = document.createElement("div");
     item.className = "history-item";
+    item.dataset.conversationId = conv.id;
     if (conv.id === currentConversationId) {
       item.classList.add("active");
     }
@@ -2675,8 +2704,8 @@ async function loadConversation(conversationId) {
       }
     });
 
-    // Update history UI
-    loadConversationHistory();
+    // Update UI to highlight current conversation (but don't move to top on just clicking)
+    updateHistoryActiveState();
 
     console.log("✅ Conversation loaded");
   } catch (error) {
