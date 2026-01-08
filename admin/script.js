@@ -16,7 +16,7 @@ const DEFAULT_ROLE_COLORS = {
   'Tester': '#F7DC6F',          // Yellow
   'Founder': '#BB8FCE',         // Purple
   'Co-Founder': '#85C1E2',      // Light Blue
-  'Head Developer': '#85C1E2',  // Light Blue (same as Co-Founder)
+  'Head Developer': '#df4b4bff',  // Light Blue (same as Co-Founder)
   'Investor': '#F8B195'         // Orange
 };
 
@@ -433,6 +433,79 @@ function closeRoleModal() {
   }
   pendingRoleData = null;
   resetRoleForm();
+}
+
+// Delete role from modal
+async function deleteRoleModal() {
+  if (!pendingRoleData) {
+    alert('No user selected');
+    return;
+  }
+
+  if (!confirm('Are you sure you want to delete this user\'s role?')) {
+    return;
+  }
+
+  // Show loading state
+  const statusContainer = document.getElementById('roleStatusContainer');
+  const loadingState = document.getElementById('roleLoadingState');
+  const successState = document.getElementById('roleSuccessState');
+  const errorState = document.getElementById('roleErrorState');
+  const submitBtn = document.getElementById('roleModalSubmitBtn');
+  const deleteBtn = document.getElementById('roleModalDeleteBtn');
+
+  // Hide all states initially
+  loadingState.classList.remove('hidden');
+  successState.classList.add('hidden');
+  errorState.classList.add('hidden');
+  statusContainer.classList.remove('hidden');
+
+  // Disable buttons
+  submitBtn.disabled = true;
+  deleteBtn.disabled = true;
+
+  try {
+    const { data, error } = await _supabase.functions.invoke('delete-role', {
+      body: { 
+        targetEmail: pendingRoleData.userEmail
+      }
+    });
+
+    console.log('Delete-role response:', { data, error });
+
+    if (error) {
+      console.error('Function error:', error);
+      throw error;
+    }
+    if (data?.error) {
+      throw new Error(data.error);
+    }
+
+    // Show success state
+    loadingState.classList.add('hidden');
+    successState.classList.remove('hidden');
+    document.getElementById('roleSuccessText').textContent = `Role deleted successfully!`;
+
+    // Close modal and refresh after 1.5 seconds
+    setTimeout(async () => {
+      closeRoleModal();
+      await loadUsersAndRefresh();
+    }, 1500);
+  } catch (error) {
+    console.error('Error deleting role:', error);
+    console.error('Pending role data:', pendingRoleData);
+
+    // Show error state
+    loadingState.classList.add('hidden');
+    errorState.classList.remove('hidden');
+    document.getElementById('roleErrorText').textContent = `Error: ${error.message || 'Failed to delete role'}`;
+
+    // Re-enable buttons for retry
+    setTimeout(() => {
+      submitBtn.disabled = false;
+      deleteBtn.disabled = false;
+    }, 2000);
+  }
 }
 
 // Reset role form to defaults

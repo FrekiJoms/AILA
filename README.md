@@ -67,6 +67,9 @@ frameworks
 - User row click for detailed actions
 - Ban users
 - Set/manage trial dates
+- **Set/Delete user roles** (new)
+- **View roles in table with custom colors** (new)
+- **Auto-color assignment for default roles** (new)
 - Impersonate users for testing
 - Send recovery emails
 - Send Gmail notifications
@@ -119,9 +122,83 @@ frameworks
 - WCAG AA color contrast
 - Touch-friendly button sizes
 
+### 🎭 Role Management System
+- Admin can assign roles to users across any page
+- Auto-detection and color assignment for 8 default roles
+- Delete roles with confirmation dialog
+- Roles searchable and sortable in admin table
+- Roles display with custom colors in user profile
+- Role validation and format checking
+- Real-time role updates across all pages
+- Pagination support (works on pages 2-5+)
+
+**Default Roles with Auto Colors**:
+- Moderator (#FF6B6B - Red)
+- Owner (#4ECDC4 - Teal)
+- Helper (#95E1D3 - Light Green)
+- Tester (#F7DC6F - Yellow)
+- Founder (#BB8FCE - Purple)
+- Co-Founder (#85C1E2 - Light Blue)
+- Head Developer (#85C1E2 - Light Blue)
+- Investor (#F8B195 - Orange)
+
 ---
 
-## 🚀 Platform Setup Order (REQUIRED SEQUENCE)
+## � Database Schema & RLS Policies
+
+### Profiles Table Structure
+```sql
+CREATE TABLE public.profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id),
+  email VARCHAR(255),
+  role VARCHAR(255),              -- User role assignment
+  role_color VARCHAR(7),          -- Hex color code for role (#RRGGBB)
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  -- ... other columns
+);
+```
+
+### Required RLS Policies for Service Role
+The `set-role` and `delete-role` edge functions require these policies:
+
+```sql
+-- Allow service role full access to profiles
+CREATE POLICY "Service role full access to profiles"
+ON public.profiles
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+-- Allow users to read their own profile
+CREATE POLICY "Users can read their own profile"
+ON public.profiles FOR SELECT
+USING (auth.uid() = id);
+
+-- Allow users to update their own profile
+CREATE POLICY "Users can update their own profile"
+ON public.profiles FOR UPDATE
+USING (auth.uid() = id)
+WITH CHECK (auth.uid() = id);
+```
+
+**Setup Instructions**:
+1. Run SQL file: `supabase/manual-rls-setup.sql`
+2. Or execute the policies above manually in Supabase SQL Editor
+3. Ensure `auth.role() = 'service_role'` is recognized (enable in RLS settings)
+
+### Admins Table Structure
+```sql
+CREATE TABLE public.admins (
+  email VARCHAR(255) PRIMARY KEY,
+  role VARCHAR(255) DEFAULT 'admin',
+  role_color VARCHAR(7) DEFAULT '#FF0000',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+---
+
+## �🚀 Platform Setup Order (REQUIRED SEQUENCE)
 
 You **MUST** set up platforms in this exact order as they are interconnected:
 
@@ -266,6 +343,23 @@ Components:
 1. Create [Supabase](https://supabase.com/) account
 2. Create new project
 3. Go to **SQL Editor** and create tables
+
+#### Adding Role Support to Profiles Table:
+Execute this SQL to add role management columns:
+```sql
+ALTER TABLE public.profiles
+ADD COLUMN IF NOT EXISTS role VARCHAR(255),
+ADD COLUMN IF NOT EXISTS role_color VARCHAR(7),
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+```
+
+#### Enabling RLS Policies:
+Run `supabase/manual-rls-setup.sql` in SQL Editor to set up all required Row-Level Security policies for:
+- Service role access (for edge functions)
+- User profile access (own profile only)
+- Admins table access
+
+See **Database Schema & RLS Policies** section above for details.
 
 #### Downloading Table Schemas:
 Use Supabase CLI snippets to download pre-configured table schemas:
@@ -413,12 +507,143 @@ Key features to implement:
 - [ ] Test offline mode (disable N8N, verify fallback)
 - [ ] Check Google Sheets logging
 - [ ] Test admin dashboard functionality
+- [ ] **Test setting role on page 1** (new)
+- [ ] **Test setting role on page 5** (new - pagination)
+- [ ] **Test deleting role** (new)
+- [ ] **Verify role displays in table with color** (new)
+- [ ] **Test role search and sort** (new)
+- [ ] **Verify default role auto-colors work** (new)
+- [ ] Test role displays in user profile/menu (new)
 - [ ] Verify DevTools blocking
 - [ ] Test on multiple browsers
 
 ---
 
-## 🔑 Key Configuration Reference
+## � Environment Variables & Secrets Setup
+
+### Required Secrets
+You must configure these secrets in your deployment environment. These are sensitive credentials that should **NEVER** be committed to git.
+
+| Secret | Source | Where to Use | Purpose |
+|--------|--------|--------------|---------|
+| `SUPABASE_URL` | Supabase Dashboard > Settings > API | Frontend, Edge Functions | Your Supabase project endpoint |
+| `SUPABASE_ANON_KEY` | Supabase Dashboard > Settings > API | Frontend, Public clients | Client-side authentication key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase Dashboard > Settings > API | Edge Functions only | Server-side admin operations |
+| `SUPABASE_DB_URL` | Supabase Dashboard > Settings > Database | Backend services | Direct database connection |
+| `SERVICE_ROLE_KEY` | Supabase Dashboard > Settings > API | Edge Functions | Alternative to SERVICE_ROLE_KEY |
+| `CHAT_WEBHOOK_URL` | N8N Dashboard > Webhooks | Frontend, Edge Functions | N8N chat workflow webhook |
+| `OFFLINE_DATA_URL` | Google Apps Script | Frontend fallback | Offline response data endpoint |
+| `SCRIPT_API_URL` | Google Apps Script | Frontend | Apps Script API endpoint |
+| `PROJECT_URL` | Supabase Dashboard | Configuration | Project base URL for CORS |
+
+### Where to Configure Secrets
+
+#### 1. **Frontend (.env file)**
+Create `.env` file in project root:
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
+VITE_CHAT_WEBHOOK_URL=https://your-n8n-instance.com/webhook/chat
+VITE_OFFLINE_DATA_URL=https://your-script-endpoint.com/offline
+VITE_SCRIPT_API_URL=https://your-script-endpoint.com
+```
+
+**Important**: Use `VITE_` prefix for Vite projects to expose variables safely to frontend.
+
+#### 2. **Supabase Edge Functions**
+Configure in `supabase/config.toml`:
+```toml
+[functions."set-role"]
+env = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_ANON_KEY"]
+
+[functions."delete-role"]
+env = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_ANON_KEY"]
+
+[functions."get-users"]
+env = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]
+```
+
+Deploy with secrets:
+```bash
+supabase secrets set SUPABASE_SERVICE_ROLE_KEY="your-key-here"
+supabase functions deploy set-role
+```
+
+#### 3. **Vercel/Netlify Deployment**
+Go to Project Settings > Environment Variables:
+- Add all secrets from the table above
+- Set for both Development and Production
+- Rebuild after adding secrets
+
+#### 4. **Docker Deployment**
+Create `.env.production` file:
+```env
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key-here
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+# ... other secrets
+```
+
+Pass to container:
+```bash
+docker run --env-file .env.production your-app
+```
+
+### How to Get Each Secret
+
+#### From Supabase Dashboard:
+1. Go to **Settings** > **API**
+2. Find these keys:
+   - **Project URL** - Copy this as `SUPABASE_URL`
+   - **anon public** - Copy as `SUPABASE_ANON_KEY`
+   - **service_role secret** - Copy as `SUPABASE_SERVICE_ROLE_KEY`
+3. Go to **Settings** > **Database** for connection string
+
+#### From N8N:
+1. Open workflow with chat webhook
+2. Click webhook node
+3. Copy the full URL as `CHAT_WEBHOOK_URL`
+
+#### From Google Apps Script:
+1. Open your Apps Script project
+2. Deploy as web app
+3. Copy deployment URL as `SCRIPT_API_URL` and `OFFLINE_DATA_URL`
+
+### Security Best Practices
+
+⚠️ **CRITICAL**: Never commit secrets to git!
+
+1. **Use `.gitignore`**:
+```gitignore
+.env
+.env.local
+.env.*.local
+secrets/
+```
+
+2. **Rotate Secrets Regularly**:
+   - Every 90 days minimum
+   - Immediately if leaked
+   - After team member leaves
+
+3. **Limit Secret Access**:
+   - Share only with team members who need them
+   - Use separate secrets for dev/prod
+   - Store in secure password manager
+
+4. **Audit Secret Usage**:
+   - Log when secrets are accessed
+   - Monitor for suspicious activity
+   - Check Supabase logs regularly
+
+5. **Client vs Server Secrets**:
+   - **NEVER** expose `SERVICE_ROLE_KEY` to frontend
+   - Only `ANON_KEY` should be in client code
+   - Service role should only be used in edge functions/backend
+
+---
+
+## �🔑 Key Configuration Reference
 
 ### Environment Variables Needed:
 ```env
@@ -456,17 +681,19 @@ PINECONE_INDEX=aila-documents (optional)
 
 Located in `supabase/functions/`:
 
-### Deployed Functions (9 total):
+### Deployed Functions (11 total):
 
 | Function | Purpose | Deployments |
 |----------|---------|-------------|
 | **conversation-history** | Retrieve and manage conversation history | 7 |
 | **get-offline-data** | Fetch offline response data from Google Sheets | 7 |
-| **get-users** | Admin function to list and retrieve users | 1 |
+| **get-users** | Admin function to list users with roles | 1 |
 | **impersonate-user** | Admin function to test as another user | 12 |
 | **log-event** | Log user actions and events | 7 |
 | **manage-admins** | Manage admin user roles and permissions | 1 |
 | **send-chat-message** | Send messages to N8N webhook | 7 |
+| **set-role** | Admin function to assign roles to users | 1 |
+| **delete-role** | Admin function to remove roles from users | 1 |
 | **set-trial-days** | Set trial period for users | 16 |
 | **smooth-endpoint** | Utility endpoint for smooth operations | 11 |
 
@@ -507,9 +734,16 @@ supabase functions serve conversation-history
    - Moving to top: Only happens on message save, not on history click
    - Use `updateConversationPosition()` after `saveConversation()`
 
-5. **DevTools Security**: Block DevTools before user login to prevent unauthorized access.
+5. **Role Management**:
+   - Run `supabase/manual-rls-setup.sql` to enable RLS policies before using role functions
+   - Roles work on all pages (pagination built in)
+   - Default roles auto-assign colors when typed
+   - Color validation ensures 7-char hex format (#RRGGBB)
+   - Delete sets role and role_color to NULL (not hard delete)
 
-6. **Fallback Strategy**: Google Sheets should always contain offline responses for when N8N is unavailable.
+6. **DevTools Security**: Block DevTools before user login to prevent unauthorized access.
+
+7. **Fallback Strategy**: Google Sheets should always contain offline responses for when N8N is unavailable.
 
 ---
 

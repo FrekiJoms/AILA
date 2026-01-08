@@ -6,10 +6,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface SetRoleRequest {
+interface DeleteRoleRequest {
   targetEmail: string;
-  role: string;
-  roleColor: string;
 }
 
 serve(async (req: Request) => {
@@ -19,7 +17,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    console.log("=== set-role function start ===");
+    console.log("=== delete-role function start ===");
     
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") || "",
@@ -86,7 +84,7 @@ serve(async (req: Request) => {
     console.log("Admin verified:", adminData.email);
 
     // Parse request body
-    let requestBody: SetRoleRequest;
+    let requestBody: DeleteRoleRequest;
     try {
       requestBody = await req.json();
     } catch (parseError) {
@@ -97,31 +95,17 @@ serve(async (req: Request) => {
       );
     }
 
-    const { targetEmail, role, roleColor } = requestBody;
+    const { targetEmail } = requestBody;
 
-    if (!targetEmail || !role) {
-      console.error("Missing targetEmail or role");
+    if (!targetEmail) {
+      console.error("Missing targetEmail");
       return new Response(
-        JSON.stringify({ error: "Missing targetEmail or role" }),
+        JSON.stringify({ error: "Missing targetEmail" }),
         { status: 400, headers: corsHeaders }
       );
     }
 
-    // Validate and normalize roleColor
-    let validatedRoleColor = roleColor || '#4D96FF';
-    if (typeof validatedRoleColor === 'string') {
-      // Remove any whitespace
-      validatedRoleColor = validatedRoleColor.trim();
-      // Ensure it's a valid hex color (7 chars: #RRGGBB)
-      if (!validatedRoleColor.match(/^#[0-9A-Fa-f]{6}$/)) {
-        console.warn(`Invalid color format: "${roleColor}", using default`);
-        validatedRoleColor = '#4D96FF';
-      }
-    }
-
-    console.log(`Validated role color: ${validatedRoleColor} (length: ${validatedRoleColor.length})`);
-
-    console.log(`Setting role for ${targetEmail} to ${role}`);
+    console.log(`Deleting role for ${targetEmail}`);
 
     // Find the user by email in auth.users table
     // Need to paginate through all users because listUsers() only returns first page
@@ -174,19 +158,19 @@ serve(async (req: Request) => {
 
     console.log(`Found user: ${targetEmail} with ID: ${targetUser.id}`);
 
-    // Update user role in profiles table
-    console.log(`Attempting to update profile for user: ${targetEmail} (ID: ${targetUser.id})`);
+    // Delete user role in profiles table by setting role and role_color to NULL
+    console.log(`Attempting to delete role for user: ${targetEmail} (ID: ${targetUser.id})`);
     const { data: updateData, error: updateError } = await supabaseAdmin
       .from("profiles")
       .update({
-        role: role,
-        role_color: validatedRoleColor,
+        role: null,
+        role_color: null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", targetUser.id);
 
     if (updateError) {
-      console.error("Update error details:", {
+      console.error("Delete error details:", {
         message: updateError.message,
         code: updateError.code,
         details: updateError.details,
@@ -194,26 +178,24 @@ serve(async (req: Request) => {
       });
       return new Response(
         JSON.stringify({ 
-          error: `Failed to update role: ${updateError.message}. Make sure RLS policies are configured.` 
+          error: `Failed to delete role: ${updateError.message}` 
         }), 
         { status: 500, headers: corsHeaders }
       );
     }
 
-    console.log("Profile updated successfully");
+    console.log("Role deleted successfully");
 
     return new Response(
       JSON.stringify({
-        message: `Role updated to ${role} successfully`,
+        message: `Role deleted successfully for ${targetEmail}`,
         user: targetEmail,
-        role: role,
-        roleColor: validatedRoleColor,
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("Uncaught error in set-role function:", errorMessage);
+    console.error("Uncaught error in delete-role function:", errorMessage);
     console.error("Stack:", error instanceof Error ? error.stack : "No stack");
     
     return new Response(JSON.stringify({ error: `Internal server error: ${errorMessage}` }), {
@@ -222,4 +204,3 @@ serve(async (req: Request) => {
     });
   }
 });
-
