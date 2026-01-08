@@ -1,8 +1,3 @@
-# Conversation History Setup
-
-To set up conversation history, run the following SQL in your Supabase SQL editor:
-
-```sql
 -- Ensure extension for gen_random_uuid()
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
@@ -47,6 +42,3 @@ CREATE POLICY "Users can delete their own conversations"
   ON public.conversation_history
   FOR DELETE
   USING ((SELECT auth.uid()) = user_id);
-```
-
-After running this SQL, the conversation history feature will be fully functional!

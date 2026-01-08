@@ -44,6 +44,7 @@
                         <option value="email">Email</option>
                         <option value="uid">User ID</option>
                         <option value="name">Name</option>
+                        <option value="role">Role</option>
                         <option value="phone">Phone number</option>
                     </select>
                     <input type="text" class="search-input" placeholder="Search..." id="searchInput">
@@ -64,6 +65,9 @@
                                 </label>
                                 <label class="column-checkbox">
                                     <input type="checkbox" data-column="email" checked> Email
+                                </label>
+                                <label class="column-checkbox">
+                                    <input type="checkbox" data-column="role" checked> Role
                                 </label>
                                 <label class="column-checkbox">
                                     <input type="checkbox" data-column="phone" checked> Phone
@@ -119,6 +123,7 @@
                                 <th class="uid-col" data-column="uid" onclick="handleHeaderClick('uid')" style="cursor: pointer;">UID <span class="sort-icon"></span></th>
                                 <th data-column="name" onclick="handleHeaderClick('name')" style="cursor: pointer;">Display name <span class="sort-icon"></span></th>
                                 <th data-column="email" onclick="handleHeaderClick('email')" style="cursor: pointer;">Email <span class="sort-icon"></span></th>
+                                <th data-column="role" onclick="handleHeaderClick('role')" style="cursor: pointer;">Role <span class="sort-icon"></span></th>
                                 <th data-column="phone" onclick="handleHeaderClick('phone')" style="cursor: pointer;">Phone <span class="sort-icon"></span></th>
                                 <th data-column="providers" onclick="handleHeaderClick('providers')" style="cursor: pointer;">Providers <span class="sort-icon"></span></th>
                                 <th data-column="provider_type" onclick="handleHeaderClick('provider_type')" style="cursor: pointer;">Provider type <span class="sort-icon"></span></th>
@@ -198,31 +203,140 @@
         </div>
     </div>
 
-    <!-- Modal for User Options -->
-    <div id="optionsModal" class="modal-backdrop hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>User Options</h2>
-                <button class="modal-close-btn" data-modal="optionsModal">&times;</button>
+    <!-- User Options Sidebar -->
+    <div id="optionsModal" class="options-modal-overlay hidden">
+        <div class="options-sidebar">
+            <div class="options-sidebar-header">
+                <div class="options-user-info">
+                    <img id="optionsUserAvatar" src="" alt="avatar" class="options-user-avatar">
+                    <div class="options-user-details">
+                        <h3 id="optionsUserName">User</h3>
+                        <p id="optionsUserEmail">email@example.com</p>
+                    </div>
+                </div>
+                <button class="options-sidebar-close" onclick="closeOptionsSidebar()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
             </div>
-            <div class="modal-body">
-                <p>Options for <strong id="optionsUserEmail"></strong>:</p>
+            <div class="options-sidebar-body">
                 <div class="options-grid">
-                    <button class="option-btn" id="optSetTrial">
-                        <span class="icon">⏳</span> Change Trial Time
+                    <button class="option-btn" onclick="handleOptionClick('setRole')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span>Set Role</span>
                     </button>
-                    <button class="option-btn" id="optLoginAs">
-                        <span class="icon">🔑</span> Login as User
+                    <button class="option-btn" onclick="handleOptionClick('setTrial')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        <span>Change Trial</span>
                     </button>
-                    <button class="option-btn danger" id="optBanUser">
-                        <span class="icon">🚫</span> Ban User
+                    <button class="option-btn" onclick="handleOptionClick('loginAs')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                            <polyline points="10 17 15 12 10 7"></polyline>
+                        </svg>
+                        <span>Login as User</span>
                     </button>
-                    <button class="option-btn" id="optResetPwd">
-                        <span class="icon">🔄</span> Send Reset Password
+                    <button class="option-btn danger" onclick="handleOptionClick('banUser')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                        </svg>
+                        <span>Ban User</span>
                     </button>
-                    <button class="option-btn" id="optSendEmail">
-                        <span class="icon">📧</span> Send Email
+                    <button class="option-btn" onclick="handleOptionClick('resetPwd')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 4v6h6M23 20v-6h-6"></path>
+                            <path d="M20.49 9A9 9 0 0 0 5.64 5.64M3.51 15A9 9 0 0 0 18.36 18.36"></path>
+                        </svg>
+                        <span>Send Reset Link</span>
                     </button>
+                    <button class="option-btn" onclick="handleOptionClick('sendEmail')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                        </svg>
+                        <span>Send Email</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Custom Role Modal -->
+    <div id="roleModal" class="role-modal-backdrop hidden">
+        <div class="role-modal">
+            <div class="role-modal-header">
+                <h3>Set User Role</h3>
+                <button class="role-modal-close" data-modal="roleModal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="role-modal-body">
+                <div class="role-form-group">
+                    <label for="roleInput">Role Name</label>
+                    <input 
+                        type="text" 
+                        id="roleInput" 
+                        placeholder="e.g., Developer, Manager, Moderator"
+                        class="role-input"
+                    >
+                </div>
+                <div class="role-form-group">
+                    <label for="roleColor">Role Color</label>
+                    <div class="role-color-picker">
+                        <input 
+                            type="color" 
+                            id="roleColor" 
+                            class="role-color-input"
+                            value="#4D96FF"
+                        >
+                        <span id="roleColorValue" class="role-color-value">#4D96FF</span>
+                    </div>
+                </div>
+                <div class="role-preview">
+                    <p>Preview:</p>
+                    <span class="role-preview-badge" id="rolePreviewBadge" style="color: #4D96FF;">Custom Role</span>
+                </div>
+                
+                <!-- Loading Spinner & Status -->
+                <div id="roleStatusContainer" class="role-status-container hidden">
+                    <div id="roleLoadingState" class="role-loading-state">
+                        <svg class="role-spinner" viewBox="0 0 50 50">
+                            <circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="2"/>
+                            <circle cx="25" cy="25" r="20" fill="none" stroke="#4D96FF" stroke-width="2" stroke-dasharray="31.4 125.6" class="spinner-dash"/>
+                        </svg>
+                        <p id="roleLoadingText">Setting role...</p>
+                    </div>
+                    <div id="roleSuccessState" class="role-success-state hidden">
+                        <svg class="role-success-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <p id="roleSuccessText">Role set successfully!</p>
+                    </div>
+                    <div id="roleErrorState" class="role-error-state hidden">
+                        <svg class="role-error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <p id="roleErrorText">Failed to set role</p>
+                    </div>
+                </div>
+                
+                <div class="role-modal-actions" id="roleModalActions">
+                    <button class="role-btn cancel" onclick="closeRoleModal()">Cancel</button>
+                    <button class="role-btn save" onclick="saveRoleModal()" id="roleModalSubmitBtn">Set Role</button>
                 </div>
             </div>
         </div>

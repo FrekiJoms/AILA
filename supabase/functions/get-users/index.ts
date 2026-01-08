@@ -79,16 +79,47 @@ serve(async (req: Request) => {
       name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Unknown',
       created_at: user.created_at,
       last_sign_in_at: user.last_sign_in_at,
-      role: user.role || 'user',
+      role: 'user', // Will be replaced with data from profiles
+      role_color: '#4D96FF',
       avatar_url: user.user_metadata?.avatar_url,
       user_metadata: user.user_metadata || {},
     }))
+
+    // Fetch profiles to get role data
+    const userIds = transformedUsers.map(u => u.id)
+    let profilesMap = {}
+    
+    if (userIds.length > 0) {
+      try {
+        const { data: profilesData, error: profilesError } = await supabaseAdmin
+          .from('profiles')
+          .select('id, role, role_color')
+          .in('id', userIds)
+        
+        if (profilesError) {
+          console.warn('Error fetching profiles:', profilesError.message)
+        } else if (profilesData) {
+          profilesMap = Object.fromEntries(profilesData.map((p: any) => [p.id, p]))
+          console.log('Fetched', profilesData.length, 'profiles')
+          
+          // Merge profile data into users
+          transformedUsers = transformedUsers.map(user => ({
+            ...user,
+            role: profilesMap[user.id]?.role || '-',
+            role_color: profilesMap[user.id]?.role_color || '#4D96FF'
+          }))
+        }
+      } catch (err) {
+        console.error('Error fetching profiles:', err)
+      }
+    }
 
     // Filter by search if provided
     if (search) {
       transformedUsers = transformedUsers.filter(user =>
         user.email?.toLowerCase().includes(search) ||
-        user.name?.toLowerCase().includes(search)
+        user.name?.toLowerCase().includes(search) ||
+        user.role?.toLowerCase().includes(search)
       )
     }
 

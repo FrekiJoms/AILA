@@ -670,7 +670,7 @@ function appendMessage(
   // This prevents duplicate conversations from being created
   if (who === "bot") {
     setTimeout(() => {
-      saveConversation();
+      saveConversation("", true); // true = new message was added
     }, 500);
   }
 
@@ -2136,6 +2136,41 @@ async function updateUserInfo() {
     menuUserNameEl.textContent = displayName;
     menuUserEmailEl.textContent = user.email;
     menuUserAvatarEl.innerHTML = avatarContent;
+    
+    // Fetch user profile to get role
+    try {
+      const { data: profileData, error: profileError } = await _supabase
+        .from("profiles")
+        .select("role, role_color")
+        .eq("id", user.id)
+        .single();
+      
+      if (profileError) {
+        console.warn("Could not fetch user profile:", profileError);
+      } else if (profileData && profileData.role) {
+        // Display role in sidebar
+        const userRoleEl = document.getElementById("userRole");
+        if (userRoleEl) {
+          userRoleEl.textContent = profileData.role;
+          if (profileData.role_color) {
+            userRoleEl.style.color = profileData.role_color;
+          }
+          userRoleEl.classList.remove("hidden");
+        }
+        
+        // Display role in user menu
+        const menuUserRoleEl = document.getElementById("menuUserRole");
+        if (menuUserRoleEl) {
+          menuUserRoleEl.textContent = profileData.role;
+          if (profileData.role_color) {
+            menuUserRoleEl.style.color = profileData.role_color;
+          }
+          menuUserRoleEl.classList.remove("hidden");
+        }
+      }
+    } catch (error) {
+      console.warn("Error fetching user profile:", error);
+    }
         // --- START: Dev Tools Button Visibility & Admin Status ---
     const devToolsBtn = document.getElementById("devToolsBtn");
     isAdminUser = adminEmails.includes(user.email);
@@ -2644,7 +2679,7 @@ function startNewConversation() {
 }
 // --- END: NEW CONVERSATION FUNCTION ---
 
-async function saveConversation(title = "") {
+async function saveConversation(title = "", isNewMessage = false) {
   try {
     const { data: { session } } = await _supabase.auth.getSession();
     if (!session) return;
@@ -2681,11 +2716,11 @@ async function saveConversation(title = "") {
       currentConversationId = data.id;
     }
     
-    // Move this conversation to the top of history AFTER saving a new message
-    // But only if we're not currently just loading an existing conversation
-    if (!isLoadingConversation) {
+    // Only move this conversation to the top when a NEW MESSAGE is appended
+    // Don't move it when just loading/clicking on an existing conversation
+    if (isNewMessage && !isLoadingConversation) {
       await updateConversationPosition();
-    }
+    }3
     
     console.log('[CONVERSATION] Conversation saved');
   } catch (error) {

@@ -8,6 +8,23 @@ const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // Admin list - will be fetched from database
 let adminEmails = [];
 
+// ========== Default Role Color Mapping ========== //
+const DEFAULT_ROLE_COLORS = {
+  'Moderator': '#FF6B6B',      // Red
+  'Owner': '#4ECDC4',           // Teal
+  'Helper': '#95E1D3',          // Light Green
+  'Tester': '#F7DC6F',          // Yellow
+  'Founder': '#BB8FCE',         // Purple
+  'Co-Founder': '#85C1E2',      // Light Blue
+  'Head Developer': '#85C1E2',  // Light Blue (same as Co-Founder)
+  'Investor': '#F8B195'         // Orange
+};
+
+// Function to get default color for a role
+function getDefaultRoleColor(roleName) {
+  return DEFAULT_ROLE_COLORS[roleName] || '#4D96FF'; // Default blue if not found
+}
+
 // ========== User Table & Pop-up Logic ========== //
 
 // Fetch users from Supabase backend
@@ -66,6 +83,7 @@ async function fetchUsers(page = 1, search = '') {
     
     // Map API response to table format
     return (data.users || []).map(user => {
+      // Role data is already included in the response from get-users edge function
       const trialDays = user.user_metadata?.custom_trial_days || 30;
       
       // Safely parse created_at date
@@ -99,7 +117,8 @@ async function fetchUsers(page = 1, search = '') {
         name: user.name || user.user_metadata?.full_name || 'N/A',
         created_at: user.created_at || new Date().toISOString(),
         last_sign_in_at: user.last_sign_in_at || null,
-        role: user.role || 'user',
+        role: user.role || '-',
+        role_color: user.role_color || '#4D96FF',
         trial_end: trialEndDate.toISOString(),
         trial_days: trialDays,
         avatar_url: user.avatar_url,
@@ -145,6 +164,7 @@ function renderUserTable(users) {
             <td class="uid-text" data-column="uid">${user.id}</td>
             <td data-column="name">${user.name || '-'}</td>
             <td data-column="email">${user.email}</td>
+            <td data-column="role"><span class="role-badge" ${user.role ? `style="color: ${user.role_color || '#4D96FF'}"` : ''}>${user.role || '-'}</span></td>
             <td data-column="phone">-</td>
             <td data-column="providers">Google</td>
             <td data-column="provider_type">Social</td>
@@ -235,60 +255,96 @@ function handleHeaderClick(column) {
     currentSortDirection = 'asc';
   }
   
-  // Re-render table with new sort
-  const users = allUsers.slice((currentPage - 1) * 30, currentPage * 30);
-  renderUserTable(users);
-  
-  // Re-apply column visibility preferences after sorting
-  const saved = localStorage.getItem('visibleColumns');
-  if (saved) {
-    const visibleColumns = JSON.parse(saved);
-    updateTableColumnVisibility(visibleColumns);
-  }
+  // Reset to page 1 when sorting changes, then re-render
+  currentPage = 1;
+  (async () => {
+    const users = await fetchUsers(currentPage, currentSearch);
+    renderUserTable(users);
+    
+    // Re-apply column visibility preferences after sorting
+    const saved = localStorage.getItem('visibleColumns');
+    if (saved) {
+      const visibleColumns = JSON.parse(saved);
+      updateTableColumnVisibility(visibleColumns);
+    }
+  })();
 }
 
 // Handle row click to show pop-up
 let currentPopup = null;
+// Store current selected user data
+let currentSelectedUser = null;
+
 function onUserRowClick(event, user, idx) {
-    if (currentPopup) currentPopup.remove();
-    const popup = document.createElement('div');
-    popup.className = 'user-popup-menu-modern';
-    // Use avatar and name for the header
+    currentSelectedUser = user;
+    
+    // Update sidebar with user data
     const avatar = user.avatar_url || user.user_metadata?.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name || user.email || 'User');
     const displayName = user.name || user.user_metadata?.full_name || user.email.split('@')[0];
-    popup.innerHTML = `
-        <div class="popup-header">
-            <img src="${avatar}" alt="avatar" class="popup-avatar">
-            <div class="popup-user-info">
-                <div class="popup-user-name">${displayName}</div>
-                <div class="popup-user-email">${user.email}</div>
-            </div>
-        </div>
-        <div class="popup-actions">
-            <button class="popup-action-btn" onclick="banUser('${user.id}')">🚫 Ban</button>
-            <button class="popup-action-btn" onclick="setTrialDate('${user.id}')">⏳ Set Trial Days</button>
-            <button class="popup-action-btn" onclick="loginAsUser('${user.id}')">🔑 Login as</button>
-            <button class="popup-action-btn" onclick="sendRecoveryLink('${user.id}')">🔄 Send Recovery Link</button>
-            <button class="popup-action-btn" onclick="sendGmail('${user.id}')">📧 Send Gmail</button>
-        </div>
-    `;
-    document.body.appendChild(popup);
-    // Position pop-up near the row (use mouse event)
-    const rect = event.target.getBoundingClientRect();
-    popup.style.position = 'absolute';
-    popup.style.left = `${event.clientX + 10}px`;
-    popup.style.top = `${event.clientY + 10}px`;
-    popup.style.zIndex = 1000;
-    function closePopup(e) {
-        if (!popup.contains(e.target)) {
-            popup.remove();
-            document.removeEventListener('mousedown', closePopup);
-            currentPopup = null;
+    
+    document.getElementById('optionsUserAvatar').src = avatar;
+    document.getElementById('optionsUserName').textContent = displayName;
+    document.getElementById('optionsUserEmail').textContent = user.email;
+    
+    // Open sidebar
+    const modal = document.getElementById('optionsModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+    
+    // Close any existing popup
+    if (currentPopup) currentPopup.remove();
+}
+
+// Close options sidebar
+function closeOptionsSidebar() {
+    const modal = document.getElementById('optionsModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+    currentSelectedUser = null;
+}
+
+// Handle sidebar button clicks
+function handleOptionClick(action) {
+    if (!currentSelectedUser) return;
+    
+    switch(action) {
+        case 'setRole':
+            setRole(currentSelectedUser.id, currentSelectedUser.email);
+            break;
+        case 'setTrial':
+            setTrialDate(currentSelectedUser.id);
+            break;
+        case 'loginAs':
+            loginAsUser(currentSelectedUser.id);
+            break;
+        case 'banUser':
+            banUser(currentSelectedUser.id);
+            break;
+        case 'resetPwd':
+            sendRecoveryLink(currentSelectedUser.id);
+            break;
+        case 'sendEmail':
+            sendGmail(currentSelectedUser.id);
+            break;
+    }
+}
+
+// Close sidebar when clicking outside
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById('optionsModal');
+    const sidebar = document.querySelector('.options-sidebar');
+    
+    if (modal && !modal.classList.contains('hidden')) {
+        if (!sidebar || !sidebar.contains(e.target)) {
+            // Check if click is on a table row
+            if (!e.target.closest('tr')) {
+                closeOptionsSidebar();
+            }
         }
     }
-    document.addEventListener('mousedown', closePopup);
-    currentPopup = popup;
-}
+});
 
 // ========== Action Handlers ========== //
 
@@ -346,6 +402,220 @@ async function setTrialDate(userId) {
     alert('Failed to set trial days: ' + error.message);
   }
 }
+
+// Set user role - Store data to apply after modal submission
+let pendingRoleData = null;
+
+async function setRole(userId, userEmail) {
+  pendingRoleData = { userId, userEmail };
+  
+  // Close sidebar
+  closeOptionsSidebar();
+  
+  // Open the role modal
+  const modal = document.getElementById('roleModal');
+  if (modal) {
+    modal.classList.remove('hidden');
+  }
+  
+  // Focus on the role input
+  setTimeout(() => {
+    const roleInput = document.getElementById('roleInput');
+    if (roleInput) roleInput.focus();
+  }, 100);
+}
+
+// Close role modal
+function closeRoleModal() {
+  const modal = document.getElementById('roleModal');
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+  pendingRoleData = null;
+  resetRoleForm();
+}
+
+// Reset role form to defaults
+function resetRoleForm() {
+  const roleInput = document.getElementById('roleInput');
+  const roleColor = document.getElementById('roleColor');
+  const roleColorValue = document.getElementById('roleColorValue');
+  const previewBadge = document.getElementById('rolePreviewBadge');
+  const statusContainer = document.getElementById('roleStatusContainer');
+  const submitBtn = document.getElementById('roleModalSubmitBtn');
+  
+  if (roleInput) {
+    roleInput.value = '';
+    roleInput.disabled = false;
+  }
+  if (roleColor) {
+    roleColor.value = '#4D96FF';
+    roleColor.disabled = false;
+  }
+  if (roleColorValue) roleColorValue.textContent = '#4D96FF';
+  if (previewBadge) {
+    previewBadge.textContent = 'Custom Role';
+    previewBadge.style.color = '#4D96FF';
+  }
+  if (statusContainer) {
+    statusContainer.classList.add('hidden');
+  }
+  if (submitBtn) {
+    submitBtn.disabled = false;
+  }
+}
+
+// Save role from modal
+async function saveRoleModal() {
+  if (!pendingRoleData) {
+    alert('No user selected');
+    return;
+  }
+  
+  const roleInput = document.getElementById('roleInput');
+  const roleColor = document.getElementById('roleColor');
+  
+  const role = roleInput.value.trim();
+  let roleColorValue = roleColor.value;
+  
+  if (!role) {
+    alert('Please enter a role name');
+    return;
+  }
+  
+  // Use default color if it's a known role
+  if (DEFAULT_ROLE_COLORS[role]) {
+    roleColorValue = DEFAULT_ROLE_COLORS[role];
+  }
+  
+  // Show loading state
+  const statusContainer = document.getElementById('roleStatusContainer');
+  const loadingState = document.getElementById('roleLoadingState');
+  const successState = document.getElementById('roleSuccessState');
+  const errorState = document.getElementById('roleErrorState');
+  const modalActions = document.getElementById('roleModalActions');
+  const submitBtn = document.getElementById('roleModalSubmitBtn');
+  
+  // Hide all states initially
+  loadingState.classList.remove('hidden');
+  successState.classList.add('hidden');
+  errorState.classList.add('hidden');
+  statusContainer.classList.remove('hidden');
+  
+  // Disable form inputs and buttons
+  roleInput.disabled = true;
+  roleColor.disabled = true;
+  submitBtn.disabled = true;
+  
+  // Show loading state
+  loadingState.classList.remove('hidden');
+  successState.classList.add('hidden');
+  errorState.classList.add('hidden');
+  
+  try {
+    const { data, error } = await _supabase.functions.invoke('set-role', {
+      body: { 
+        targetEmail: pendingRoleData.userEmail, 
+        role: role, 
+        roleColor: roleColorValue 
+      }
+    });
+    
+    console.log('Set-role response:', { data, error });
+    
+    if (error) {
+      console.error('Function error:', error);
+      throw error;
+    }
+    if (data?.error) {
+      throw new Error(data.error);
+    }
+    
+    // Show success state
+    loadingState.classList.add('hidden');
+    successState.classList.remove('hidden');
+    document.getElementById('roleSuccessText').textContent = `Role "${role}" set successfully!`;
+    
+    // Close modal and refresh after 1.5 seconds
+    setTimeout(async () => {
+      closeRoleModal();
+      await loadUsersAndRefresh();
+    }, 1500);
+  } catch (error) {
+    console.error('Error setting role:', error);
+    console.error('Pending role data:', pendingRoleData);
+    
+    // Show error state
+    loadingState.classList.add('hidden');
+    errorState.classList.remove('hidden');
+    document.getElementById('roleErrorText').textContent = `Error: ${error.message || 'Failed to set role'}`;
+    
+    // Re-enable form for retry
+    setTimeout(() => {
+      roleInput.disabled = false;
+      roleColor.disabled = false;
+      submitBtn.disabled = false;
+    }, 2000);
+  }
+}
+
+// Update role preview when input changes
+document.addEventListener('DOMContentLoaded', () => {
+  const roleInput = document.getElementById('roleInput');
+  const roleColor = document.getElementById('roleColor');
+  const roleColorValue = document.getElementById('roleColorValue');
+  const previewBadge = document.getElementById('rolePreviewBadge');
+  
+  if (roleInput) {
+    roleInput.addEventListener('input', () => {
+      const roleName = roleInput.value.trim();
+      
+      if (previewBadge) {
+        previewBadge.textContent = roleName || 'Custom Role';
+      }
+      
+      // Check if role matches a default role and auto-set color
+      const defaultColor = getDefaultRoleColor(roleName);
+      if (DEFAULT_ROLE_COLORS[roleName]) {
+        // Auto-set color for default role
+        roleColor.value = defaultColor;
+        if (roleColorValue) {
+          roleColorValue.textContent = defaultColor;
+        }
+        if (previewBadge) {
+          previewBadge.style.color = defaultColor;
+        }
+      }
+    });
+  }
+  
+  if (roleColor) {
+    roleColor.addEventListener('change', () => {
+      if (roleColorValue) {
+        roleColorValue.textContent = roleColor.value;
+      }
+      if (previewBadge) {
+        previewBadge.style.color = roleColor.value;
+      }
+    });
+    
+    // Also update on input (for real-time preview)
+    roleColor.addEventListener('input', () => {
+      if (roleColorValue) {
+        roleColorValue.textContent = roleColor.value;
+      }
+      if (previewBadge) {
+        previewBadge.style.color = roleColor.value;
+      }
+    });
+  }
+  
+  // Close modal when clicking the X button
+  const closeBtn = document.querySelector('[data-modal="roleModal"]');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeRoleModal);
+  }
+});
 
 // Login as a user (impersonate)
 async function loginAsUser(userId) {
@@ -420,9 +690,10 @@ function getUserEmailById(userId) {
   return user ? user.email : null;
 }
 
-// Helper: Reload users and refresh table
+// Helper: Reload users and refresh table (preserves current page)
 async function loadUsersAndRefresh() {
-  const users = await fetchUsers();
+  // Fetch users for the current page and search term
+  const users = await fetchUsers(currentPage, currentSearch);
   renderUserTable(users);
   updateTrialCountdowns();
 }
@@ -572,6 +843,7 @@ function setupSearchListener() {
         'email': 'Search by email',
         'uid': 'Search by user ID',
         'name': 'Search by name',
+        'role': 'Search by role',
         'phone': 'Search by phone'
       };
       searchInput.placeholder = placeholders[selected] || 'Search...';
@@ -645,10 +917,10 @@ function createSortDropdown() {
     option.style.cursor = 'pointer';
     option.style.borderRadius = '4px';
     option.style.fontSize = '14px';
-    option.textContent = col.label + (currentSortColumn === col.key ? (currentSortDirection === 'asc' ? ' ▲' : ' ▼') : '');
+    option.textContent = col.textContent + (currentSortColumn === col.key ? (currentSortDirection === 'asc' ? ' ▲' : ' ▼') : '');
     option.onmouseover = () => option.style.background = 'var(--hover-bg, #2a2a2a)';
     option.onmouseout = () => option.style.background = 'transparent';
-    option.onclick = () => {
+    option.onclick = async () => {
       if (currentSortColumn === col.key) {
         currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
       } else {
@@ -656,7 +928,8 @@ function createSortDropdown() {
         currentSortDirection = 'asc';
       }
       updateSortLabel();
-      const users = allUsers.slice((currentPage - 1) * 30, currentPage * 30);
+      currentPage = 1; // Reset to page 1
+      const users = await fetchUsers(currentPage, currentSearch);
       renderUserTable(users);
       document.getElementById('sortDropdown').classList.add('hidden');
     };
@@ -724,7 +997,7 @@ function saveColumns() {
 }
 
 function resetColumns() {
-  const defaultColumns = ['uid', 'name', 'email', 'phone', 'providers', 'provider_type', 'created_at', 'last_signin'];
+  const defaultColumns = ['uid', 'name', 'email', 'role', 'phone', 'providers', 'provider_type', 'created_at', 'last_signin'];
   const checkboxes = document.querySelectorAll('#columnsDropdown .column-checkbox input');
   checkboxes.forEach(cb => {
     cb.checked = defaultColumns.includes(cb.dataset.column);

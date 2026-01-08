@@ -3100,6 +3100,20 @@ body.sidebar-expanded .chat {
   font-family: "Courier New", Courier, monospace;
 }
 
+/* User role badge styling */
+.user-role-badge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  background: rgba(77, 150, 255, 0.15);
+  border: 1px solid rgba(77, 150, 255, 0.3);
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 /* --- Mobile Navigation Overrides --- */
 .mobile-nav-toggle {
   display: none;

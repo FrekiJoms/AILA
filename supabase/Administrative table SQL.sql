@@ -1,8 +1,4 @@
-# Administratrive table Setup
 
-To set up admin table, run the following SQL in your Supabase SQL editor:
-
-```sql
 -- Ensure required extension for gen_random_uuid()
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
@@ -32,5 +28,3 @@ COMMENT ON COLUMN public.admins.created_at IS 'Timestamp when the row was create
 -- If you prefer uuid_generate_v4() from uuid-ossp instead of gen_random_uuid(), use:
 -- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- and change DEFAULT gen_random_uuid() to DEFAULT uuid_generate_v4();
-```
-After running this SQL, the administrative table feature will be fully functional!
