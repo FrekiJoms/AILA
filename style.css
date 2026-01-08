@@ -3553,7 +3553,7 @@ textarea#input::-webkit-scrollbar-thumb:hover {
 }
 
 .history-filter {
-  padding: 6px 8px;
+  padding: 8px 10px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
@@ -3563,14 +3563,31 @@ textarea#input::-webkit-scrollbar-thumb:hover {
   transition: all 0.2s ease;
   flex: 1;
   font-weight: 500;
+  font-family: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8"><path fill="%23c9d1d9" d="M1 1l5 5 5-5"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 28px;
 }
 
 .history-filter:hover,
 .history-filter:focus {
   outline: none;
-  background: rgba(255, 255, 255, 0.08);
+  background-color: rgba(255, 255, 255, 0.1);
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8"><path fill="%2300d1ff" d="M1 1l5 5 5-5"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
   border-color: var(--accent1);
   color: var(--accent1);
+}
+
+.history-filter option {
+  background: var(--bg2);
+  color: #e6fbff;
+  padding: 8px;
 }
 
 /* Container for scrollable content - ONLY THIS IS SCROLLABLE */

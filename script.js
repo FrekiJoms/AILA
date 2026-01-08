@@ -1167,34 +1167,122 @@ async function logUserEventToSheet(email, username, eventType) {
 }
 async function loadOfflineData() {
   try {
-    // Securely invoke the 'get-offline-data' Edge Function
-    const { data, error } = await _supabase.functions.invoke('get-offline-data');
+    // Get auth session first
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) {
+      console.warn('No session for offline data. Using fallback.');
+      offlineResponses = { Error: "Not authenticated" };
+      return;
+    }
 
-    if (error) throw error; // Rethrow Supabase-specific errors
+    // Securely invoke the 'get-offline-data' Edge Function via fetch
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/get-offline-data`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({})
+    });
 
-    if (data) {
-        offlineResponses = data;
-        console.log("Server loaded successfully.");
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    if (data && typeof data === 'object') {
+      offlineResponses = data;
+      console.log("✅ Offline data loaded successfully.", Object.keys(data).length + ' entries');
     } else {
-        throw new Error("Offline data from function was empty or invalid.");
+      throw new Error("Invalid data format from offline-data function");
     }
 
   } catch (error) {
-    console.error("Could not load offline data via Edge Function. This can happen for several reasons:", error);
+    console.error("❌ Could not load offline data:", error.message);
     // Hardcoded fallback
     offlineResponses = {
-      Error:
-        "Offline responses could not be loaded. Please check your connection or contact support.",
+      Error: "Offline responses could not be loaded. Please check your connection or contact support."
     };
   }
 }
 // --- START: Updated initializeApp Function ---
 async function initializeApp() {
-  // Setup DevTools blocker immediately (blocks everyone by default)
-  setupDevToolsBlocker();
-  
   // Load admins from database first
   await loadAdminsFromDatabase();
+
+  // --- NEW: Check if user is already logged in (from localStorage) ---
+  const storedUser = localStorage.getItem("loggedInUser");
+  const storedAuth = localStorage.getItem("authToken");
+  
+  if (storedUser && storedAuth === "true") {
+    // User was previously logged in
+    // Verify session is still valid with Supabase
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (session) {
+      // Session is still valid, load app in background (no loading overlay)
+      isUserAuthenticated = true;
+      
+      // Hide loading overlay - we'll process in the main UI
+      const loadingOverlay = document.getElementById("loading-overlay");
+      if (loadingOverlay) {
+        loadingOverlay.classList.add("hidden");
+      }
+      
+      // Update user info FIRST - this sets isAdminUser flag
+      updateUserInfo();
+      
+      // NOW setup DevTools blocker AFTER isAdminUser is set
+      setupDevToolsBlocker();
+      showWelcomeScreen();
+      
+      // Load offline data and conversation history
+      await loadOfflineData();
+      const { data: { session: currentSession } } = await _supabase.auth.getSession();
+      if (currentSession) {
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/conversation-history`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${currentSession.access_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ action: "list" }),
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const conversations = data.conversations || [];
+          
+          // If no conversations exist, show welcome screen
+          if (conversations.length === 0) {
+            showWelcomeScreen();
+          } else {
+            // Render the conversation history and show welcome screen
+            renderConversationHistory(conversations);
+            setTimeout(() => {
+              showWelcomeScreen();
+            }, 300);
+          }
+        } else {
+          // Fallback to welcome screen if fetch fails
+          showWelcomeScreen();
+        }
+      } else {
+        // No session, show welcome screen
+        showWelcomeScreen();
+      }
+      
+      updateStatus("pending");
+      return;
+    } else {
+      // Session expired, clear stored auth and show login
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("loggedInUser");
+    }
+  }
+  // --- END: Check for existing session ---
+  
+  // Setup DevTools blocker (blocks everyone by default, enabled after login)
+  setupDevToolsBlocker();
   
   // --- THIS IS THE FIX (Part 2): Check for the double-reload flag ---
   if (sessionStorage.getItem("justLoggedIn") === "true") {
@@ -1469,6 +1557,7 @@ function showConfirm(title, message) {
 function handleSuccessfulLogin(email, isNewUser = false) {
     isUserAuthenticated = true;
   localStorage.setItem("loggedInUser", email);
+  localStorage.setItem("authToken", "true");
   if (isNewUser) {
     localStorage.setItem("trialStartDate", new Date().toISOString());
   }
@@ -2339,6 +2428,7 @@ function setupNavigation() {
         // --- END: Reset admin status on logout ---
         await _supabase.auth.signOut();
         localStorage.removeItem("loggedInUser");
+        localStorage.removeItem("authToken");
         window.location.reload();
       }
     });
@@ -2714,8 +2804,7 @@ async function loadConversation(conversationId) {
 }
 
 async function deleteConversation(conversationId, title) {
-  if (!confirm(`Delete "${title}"?`)) return;
-
+  // Confirmation is handled by showDeleteConfirmation modal - no need for confirm() here
   try {
     const { data: { session } } = await _supabase.auth.getSession();
     if (!session) return;
@@ -2741,10 +2830,10 @@ async function deleteConversation(conversationId, title) {
     }
 
     loadConversationHistory();
-    console.log("✅ Conversation deleted");
+    console.log("✅ Conversation deleted successfully");
   } catch (error) {
     console.error("Error deleting conversation:", error);
-    alert("Failed to delete conversation");
+    // No alert - user will see it failed if conversation still appears
   }
 }
 
