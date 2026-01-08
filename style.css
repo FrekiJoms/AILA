@@ -3455,7 +3455,6 @@ textarea#input::-webkit-scrollbar-thumb:hover {
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
-  group: "history-item";
 }
 
 .history-item:hover {

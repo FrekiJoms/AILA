@@ -3,47 +3,50 @@
 To set up conversation history, run the following SQL in your Supabase SQL editor:
 
 ```sql
--- Create conversation_history table
-CREATE TABLE conversation_history (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  messages JSONB NOT NULL DEFAULT '[]',
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+-- Ensure extension for gen_random_uuid()
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- Ensure schema exists
+CREATE SCHEMA IF NOT EXISTS public;
+
+-- Create the conversation_history table (idempotent)
+CREATE TABLE IF NOT EXISTS public.conversation_history (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  title text,
+  messages jsonb DEFAULT '[]'::jsonb,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
 );
 
--- Create index for faster queries
-CREATE INDEX idx_conversation_user_id ON conversation_history(user_id);
-CREATE INDEX idx_conversation_updated_at ON conversation_history(updated_at DESC);
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_conversation_user_id ON public.conversation_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_conversation_updated_at ON public.conversation_history(updated_at DESC);
 
--- Enable RLS (Row Level Security)
-ALTER TABLE conversation_history ENABLE ROW LEVEL SECURITY;
+-- Enable RLS
+ALTER TABLE public.conversation_history ENABLE ROW LEVEL SECURITY;
 
--- Create RLS policy: Users can only see their own conversations
+-- RLS policies (use SELECT auth.uid() for plan stability)
 CREATE POLICY "Users can view their own conversations"
-  ON conversation_history
+  ON public.conversation_history
   FOR SELECT
-  USING (auth.uid() = user_id);
+  USING ((SELECT auth.uid()) = user_id);
 
--- Create RLS policy: Users can insert their own conversations
 CREATE POLICY "Users can insert their own conversations"
-  ON conversation_history
+  ON public.conversation_history
   FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK ((SELECT auth.uid()) = user_id);
 
--- Create RLS policy: Users can update their own conversations
 CREATE POLICY "Users can update their own conversations"
-  ON conversation_history
+  ON public.conversation_history
   FOR UPDATE
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  USING ((SELECT auth.uid()) = user_id)
+  WITH CHECK ((SELECT auth.uid()) = user_id);
 
--- Create RLS policy: Users can delete their own conversations
 CREATE POLICY "Users can delete their own conversations"
-  ON conversation_history
+  ON public.conversation_history
   FOR DELETE
-  USING (auth.uid() = user_id);
+  USING ((SELECT auth.uid()) = user_id);
 ```
 
 After running this SQL, the conversation history feature will be fully functional!
