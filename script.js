@@ -1214,11 +1214,11 @@ async function loadOfflineData() {
 }
 // --- START: Updated initializeApp Function ---
 async function initializeApp() {
-  // Load admins from database first
+  // Load offline data first - must be done before anything else
+  await loadOfflineData();
+  
+  // Load admins from database
   await loadAdminsFromDatabase();
-
-  // Setup DevTools blocker immediately to block access during loading
-  setupDevToolsBlocker();
 
   // --- NEW: Check if user is already logged in (from localStorage) ---
   const storedUser = localStorage.getItem("loggedInUser");
@@ -1241,11 +1241,14 @@ async function initializeApp() {
       // Update user info FIRST - this sets isAdminUser flag
       await updateUserInfo();
       
-      // DevTools blocker is already active and will check isAdminUser flag
+      // AFTER updateUserInfo(), now set up DevTools blocker with correct admin status
+      setupDevToolsBlocker();
+      
+      // Show welcome screen
       showWelcomeScreen();
       
-      // Load offline data and conversation history
-      await loadOfflineData();
+      // Offline data already loaded at the start of initializeApp()
+      // Load conversation history
       const { data: { session: currentSession } } = await _supabase.auth.getSession();
       if (currentSession) {
         const response = await fetch(`${SUPABASE_URL}/functions/v1/conversation-history`, {
@@ -1308,6 +1311,9 @@ async function initializeApp() {
     return;
   }
   // --- End of Double-Reload Logic ---
+
+  // For first-time visitors (loading screen flow), set up DevTools blocker
+  setupDevToolsBlocker();
 
   if (window.location.hash.includes("access_token")) {
     // ... (google login redirect logic remains the same)
@@ -1403,9 +1409,8 @@ if (logoContainer && mainLogo) {
 }
 // --- END: FINAL Shatter & Reassemble Listener ---
 
-  // --- THIS IS THE FIX (Part 2): Load the offline data right at the start ---
-  await loadOfflineData();
-  // --- END OF FIX ---
+  // Offline data is loaded at the very start of initializeApp()
+  // No need to load it again here
 
   // ... (the rest of your tip cycling and loading animation logic remains the same)
   const loadingTips = [
@@ -2008,6 +2013,11 @@ function showWelcomeAndEnter(email, isNewUser) {
             // Step 3: Immediately handle the successful login and load the app.
             // We pass 'true' to indicate this is a new user for the trial logic.
             handleSuccessfulLogin(email, true);
+            
+            // Reload the page after 1 second to ensure all data is refreshed
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
             // --- END: THIS IS THE FIX ---
 
           } else {
@@ -2026,6 +2036,11 @@ function showWelcomeAndEnter(email, isNewUser) {
             await logUserEventToSheet(email, displayName, "PIN Login");
 
             handleSuccessfulLogin(email);
+            
+            // Reload the page after 1 second to ensure all data is refreshed
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
           }
         }
       } catch (error) {
@@ -2648,7 +2663,10 @@ async function saveConversation(title = "") {
     }
     
     // Move this conversation to the top of history AFTER saving a new message
-    await updateConversationPosition();
+    // But only if we're not currently just loading an existing conversation
+    if (!isLoadingConversation) {
+      await updateConversationPosition();
+    }
     
     console.log("✅ Conversation saved");
   } catch (error) {
@@ -2850,8 +2868,12 @@ async function deleteConversation(conversationId, title) {
 
     if (currentConversationId === conversationId) {
       currentConversationId = null;
+      conversationMessages = [];
       const messagesContainer = document.getElementById("messages");
       if (messagesContainer) messagesContainer.innerHTML = "";
+      
+      // Show welcome screen after deleting the current conversation
+      showWelcomeScreen();
     }
 
     loadConversationHistory();
