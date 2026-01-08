@@ -9,6 +9,8 @@ const AILA_URL = "https://ailearningassistant.edgeone.app";
 // ========== CONVERSATION HISTORY GLOBALS ========== //
 let currentConversationId = null;
 let conversationMessages = [];
+let isOfflineDataReady = false; // Flag to track if offline data is loaded
+let isLoadingConversation = false; // Flag to prevent auto-position update on load
 // ========== END CONVERSATION HISTORY GLOBALS ========== //
 
 // --- START: Supabase Client Initialization ---
@@ -668,10 +670,13 @@ function appendMessage(
     content: text
   });
 
-  // Auto-save conversation after each message
-  setTimeout(() => {
-    saveConversation();
-  }, 500);
+  // Only auto-save after bot messages (complete exchange), not after user messages
+  // This prevents duplicate conversations from being created
+  if (who === "bot") {
+    setTimeout(() => {
+      saveConversation();
+    }, 500);
+  }
 
   return wrap;
 }
@@ -1192,6 +1197,7 @@ async function loadOfflineData() {
     const data = await response.json();
     if (data && typeof data === 'object') {
       offlineResponses = data;
+      isOfflineDataReady = true; // Mark offline data as ready
       console.log("✅ Offline data loaded successfully.", Object.keys(data).length + ' entries');
     } else {
       throw new Error("Invalid data format from offline-data function");
@@ -1203,12 +1209,16 @@ async function loadOfflineData() {
     offlineResponses = {
       Error: "Offline responses could not be loaded. Please check your connection or contact support."
     };
+    isOfflineDataReady = true; // Mark as ready even if fallback
   }
 }
 // --- START: Updated initializeApp Function ---
 async function initializeApp() {
   // Load admins from database first
   await loadAdminsFromDatabase();
+
+  // Setup DevTools blocker immediately to block access during loading
+  setupDevToolsBlocker();
 
   // --- NEW: Check if user is already logged in (from localStorage) ---
   const storedUser = localStorage.getItem("loggedInUser");
@@ -1229,10 +1239,9 @@ async function initializeApp() {
       }
       
       // Update user info FIRST - this sets isAdminUser flag
-      updateUserInfo();
+      await updateUserInfo();
       
-      // NOW setup DevTools blocker AFTER isAdminUser is set
-      setupDevToolsBlocker();
+      // DevTools blocker is already active and will check isAdminUser flag
       showWelcomeScreen();
       
       // Load offline data and conversation history
@@ -1280,9 +1289,6 @@ async function initializeApp() {
     }
   }
   // --- END: Check for existing session ---
-  
-  // Setup DevTools blocker (blocks everyone by default, enabled after login)
-  setupDevToolsBlocker();
   
   // --- THIS IS THE FIX (Part 2): Check for the double-reload flag ---
   if (sessionStorage.getItem("justLoggedIn") === "true") {
@@ -1580,22 +1586,16 @@ function handleSuccessfulLogin(email, isNewUser = false) {
   closeModal();
 
   // Now, show the main application screen and update user info
-  showWelcomeScreen();
   updateUserInfo();
+  showWelcomeScreen();
+  
+  // DevTools blocker is already active and will check isAdminUser flag dynamically
+  
   updateStatus("pending");
 }
 
 // --- START: DEVTOOLS BLOCKER FOR NON-ADMINS ---
 function setupDevToolsBlocker() {
-  // GUARD: Only ALLOW if user is authenticated AND is an admin
-  // Block everyone else by default
-  if (isUserAuthenticated && isAdminUser) {
-    console.log("🔓 Admin mode: Developer tools access enabled");
-    return;
-  }
-
-  console.log("🔒 Developer tools access restricted");
-
   // Show friendly message
   const showBlockMessage = () => {
     console.warn(
@@ -1608,8 +1608,16 @@ function setupDevToolsBlocker() {
     );
   };
 
+  // Check if user should be blocked (called dynamically on each event)
+  const shouldBlockDevTools = () => {
+    return !(isUserAuthenticated && isAdminUser);
+  };
+
   // Block keyboard shortcuts
   document.addEventListener("keydown", (e) => {
+    // Only block if user is NOT an admin
+    if (!shouldBlockDevTools()) return;
+
     // F12 (DevTools)
     if (e.key === "F12") {
       e.preventDefault();
@@ -1654,6 +1662,9 @@ function setupDevToolsBlocker() {
 
   // Block right-click context menu
   document.addEventListener("contextmenu", (e) => {
+    // Only block if user is NOT an admin
+    if (!shouldBlockDevTools()) return;
+    
     e.preventDefault();
     showBlockMessage();
     return false;
@@ -1661,6 +1672,9 @@ function setupDevToolsBlocker() {
 
   // Detect if someone tries to open DevTools (this is a basic check)
   const devtoolsCheck = setInterval(() => {
+    // Only block if user is NOT an admin
+    if (!shouldBlockDevTools()) return;
+    
     const threshold = 160; // Height threshold to detect DevTools opening
     if (window.outerHeight - window.innerHeight > threshold ||
         window.outerWidth - window.innerWidth > threshold) {
@@ -2344,7 +2358,7 @@ function setupNavigation() {
   // --- Common Button Logic ---
   if (newChatBtn) {
     newChatBtn.addEventListener("click", () => {
-      showWelcomeScreen();
+      startNewConversation();
       // If on mobile and sidebar is open, close it
       if (
         window.innerWidth <= 900 &&
@@ -2586,8 +2600,11 @@ function startNewConversation() {
     messagesContainer.innerHTML = "";
   }
   
-  // Update history UI
-  loadConversationHistory();
+  // Show welcome screen
+  showWelcomeScreen();
+  
+  // Update history UI to deselect current conversation
+  updateHistoryActiveState();
   
   console.log("✅ Started new conversation");
 }
@@ -2756,6 +2773,9 @@ async function loadConversation(conversationId) {
     const { data: { session } } = await _supabase.auth.getSession();
     if (!session) return;
 
+    // Set flag to prevent auto-position update during load
+    isLoadingConversation = true;
+
     const response = await fetch(`${SUPABASE_URL}/functions/v1/conversation-history`, {
       method: "POST",
       headers: {
@@ -2770,6 +2790,7 @@ async function loadConversation(conversationId) {
 
     if (!response.ok) {
       alert("Failed to load conversation");
+      isLoadingConversation = false;
       return;
     }
 
@@ -2794,12 +2815,16 @@ async function loadConversation(conversationId) {
       }
     });
 
+    // Clear the flag now that loading is complete
+    isLoadingConversation = false;
+
     // Update UI to highlight current conversation (but don't move to top on just clicking)
     updateHistoryActiveState();
 
     console.log("✅ Conversation loaded");
   } catch (error) {
     console.error("Error loading conversation:", error);
+    isLoadingConversation = false;
   }
 }
 
