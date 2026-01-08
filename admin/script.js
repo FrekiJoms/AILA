@@ -545,10 +545,18 @@ async function saveRoleModal() {
     console.error('Error setting role:', error);
     console.error('Pending role data:', pendingRoleData);
     
+    // Parse the error message for better UX
+    let errorMessage = error.message || 'Failed to set role';
+    if (error.message?.includes('RLS')) {
+      errorMessage = 'Database permission issue. Please contact admin to run: enable-role-features.sql';
+    } else if (error.message?.includes('2xx')) {
+      errorMessage = 'Server error. Check Supabase function logs for details.';
+    }
+    
     // Show error state
     loadingState.classList.add('hidden');
     errorState.classList.remove('hidden');
-    document.getElementById('roleErrorText').textContent = `Error: ${error.message || 'Failed to set role'}`;
+    document.getElementById('roleErrorText').textContent = `Error: ${errorMessage}`;
     
     // Re-enable form for retry
     setTimeout(() => {

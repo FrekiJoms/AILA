@@ -106,6 +106,7 @@ serve(async (req: Request) => {
     }
 
     // Update user role in profiles table
+    console.log(`Attempting to update profile for user: ${targetEmail} (ID: ${targetUser.id})`);
     const { data: updateData, error: updateError } = await supabaseAdmin
       .from("profiles")
       .update({
@@ -116,12 +117,17 @@ serve(async (req: Request) => {
       .eq("id", targetUser.id);
 
     if (updateError) {
-      console.error("Update error:", updateError);
-      throw new Error(`Failed to update role: ${updateError.message}`);
+      console.error("Update error details:", {
+        message: updateError.message,
+        code: updateError.code,
+        details: updateError.details,
+        hint: updateError.hint
+      });
+      throw new Error(`Failed to update role: ${updateError.message}. This usually means RLS policies need to be configured. Check Supabase SQL Editor and run enable-role-features.sql`);
     }
 
     if (!updateData) {
-      console.warn("No data returned from update, but no error either - this may be expected");
+      console.warn("No data returned from update, but no error either - this may be expected for Postgres updates");
     }
 
     return new Response(
