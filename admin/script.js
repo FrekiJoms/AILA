@@ -11,7 +11,7 @@ let adminEmails = [];
 // ========== Default Role Color Mapping ========== //
 const DEFAULT_ROLE_COLORS = {
   'Moderator': '#FF6B6B',      // Red
-  'Owner': '#4ECDC4',           // Teal
+  'Owner': '#b84ecdff',           // Teal
   'Helper': '#95E1D3',          // Light Green
   'Tester': '#F7DC6F',          // Yellow
   'Co-Founder': '#85C1E2',      // Light Blue
@@ -33,6 +33,8 @@ let currentSearch = '';
 let totalPages = 1;
 let currentSortColumn = 'uid';
 let currentSortDirection = 'asc';
+let allUsersUnfiltered = []; // Stores ALL users from all pages for filtering
+let isFilterActive = false; // Track if filter is currently applied
 
 async function fetchUsers(page = 1, search = '') {
   try {
@@ -417,6 +419,12 @@ async function setRole(userId, userEmail) {
     modal.classList.remove('hidden');
   }
   
+  // Load role templates
+  loadRoleTemplates();
+  
+  // Load user's current role if they have one
+  await loadUserCurrentRole(userEmail);
+  
   // Focus on the role input
   setTimeout(() => {
     const roleInput = document.getElementById('roleInput');
@@ -452,6 +460,8 @@ async function deleteRoleModal() {
   const errorState = document.getElementById('roleErrorState');
   const submitBtn = document.getElementById('roleModalSubmitBtn');
   const deleteBtn = document.getElementById('roleModalDeleteBtn');
+  const roleInput = document.getElementById('roleInput');
+  const roleColor = document.getElementById('roleColor');
 
   // Hide all states initially
   loadingState.classList.remove('hidden');
@@ -462,6 +472,8 @@ async function deleteRoleModal() {
   // Disable buttons
   submitBtn.disabled = true;
   deleteBtn.disabled = true;
+  roleInput.disabled = true;
+  roleColor.disabled = true;
 
   try {
     const { data, error } = await _supabase.functions.invoke('delete-role', {
@@ -488,6 +500,8 @@ async function deleteRoleModal() {
     // Close modal and refresh after 1.5 seconds
     setTimeout(async () => {
       closeRoleModal();
+      pendingRoleData = null;
+      resetRoleForm();
       await loadUsersAndRefresh();
     }, 1500);
   } catch (error) {
@@ -503,6 +517,8 @@ async function deleteRoleModal() {
     setTimeout(() => {
       submitBtn.disabled = false;
       deleteBtn.disabled = false;
+      roleInput.disabled = false;
+      roleColor.disabled = false;
     }, 2000);
   }
 }
@@ -603,6 +619,9 @@ async function saveRoleModal() {
       throw new Error(data.error);
     }
     
+    // Save role as template for future use
+    saveRoleTemplate(role, roleColorValue);
+    
     // Show success state
     loadingState.classList.add('hidden');
     successState.classList.remove('hidden');
@@ -636,6 +655,467 @@ async function saveRoleModal() {
       roleColor.disabled = false;
       submitBtn.disabled = false;
     }, 2000);
+  }
+}
+
+// ========== ROLE TEMPLATES MANAGEMENT ========== //
+
+// Get recent role templates from localStorage
+function getRecentRoleTemplates() {
+  const templates = localStorage.getItem('roleTemplates');
+  return templates ? JSON.parse(templates) : [];
+}
+
+// Save a new role template to localStorage
+function saveRoleTemplate(roleName, roleColor) {
+  let templates = getRecentRoleTemplates();
+  
+  // Remove if already exists (to avoid duplicates and move to top)
+  templates = templates.filter(t => t.name !== roleName);
+  
+  // Add new template at the beginning
+  templates.unshift({ name: roleName, color: roleColor });
+  
+  // Keep only last 10 templates
+  templates = templates.slice(0, 10);
+  
+  // Save to localStorage
+  localStorage.setItem('roleTemplates', JSON.stringify(templates));
+}
+
+// Delete role template from localStorage
+function deleteRoleTemplate(roleName) {
+  let templates = getRecentRoleTemplates();
+  templates = templates.filter(t => t.name !== roleName);
+  localStorage.setItem('roleTemplates', JSON.stringify(templates));
+  loadRoleTemplates();
+}
+
+// Load and display role templates in the modal
+function loadRoleTemplates() {
+  const container = document.getElementById('roleTemplatesContainer');
+  if (!container) return;
+  
+  const templates = getRecentRoleTemplates();
+  
+  if (templates.length === 0) {
+    container.innerHTML = '<p class="no-templates">No recent roles yet</p>';
+    return;
+  }
+  
+  container.innerHTML = '';
+  
+  templates.forEach(template => {
+    const templateItem = document.createElement('div');
+    templateItem.className = 'role-template-item';
+    
+    templateItem.innerHTML = `
+      <div class="role-template-color" style="background-color: ${template.color};"></div>
+      <span class="role-template-name">${template.name}</span>
+      <button class="role-template-delete" onclick="event.stopPropagation(); deleteRoleTemplate('${template.name.replace(/'/g, "\\'")}'); loadRoleTemplates();">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          <line x1="10" y1="11" x2="10" y2="17"></line>
+          <line x1="14" y1="11" x2="14" y2="17"></line>
+        </svg>
+      </button>
+    `;
+    
+    // Click on template to use it
+    templateItem.addEventListener('click', () => {
+      document.getElementById('roleInput').value = template.name;
+      document.getElementById('roleColor').value = template.color;
+      document.getElementById('roleColorValue').textContent = template.color;
+      const previewBadge = document.getElementById('rolePreviewBadge');
+      if (previewBadge) {
+        previewBadge.textContent = template.name;
+        previewBadge.style.color = template.color;
+      }
+      // Focus on the role input
+      document.getElementById('roleInput').focus();
+    });
+    
+    container.appendChild(templateItem);
+  });
+}
+
+// ========== ADVANCED FILTER MANAGEMENT ========== //
+
+// Active filters state
+let activeFilters = {
+  roles: [],
+  roleMode: 'any',
+  trialStatus: [],
+  providers: [],
+  dateRange: { start: null, end: null },
+  searchText: '',
+  minTrialDays: 0,
+  maxTrialDays: 999,
+  signInDays: null,
+  createdAfter: null,
+  createdBefore: null,
+  hasNoRole: false
+};
+
+// Toggle advanced filter dropdown
+function toggleAdvancedFilter() {
+  const dropdown = document.getElementById('advancedFilterDropdown');
+  if (dropdown) {
+    dropdown.classList.toggle('hidden');
+    if (!dropdown.classList.contains('hidden')) {
+      initializeFilterOptions();
+    }
+  }
+}
+
+// Fetch all users from all pages for filtering
+async function fetchAllUsersPaginated() {
+  try {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session || !session.access_token) {
+      throw new Error('No active session');
+    }
+    
+    let allUsersData = [];
+    let currentPageNum = 1;
+    let totalPagesNum = 1;
+    
+    // Fetch all pages
+    while (currentPageNum <= totalPagesNum) {
+      const params = new URLSearchParams();
+      params.append('page', currentPageNum);
+      params.append('pageSize', '100'); // Larger page size for efficiency
+      
+      const url = `${SUPABASE_URL}/functions/v1/get-users?${params.toString()}`;
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) throw new Error('Failed to fetch users');
+      
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+      
+      // Map and add users
+      const mappedUsers = (data.users || []).map(user => {
+        const trialDays = user.user_metadata?.custom_trial_days || 30;
+        let createdDate = new Date();
+        if (user.created_at) {
+          try {
+            const parsed = new Date(user.created_at);
+            if (!isNaN(parsed.getTime())) createdDate = parsed;
+          } catch (e) {}
+        }
+        
+        let trialEndDate = new Date();
+        try {
+          trialEndDate = new Date(createdDate.getTime() + trialDays * 24 * 60 * 60 * 1000);
+          if (isNaN(trialEndDate.getTime())) trialEndDate = new Date();
+        } catch (e) {}
+        
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name || user.user_metadata?.full_name || 'N/A',
+          created_at: user.created_at || new Date().toISOString(),
+          last_sign_in_at: user.last_sign_in_at || null,
+          role: user.role || '-',
+          role_color: user.role_color || '#4D96FF',
+          trial_end: trialEndDate.toISOString(),
+          trial_days: trialDays,
+          avatar_url: user.avatar_url,
+          user_metadata: user.user_metadata || {},
+          provider_type: user.provider_type || 'Social'
+        };
+      });
+      
+      allUsersData = allUsersData.concat(mappedUsers);
+      totalPagesNum = data.totalPages || 1;
+      currentPageNum++;
+    }
+    
+    console.log(`Fetched ${allUsersData.length} users from ${totalPagesNum} pages`);
+    return allUsersData;
+  } catch (error) {
+    console.error('Error fetching all users:', error);
+    return [];
+  }
+}
+
+// Initialize filter options based on current data
+function initializeFilterOptions() {
+  // Use all users if filter was previously applied
+  const usersForFiltering = isFilterActive && allUsersUnfiltered.length > 0 ? allUsersUnfiltered : allUsers;
+  
+  // Get unique roles
+  const roles = [...new Set(usersForFiltering
+    .filter(u => u.role && u.role.trim() !== '' && u.role !== '-')
+    .map(u => u.role)
+  )].sort();
+  
+  const roleFilterContainer = document.getElementById('roleFilterOptions');
+  if (roleFilterContainer) {
+    roleFilterContainer.innerHTML = '';
+    
+    // Add "All roles" option
+    if (roles.length > 0) {
+      const allLabel = document.createElement('label');
+      allLabel.className = 'filter-checkbox';
+      allLabel.style.fontWeight = '600';
+      allLabel.innerHTML = `
+        <input type="checkbox" data-filter-role="__all__" ${activeFilters.roles.length === roles.length ? 'checked' : ''}>
+        <span>All Roles (${roles.length})</span>
+      `;
+      allLabel.querySelector('input').addEventListener('change', (e) => {
+        const checkboxes = roleFilterContainer.querySelectorAll('input[data-filter-role]:not([data-filter-role="__all__"])');
+        checkboxes.forEach(cb => cb.checked = e.target.checked);
+      });
+      roleFilterContainer.appendChild(allLabel);
+      
+      // Add divider
+      const divider = document.createElement('div');
+      divider.style.cssText = 'height: 1px; background: #444; margin: 0.5rem 0;';
+      roleFilterContainer.appendChild(divider);
+    }
+    
+    // Add individual roles
+    roles.forEach(role => {
+      const label = document.createElement('label');
+      label.className = 'filter-checkbox';
+      label.innerHTML = `
+        <input type="checkbox" data-filter-role="${role}" ${activeFilters.roles.includes(role) ? 'checked' : ''}>
+        <span>${role}</span>
+      `;
+      roleFilterContainer.appendChild(label);
+    });
+  }
+  
+  // Get unique providers
+  const providers = [...new Set(usersForFiltering
+    .filter(u => u.provider_type && u.provider_type.trim() !== '')
+    .map(u => u.provider_type)
+  )].sort();
+  
+  const providerFilterContainer = document.getElementById('providerFilterOptions');
+  if (providerFilterContainer && providers.length > 0) {
+    providerFilterContainer.innerHTML = '';
+    providers.forEach(provider => {
+      const label = document.createElement('label');
+      label.className = 'filter-checkbox';
+      label.innerHTML = `
+        <input type="checkbox" data-filter-provider="${provider}" ${activeFilters.providers.includes(provider) ? 'checked' : ''}>
+        <span>${provider}</span>
+      `;
+      providerFilterContainer.appendChild(label);
+    });
+  }
+}
+
+// Apply filters to the table
+async function applyFilters() {
+  // Collect selected filters
+  const roleCheckboxes = document.querySelectorAll('[data-filter-role]:not([data-filter-role="__all__"]):checked');
+  const providerCheckboxes = document.querySelectorAll('[data-filter-provider]:checked');
+  const trialCheckboxes = document.querySelectorAll('[data-filter]:checked');
+  const noRoleCheckbox = document.querySelector('[data-filter="no-role"]:checked');
+  const minTrialDaysInput = document.getElementById('minTrialDaysInput');
+  const maxTrialDaysInput = document.getElementById('maxTrialDaysInput');
+  const signInDaysInput = document.getElementById('signInDaysInput');
+  const createdAfterInput = document.getElementById('createdAfterInput');
+  const createdBeforeInput = document.getElementById('createdBeforeInput');
+  
+  activeFilters.roles = Array.from(roleCheckboxes).map(cb => cb.dataset.filterRole);
+  activeFilters.providers = Array.from(providerCheckboxes).map(cb => cb.dataset.filterProvider);
+  activeFilters.trialStatus = Array.from(trialCheckboxes).map(cb => cb.dataset.filter);
+  activeFilters.minTrialDays = minTrialDaysInput ? parseInt(minTrialDaysInput.value) || 0 : 0;
+  activeFilters.maxTrialDays = maxTrialDaysInput ? parseInt(maxTrialDaysInput.value) || 999 : 999;
+  activeFilters.signInDays = signInDaysInput ? parseInt(signInDaysInput.value) : null;
+  activeFilters.createdAfter = createdAfterInput ? createdAfterInput.value : null;
+  activeFilters.createdBefore = createdBeforeInput ? createdBeforeInput.value : null;
+  activeFilters.hasNoRole = !!noRoleCheckbox;
+  
+  // Fetch all users from all pages if not already done
+  if (allUsersUnfiltered.length === 0) {
+    console.log('Fetching all users from all pages for filtering...');
+    allUsersUnfiltered = await fetchAllUsersPaginated();
+  }
+  
+  // Filter users
+  const filteredUsers = allUsersUnfiltered.filter(user => {
+    // No role filter
+    if (activeFilters.hasNoRole) {
+      if (user.role && user.role !== '-') {
+        return false;
+      }
+    }
+    
+    // Role filter
+    if (activeFilters.roles.length > 0) {
+      if (!activeFilters.roles.includes(user.role)) {
+        return false;
+      }
+    }
+    
+    // Trial days range filter
+    if (activeFilters.minTrialDays > 0 || activeFilters.maxTrialDays < 999) {
+      if (user.trial_days < activeFilters.minTrialDays || user.trial_days > activeFilters.maxTrialDays) {
+        return false;
+      }
+    }
+    
+    // Trial status filter
+    if (activeFilters.trialStatus.length > 0) {
+      const now = new Date();
+      const trialEnd = new Date(user.trial_end);
+      const isActive = trialEnd > now;
+      
+      const hasActiveFilter = activeFilters.trialStatus.includes('trial-active');
+      const hasExpiredFilter = activeFilters.trialStatus.includes('trial-expired');
+      
+      if (hasActiveFilter && !isActive) return false;
+      if (hasExpiredFilter && isActive) return false;
+    }
+    
+    // Last sign in days filter
+    if (activeFilters.signInDays !== null) {
+      const lastSignIn = user.last_sign_in_at ? new Date(user.last_sign_in_at) : null;
+      if (!lastSignIn) return false;
+      
+      const daysDiff = Math.floor((new Date() - lastSignIn) / (1000 * 60 * 60 * 24));
+      if (daysDiff > activeFilters.signInDays) return false;
+    }
+    
+    // Created date filters
+    if (activeFilters.createdAfter) {
+      const createdDate = new Date(user.created_at);
+      const filterDate = new Date(activeFilters.createdAfter);
+      if (createdDate < filterDate) return false;
+    }
+    
+    if (activeFilters.createdBefore) {
+      const createdDate = new Date(user.created_at);
+      const filterDate = new Date(activeFilters.createdBefore);
+      if (createdDate > filterDate) return false;
+    }
+    
+    // Provider filter
+    if (activeFilters.providers.length > 0) {
+      if (!activeFilters.providers.includes(user.provider_type)) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
+  
+  isFilterActive = true;
+  renderUserTable(filteredUsers);
+  updateTrialCountdowns();
+  closeAdvancedFilter();
+}
+
+// Reset all filters
+async function resetAllFilters() {
+  activeFilters = {
+    roles: [],
+    roleMode: 'any',
+    trialStatus: [],
+    providers: [],
+    dateRange: { start: null, end: null },
+    searchText: '',
+    minTrialDays: 0,
+    maxTrialDays: 999,
+    signInDays: null,
+    createdAfter: null,
+    createdBefore: null,
+    hasNoRole: false
+  };
+  
+  isFilterActive = false;
+  allUsersUnfiltered = [];
+  
+  // Uncheck all checkboxes and clear inputs
+  document.querySelectorAll('#advancedFilterDropdown input').forEach(input => {
+    if (input.type === 'checkbox') {
+      input.checked = false;
+    } else if (input.type === 'number' || input.type === 'date') {
+      input.value = '';
+    }
+  });
+  
+  // Reload original page
+  currentPage = 1;
+  const users = await fetchUsers(currentPage, currentSearch);
+  renderUserTable(users);
+  updateTrialCountdowns();
+}
+
+// Close advanced filter dropdown
+function closeAdvancedFilter() {
+  const dropdown = document.getElementById('advancedFilterDropdown');
+  if (dropdown) {
+    dropdown.classList.add('hidden');
+  }
+}
+
+// Update role modal with current user's role if they have one
+async function loadUserCurrentRole(userEmail) {
+  try {
+    // First, try to find the user in the already loaded allUsers array
+    const user = allUsers.find(u => u.email === userEmail);
+    
+    if (user && user.role && user.role !== '-') {
+      // Pre-fill the modal with current role
+      document.getElementById('roleInput').value = user.role;
+      const roleColor = user.role_color || getDefaultRoleColor(user.role);
+      document.getElementById('roleColor').value = roleColor;
+      document.getElementById('roleColorValue').textContent = roleColor;
+      
+      const previewBadge = document.getElementById('rolePreviewBadge');
+      if (previewBadge) {
+        previewBadge.textContent = user.role;
+        previewBadge.style.color = roleColor;
+      }
+      return;
+    }
+    
+    // Fallback: Try to fetch from database if not in allUsers
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) return;
+    
+    // Fetch the user to get their current role
+    const { data: userProfiles, error } = await _supabase
+      .from('profiles')
+      .select('role, role_color')
+      .eq('email', userEmail)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error fetching user role:', error);
+      return;
+    }
+    
+    if (userProfiles && userProfiles.role) {
+      // Pre-fill the modal with current role
+      document.getElementById('roleInput').value = userProfiles.role;
+      const roleColor = userProfiles.role_color || getDefaultRoleColor(userProfiles.role);
+      document.getElementById('roleColor').value = roleColor;
+      document.getElementById('roleColorValue').textContent = roleColor;
+      
+      const previewBadge = document.getElementById('rolePreviewBadge');
+      if (previewBadge) {
+        previewBadge.textContent = userProfiles.role;
+        previewBadge.style.color = roleColor;
+      }
+    }
+  } catch (error) {
+    console.error('Error loading user current role:', error);
   }
 }
 
@@ -903,6 +1383,12 @@ window.addEventListener('DOMContentLoaded', async () => {
   const columnsBtn = document.getElementById('columnsBtn');
   if (columnsBtn) {
     columnsBtn.addEventListener('click', openColumnsDropdown);
+  }
+  
+  // Setup advanced filter button
+  const advancedFilterBtn = document.getElementById('advancedFilterBtn');
+  if (advancedFilterBtn) {
+    advancedFilterBtn.addEventListener('click', toggleAdvancedFilter);
   }
 });
 

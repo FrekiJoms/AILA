@@ -1,11 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 
-// List of authorized admin emails
-const ADMIN_EMAILS = [
-  "narvasajoshua61@gmail.com",
-  "levercrafter@gmail.com"
-];
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -22,7 +17,19 @@ Deno.serve(async (req) => {
 
     // Check if the user making the request is an admin
     const { data: { user: callingUser } } = await supabaseAdmin.auth.getUser(req.headers.get('Authorization')!.replace('Bearer ', ''));
-    if (!callingUser || !ADMIN_EMAILS.includes(callingUser.email)) {
+    
+    if (!callingUser) {
+      throw new Error('🛑 SECURITY: You are not authorized to perform this action.');
+    }
+
+    // Check if calling user is an admin
+    const { data: adminCheck, error: adminCheckError } = await supabaseAdmin
+      .from('admins')
+      .select('email')
+      .eq('email', callingUser.email)
+      .single()
+    
+    if (!adminCheck || adminCheckError) {
       throw new Error('🛑 SECURITY: You are not authorized to perform this action.');
     }
     

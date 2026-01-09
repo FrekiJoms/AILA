@@ -51,6 +51,59 @@
                 </div>
 
                 <div class="filter-controls">
+                    <div class="advanced-filter-wrapper">
+                        <button class="filter-btn" id="advancedFilterBtn" title="Advanced filters">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px; display: inline-block; margin-right: 4px;">
+                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                            </svg>
+                            Filters
+                        </button>
+                        <div id="advancedFilterDropdown" class="advanced-filter-dropdown hidden">
+                            <div class="filter-section">
+                                <h4>Filter by Role</h4>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" data-filter="no-role"> No Role
+                                </label>
+                                <div class="filter-options" id="roleFilterOptions"></div>
+                            </div>
+                            <div class="filter-section">
+                                <h4>Trial Days Range</h4>
+                                <div class="filter-range-inputs">
+                                    <input type="number" id="minTrialDaysInput" placeholder="Min days" min="0" class="filter-input">
+                                    <span>-</span>
+                                    <input type="number" id="maxTrialDaysInput" placeholder="Max days" min="0" class="filter-input">
+                                </div>
+                            </div>
+                            <div class="filter-section">
+                                <h4>Trial Status</h4>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" data-filter="trial-active"> Active Trial
+                                </label>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" data-filter="trial-expired"> Expired Trial
+                                </label>
+                            </div>
+                            <div class="filter-section">
+                                <h4>Last Sign In (Days)</h4>
+                                <input type="number" id="signInDaysInput" placeholder="Within X days" min="0" class="filter-input">
+                            </div>
+                            <div class="filter-section">
+                                <h4>Created Date</h4>
+                                <div class="filter-date-inputs">
+                                    <input type="date" id="createdAfterInput" class="filter-input" placeholder="From">
+                                    <input type="date" id="createdBeforeInput" class="filter-input" placeholder="To">
+                                </div>
+                            </div>
+                            <div class="filter-section">
+                                <h4>Provider Type</h4>
+                                <div class="filter-options" id="providerFilterOptions"></div>
+                            </div>
+                            <div class="filter-footer">
+                                <button class="filter-reset-btn" onclick="resetAllFilters()">Reset Filters</button>
+                                <button class="filter-apply-btn" onclick="applyFilters()">Apply</button>
+                            </div>
+                        </div>
+                    </div>
                     <div class="columns-dropdown-wrapper">
                         <button class="filter-btn" id="columnsBtn">
                             All columns
@@ -338,6 +391,14 @@
                     <button class="role-btn cancel" onclick="closeRoleModal()">Cancel</button>
                     <button class="role-btn delete" onclick="deleteRoleModal()" id="roleModalDeleteBtn">Delete Role</button>
                     <button class="role-btn save" onclick="saveRoleModal()" id="roleModalSubmitBtn">Set Role</button>
+                </div>
+                
+                <!-- Role Templates Section -->
+                <div class="role-templates-section">
+                    <h4>Recent Roles</h4>
+                    <div class="role-templates-container" id="roleTemplatesContainer">
+                        <p class="no-templates">No recent roles yet</p>
+                    </div>
                 </div>
             </div>
         </div>

@@ -7,11 +7,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const ADMIN_EMAILS = [
-  "narvasajoshua61@gmail.com",
-  "levercrafter@gmail.com"
-];
-
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
@@ -35,7 +30,18 @@ serve(async (req: Request) => {
     const token = authHeader.replace('Bearer ', '')
     const { data: { user: callingUser }, error: userError } = await supabaseAdmin.auth.getUser(token)
     
-    if (userError || !callingUser || !ADMIN_EMAILS.includes(callingUser.email)) {
+    if (userError || !callingUser) {
+      throw new Error('Unauthorized')
+    }
+
+    // Check if calling user is an admin
+    const { data: adminCheck, error: adminCheckError } = await supabaseAdmin
+      .from('admins')
+      .select('email')
+      .eq('email', callingUser.email)
+      .single()
+    
+    if (adminCheckError || !adminCheck) {
       throw new Error('You are not authorized to perform this action.')
     }
     

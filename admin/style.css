@@ -9,6 +9,33 @@ body {
   overflow: hidden;
 }
 
+/* Custom Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f1117;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #444c56;
+  border-radius: 10px;
+  border: 2px solid #0f1117;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6e7681;
+}
+
+/* Firefox Scrollbar */
+* {
+  scrollbar-color: #444c56 #0f1117;
+  scrollbar-width: thin;
+}
+
 header {
   background: #0d1117;
   border-bottom: 1px solid #30363d;
@@ -954,7 +981,6 @@ main {
     background-color: #0d1117;
     border-color: #444;
 }
-}
 
 .option-btn:hover svg {
     color: #c9d1d9;
@@ -1530,4 +1556,302 @@ main {
 
 .role-modal-backdrop.hidden {
     display: none;
+}
+
+/* Advanced Filter Dropdown */
+.advanced-filter-wrapper {
+    position: relative;
+}
+
+.advanced-filter-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #25282a;
+    border: 1px solid #444;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    min-width: 280px;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 1100;
+    margin-top: 0.5rem;
+}
+
+.advanced-filter-dropdown.hidden {
+    display: none;
+}
+
+.filter-section {
+    padding: 1rem;
+    border-bottom: 1px solid #333;
+}
+
+.filter-section:last-of-type {
+    border-bottom: none;
+}
+
+.filter-section h4 {
+    margin: 0 0 0.8rem 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #8b949e;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.filter-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.filter-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #c9d1d9;
+    user-select: none;
+    transition: color 0.2s;
+}
+
+.filter-checkbox:hover {
+    color: #f0f6fc;
+}
+
+.filter-checkbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #4D96FF;
+    border: 1px solid #444;
+    border-radius: 3px;
+    background-color: #161b22;
+}
+
+.filter-footer {
+    padding: 0.8rem 1rem;
+    border-top: 1px solid #333;
+    display: flex;
+    gap: 0.6rem;
+    justify-content: flex-end;
+}
+
+.filter-reset-btn,
+.filter-apply-btn {
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-reset-btn {
+    background-color: #21262d;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+}
+
+.filter-reset-btn:hover {
+    background-color: #30363d;
+    border-color: #444;
+}
+
+.filter-apply-btn {
+    background-color: #238636;
+    color: #fff;
+    border: 1px solid #3fb950;
+}
+
+.filter-apply-btn:hover {
+    background-color: #2ea043;
+}
+
+/* Role Templates Section */
+.role-templates-section {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #333;
+}
+
+.role-templates-section h4 {
+    margin: 0 0 0.8rem 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #8b949e;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.role-templates-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.role-template-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.7rem;
+    background-color: #1a1d1f;
+    border: 1px solid #333;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.role-template-item:hover {
+    background-color: #21262d;
+    border-color: #444;
+}
+
+.role-template-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.role-template-name {
+    flex: 1;
+    font-size: 0.9rem;
+    color: #c9d1d9;
+    word-break: break-word;
+}
+
+.role-template-delete {
+    background: none;
+    border: none;
+    color: #8b949e;
+    cursor: pointer;
+    padding: 0.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.role-template-delete:hover {
+    color: #FF6B6B;
+}
+
+.no-templates {
+    font-size: 0.85rem;
+    color: #8b949e;
+    margin: 0;
+    padding: 0.5rem;
+    text-align: center;
+}
+
+/* Filter Input Styling */
+.filter-input,
+.filter-range-inputs input,
+.filter-date-inputs input {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #444;
+  background-color: #161b22;
+  color: #c9d1d9;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.filter-input:focus,
+.filter-range-inputs input:focus,
+.filter-date-inputs input:focus {
+  outline: none;
+  border-color: #4D96FF;
+  box-shadow: 0 0 0 3px rgba(77, 150, 255, 0.1);
+}
+
+.filter-range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-range-inputs input {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.filter-range-inputs span {
+  color: #8b949e;
+  font-weight: 600;
+}
+
+.filter-date-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-date-inputs input {
+  margin-bottom: 0;
+}
+
+/* Scrollbar styling for specific containers */
+.user-table-scroll::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.user-table-scroll::-webkit-scrollbar-track {
+  background: #161b22;
+  border-radius: 10px;
+}
+
+.user-table-scroll::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 10px;
+  border: 2px solid #161b22;
+}
+
+.user-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #444c56;
+}
+
+.role-modal::-webkit-scrollbar,
+.role-templates-container::-webkit-scrollbar,
+.advanced-filter-dropdown::-webkit-scrollbar,
+.columns-dropdown::-webkit-scrollbar,
+#adminsList::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.role-modal::-webkit-scrollbar-track,
+.role-templates-container::-webkit-scrollbar-track,
+.advanced-filter-dropdown::-webkit-scrollbar-track,
+.columns-dropdown::-webkit-scrollbar-track,
+#adminsList::-webkit-scrollbar-track {
+  background: #1a1d1f;
+  border-radius: 8px;
+}
+
+.role-modal::-webkit-scrollbar-thumb,
+.role-templates-container::-webkit-scrollbar-thumb,
+.advanced-filter-dropdown::-webkit-scrollbar-thumb,
+.columns-dropdown::-webkit-scrollbar-thumb,
+#adminsList::-webkit-scrollbar-thumb {
+  background: #444c56;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.role-modal::-webkit-scrollbar-thumb:hover,
+.role-templates-container::-webkit-scrollbar-thumb:hover,
+.advanced-filter-dropdown::-webkit-scrollbar-thumb:hover,
+.columns-dropdown::-webkit-scrollbar-thumb:hover,
+#adminsList::-webkit-scrollbar-thumb:hover {
+  background: #6e7681;
 }
