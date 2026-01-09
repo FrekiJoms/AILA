@@ -998,7 +998,7 @@ function createSortDropdown() {
     option.style.cursor = 'pointer';
     option.style.borderRadius = '4px';
     option.style.fontSize = '14px';
-    option.textContent = col.textContent + (currentSortColumn === col.key ? (currentSortDirection === 'asc' ? ' ▲' : ' ▼') : '');
+    option.textContent = col.label + (currentSortColumn === col.key ? (currentSortDirection === 'asc' ? ' ▲' : ' ▼') : '');
     option.onmouseover = () => option.style.background = 'var(--hover-bg, #2a2a2a)';
     option.onmouseout = () => option.style.background = 'transparent';
     option.onclick = async () => {
