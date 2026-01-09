@@ -14,7 +14,6 @@ const DEFAULT_ROLE_COLORS = {
   'Owner': '#4ECDC4',           // Teal
   'Helper': '#95E1D3',          // Light Green
   'Tester': '#F7DC6F',          // Yellow
-  'Founder': '#BB8FCE',         // Purple
   'Co-Founder': '#85C1E2',      // Light Blue
   'Head Developer': '#df4b4bff',  // Light Blue (same as Co-Founder)
   'Investor': '#F8B195'         // Orange
