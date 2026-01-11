@@ -1964,7 +1964,7 @@ function showWelcomeAndEnter(email, isNewUser) {
         if (authState === "reset") {
           // This sends a password reset link to the user's email.
           const { error } = await _supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: window.location.origin + "reset.html",
+            redirectTo: window.location.origin + "/reset.html",
           });
 
           if (error) {
