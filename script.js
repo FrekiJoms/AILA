@@ -1856,14 +1856,33 @@ function showWelcomeAndEnter(email, isNewUser) {
     if (!container) return;
     const inputs = [...container.querySelectorAll(".pin-digit")];
     inputs.forEach((input, index) => {
-      input.addEventListener("input", () => {
-        // Use 'tel' type but only allow digits via this regex
-        input.value = input.value.replace(/\\D/g, "");
-        if (input.value && index < inputs.length - 1) inputs[index + 1].focus();
+      input.addEventListener("input", (e) => {
+        // Only allow digits - remove any non-digit characters
+        input.value = input.value.replace(/\D/g, "");
+        
+        // Auto-focus next input when current is filled
+        if (input.value && index < inputs.length - 1) {
+          inputs[index + 1].focus();
+        }
       });
+      
       input.addEventListener("keydown", (e) => {
-        if (e.key === "Backspace" && !input.value && index > 0)
+        // Handle backspace to go to previous input
+        if (e.key === "Backspace" && !input.value && index > 0) {
           inputs[index - 1].focus();
+        }
+        
+        // Prevent non-numeric input on keydown for better mobile experience
+        if (e.key && e.key.length === 1 && !/[0-9]/.test(e.key)) {
+          e.preventDefault();
+        }
+      });
+      
+      // Additional mobile-friendly input validation
+      input.addEventListener("beforeinput", (e) => {
+        if (e.data && !/[0-9]/.test(e.data)) {
+          e.preventDefault();
+        }
       });
     });
   }
@@ -2509,10 +2528,32 @@ function setupNavigation() {
         isUserAuthenticated = false;
         isAdminUser = false;
         // --- END: Reset admin status on logout ---
-        await _supabase.auth.signOut();
+        
+        try {
+          // Clear Supabase auth
+          await _supabase.auth.signOut();
+        } catch (error) {
+          console.warn("Supabase signOut error:", error);
+        }
+        
+        // Clear all local storage items
         localStorage.removeItem("loggedInUser");
         localStorage.removeItem("authToken");
-        window.location.reload();
+        sessionStorage.clear(); // Clear session storage too
+        
+        // Force complete page reload to handle Messenger embedded browser
+        // Add timestamp to prevent caching issues
+        const timestamp = new Date().getTime();
+        if (window.location.href.includes('?')) {
+          window.location.href = window.location.href + '&t=' + timestamp;
+        } else {
+          window.location.href = window.location.href + '?t=' + timestamp;
+        }
+        
+        // Fallback if redirect doesn't work
+        setTimeout(() => {
+          window.location.reload(true);
+        }, 100);
       }
     });
   }

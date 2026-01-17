@@ -163,6 +163,13 @@
                         </svg>
                         Admins
                     </button>
+                    <button class="filter-btn" onclick="openRoleHierarchySettings()" title="Manage role hierarchy">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px; display: inline-block; margin-right: 4px;">
+                            <path d="M12 2l10 6v8l-10 6-10-6v-8l10-6z"></path>
+                            <path d="M12 12l-5-3M12 12l5-3"></path>
+                        </svg>
+                        Roles
+                    </button>
                 </div>
             </div>
 
@@ -400,6 +407,41 @@
                         <p class="no-templates">No recent roles yet</p>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== ROLE HIERARCHY MANAGEMENT MODAL ========== -->
+    <div id="roleHierarchyModal" class="modal hidden" role="dialog" aria-labelledby="roleHierarchyTitle">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid #30363d;">
+                <h2 id="roleHierarchyTitle" style="margin: 0; color: #c9d1d9; font-size: 1.2rem;">Role Hierarchy Management</h2>
+                <button class="modal-close-btn" data-modal="roleHierarchyModal" style="background: none; border: none; color: #8b949e; cursor: pointer; font-size: 1.5rem;">
+                    ✕
+                </button>
+            </div>
+            
+            <div class="modal-body" style="padding: 1.5rem;">
+                <p style="color: #8b949e; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    📋 Drag roles to reorder them. <strong>Higher positions = Higher authority.</strong> Changes are saved automatically.
+                </p>
+                
+                <div id="roleHierarchyList" style="max-height: 500px; overflow-y: auto; border: 1px solid #30363d; border-radius: 8px; padding: 0.5rem;">
+                    <!-- Dynamically populated -->
+                </div>
+                
+                <div style="margin-top: 1rem; color: #8b949e; font-size: 0.85rem;">
+                    <strong>Current Hierarchy:</strong>
+                    <div id="hierarchyInfo" style="margin-top: 0.5rem; padding: 0.5rem; background: #0d1117; border-radius: 4px;">
+                        <!-- Updated dynamically -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid #30363d; text-align: right;">
+                <button onclick="closeRoleHierarchyModal()" style="padding: 0.5rem 1rem; background: #238636; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">
+                    Done
+                </button>
             </div>
         </div>
     </div>

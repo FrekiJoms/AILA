@@ -1855,3 +1855,139 @@ main {
 #adminsList::-webkit-scrollbar-thumb:hover {
   background: #6e7681;
 }
+
+/* Role Hierarchy Modal Styles */
+#roleHierarchyModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+#roleHierarchyModal.hidden {
+  display: none !important;
+}
+
+#roleHierarchyModal .modal-content {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  max-width: 700px;
+  width: 95%;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease-out;
+}
+
+#roleHierarchyModal .modal-header {
+  background: #161b22;
+  padding: 1.5rem;
+  border-bottom: 1px solid #30363d;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+#roleHierarchyModal .modal-header h2 {
+  margin: 0;
+  color: #c9d1d9;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+#roleHierarchyModal .modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+  color: #8b949e;
+}
+
+#roleHierarchyModal .modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #30363d;
+  background: #0d1117;
+  position: sticky;
+  bottom: 0;
+  text-align: right;
+  z-index: 10;
+}
+
+#roleHierarchyList {
+  max-height: 500px;
+  overflow-y: auto;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+#roleHierarchyList ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#roleHierarchyList li {
+  padding: 1rem;
+  margin: 0.5rem 0;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  cursor: move;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+#roleHierarchyList li:hover {
+  background: #1c2128;
+  border-color: #444c56;
+}
+
+#roleHierarchyList li.drag-over {
+  background: #30363d;
+  border-color: #58a6ff;
+  box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.1);
+}
+
+#roleHierarchyList li[draggable="true"] {
+  cursor: grab;
+}
+
+#roleHierarchyList li[draggable="true"]:active {
+  cursor: grabbing;
+  opacity: 0.8;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

@@ -15,13 +15,61 @@ const DEFAULT_ROLE_COLORS = {
   'Helper': '#95E1D3',          // Light Green
   'Tester': '#F7DC6F',          // Yellow
   'Co-Founder': '#85C1E2',      // Light Blue
-  'Head Developer': '#df4b4bff',  // Light Blue (same as Co-Founder)
   'Investor': '#F8B195'         // Orange
 };
 
 // Function to get default color for a role
 function getDefaultRoleColor(roleName) {
   return DEFAULT_ROLE_COLORS[roleName] || '#4D96FF'; // Default blue if not found
+}
+
+// ========== STATE MANAGEMENT & LOCAL STORAGE ========== //
+
+// State persistence key
+const STATE_STORAGE_KEY = 'adminPanelState';
+
+// Function to save UI state to localStorage
+function saveUIState() {
+  const state = {
+    currentPage,
+    currentSearch,
+    currentSortColumn,
+    currentSortDirection,
+    isFilterActive,
+    activeFilters: JSON.parse(JSON.stringify(activeFilters)),
+    visibleColumns: JSON.parse(localStorage.getItem('visibleColumns') || '[]'),
+    timestamp: Date.now()
+  };
+  localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(state));
+}
+
+// Function to restore UI state from localStorage
+function restoreUIState() {
+  try {
+    const saved = localStorage.getItem(STATE_STORAGE_KEY);
+    if (!saved) return false;
+    
+    const state = JSON.parse(saved);
+    // Only restore if saved less than 30 minutes ago
+    if (Date.now() - state.timestamp > 30 * 60 * 1000) return false;
+    
+    currentPage = state.currentPage || 1;
+    currentSearch = state.currentSearch || '';
+    currentSortColumn = state.currentSortColumn || 'uid';
+    currentSortDirection = state.currentSortDirection || 'asc';
+    isFilterActive = state.isFilterActive || false;
+    activeFilters = state.activeFilters || activeFilters;
+    
+    return true;
+  } catch (e) {
+    console.warn('Failed to restore UI state:', e);
+    return false;
+  }
+}
+
+// Function to clear saved state
+function clearSavedState() {
+  localStorage.removeItem(STATE_STORAGE_KEY);
 }
 
 // ========== User Table & Pop-up Logic ========== //
@@ -47,7 +95,7 @@ async function fetchUsers(page = 1, search = '') {
     // Build query string
     const params = new URLSearchParams();
     params.append('page', page);
-    params.append('pageSize', '30');
+    params.append('pageSize', '100');
     if (search) {
       params.append('search', search);
     }
@@ -201,6 +249,17 @@ function sortUsers(users) {
     }
     if (currentSortColumn === 'name' && !bVal) {
       bVal = b.user_metadata?.full_name || '';
+    }
+    
+    // Special handling for role column - sort by hierarchy order
+    if (currentSortColumn === 'role') {
+      const roleAOrder = roleHierarchy.find(r => r.role_name === aVal)?.hierarchy_order || 9999;
+      const roleBOrder = roleHierarchy.find(r => r.role_name === bVal)?.hierarchy_order || 9999;
+      
+      if (roleAOrder !== roleBOrder) {
+        return currentSortDirection === 'asc' ? roleAOrder - roleBOrder : roleBOrder - roleAOrder;
+      }
+      return 0;
     }
     
     // Convert to lowercase for string comparison
@@ -576,6 +635,9 @@ async function saveRoleModal() {
     roleColorValue = DEFAULT_ROLE_COLORS[role];
   }
   
+  // Auto-add new role to hierarchy if it doesn't exist
+  await ensureRoleInHierarchy(role, roleColorValue);
+  
   // Show loading state
   const statusContainer = document.getElementById('roleStatusContainer');
   const loadingState = document.getElementById('roleLoadingState');
@@ -758,12 +820,29 @@ let activeFilters = {
   hasNoRole: false
 };
 
+// ========== DROPDOWN MANAGEMENT - MUTUAL EXCLUSIVITY ========== //
+
+// Close all open dropdowns
+function closeAllDropdowns() {
+  const dropdowns = [
+    document.getElementById('columnsDropdown'),
+    document.getElementById('sortDropdown'),
+    document.getElementById('advancedFilterDropdown')
+  ];
+  dropdowns.forEach(dropdown => {
+    if (dropdown) dropdown.classList.add('hidden');
+  });
+}
+
 // Toggle advanced filter dropdown
 function toggleAdvancedFilter() {
   const dropdown = document.getElementById('advancedFilterDropdown');
   if (dropdown) {
-    dropdown.classList.toggle('hidden');
-    if (!dropdown.classList.contains('hidden')) {
+    const isHidden = dropdown.classList.contains('hidden');
+    closeAllDropdowns();
+    if (isHidden) {
+      dropdown.classList.remove('hidden');
+      // Refresh filter options every time the dropdown opens
       initializeFilterOptions();
     }
   }
@@ -853,11 +932,19 @@ function initializeFilterOptions() {
   // Use all users if filter was previously applied
   const usersForFiltering = isFilterActive && allUsersUnfiltered.length > 0 ? allUsersUnfiltered : allUsers;
   
-  // Get unique roles
-  const roles = [...new Set(usersForFiltering
-    .filter(u => u.role && u.role.trim() !== '' && u.role !== '-')
-    .map(u => u.role)
-  )].sort();
+  // Get roles from hierarchy (preferred) or from users as fallback
+  let roles = [];
+  
+  if (roleHierarchy && roleHierarchy.length > 0) {
+    // Use roles from hierarchy - this shows ALL roles, not just ones in use
+    roles = roleHierarchy.map(r => r.role_name).sort();
+  } else {
+    // Fallback to roles found in users
+    roles = [...new Set(usersForFiltering
+      .filter(u => u.role && u.role.trim() !== '' && u.role !== '-')
+      .map(u => u.role)
+    )].sort();
+  }
   
   const roleFilterContainer = document.getElementById('roleFilterOptions');
   if (roleFilterContainer) {
@@ -1015,9 +1102,11 @@ async function applyFilters() {
   });
   
   isFilterActive = true;
+  currentPage = 1; // Reset to page 1 when applying new filters
   renderUserTable(filteredUsers);
   updateTrialCountdowns();
   closeAdvancedFilter();
+  saveUIState();
 }
 
 // Reset all filters
@@ -1054,6 +1143,7 @@ async function resetAllFilters() {
   const users = await fetchUsers(currentPage, currentSearch);
   renderUserTable(users);
   updateTrialCountdowns();
+  clearSavedState();
 }
 
 // Close advanced filter dropdown
@@ -1120,6 +1210,95 @@ async function loadUserCurrentRole(userEmail) {
 }
 
 // Update role preview when input changes
+// Create and show role suggestions/autocomplete for role input
+function updateRoleSuggestions(roleInput) {
+  if (!roleInput) return;
+  
+  // Remove existing suggestions box if any
+  let suggestionsBox = document.getElementById('roleSuggestionsBox');
+  if (suggestionsBox) suggestionsBox.remove();
+  
+  const inputValue = roleInput.value.toLowerCase();
+  
+  // Get available roles from hierarchy
+  let availableRoles = [];
+  if (roleHierarchy && roleHierarchy.length > 0) {
+    availableRoles = roleHierarchy.map(r => ({
+      name: r.role_name,
+      color: r.color
+    }));
+  } else {
+    // Fallback to default roles if hierarchy not loaded
+    availableRoles = Object.keys(DEFAULT_ROLE_COLORS).map(name => ({
+      name: name,
+      color: DEFAULT_ROLE_COLORS[name]
+    }));
+  }
+  
+  // Filter suggestions based on input
+  const suggestions = availableRoles.filter(role => 
+    !inputValue || role.name.toLowerCase().includes(inputValue)
+  );
+  
+  // Only show suggestions if there are matching ones
+  if (suggestions.length === 0 || inputValue.length === 0) return;
+  
+  // Create suggestions box
+  suggestionsBox = document.createElement('div');
+  suggestionsBox.id = 'roleSuggestionsBox';
+  suggestionsBox.style.cssText = `
+    position: absolute;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    min-width: 200px;
+  `;
+  
+  suggestions.forEach(suggestion => {
+    const item = document.createElement('div');
+    item.style.cssText = `
+      padding: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: background 0.2s;
+    `;
+    item.innerHTML = `
+      <div style="width: 16px; height: 16px; border-radius: 3px; background: ${suggestion.color};"></div>
+      <span style="color: #c9d1d9;">${suggestion.name}</span>
+    `;
+    
+    item.addEventListener('mouseover', () => {
+      item.style.background = '#1c2128';
+    });
+    
+    item.addEventListener('mouseout', () => {
+      item.style.background = 'transparent';
+    });
+    
+    item.addEventListener('click', () => {
+      roleInput.value = suggestion.name;
+      roleInput.dispatchEvent(new Event('input'));
+      suggestionsBox.remove();
+      roleInput.focus();
+    });
+    
+    suggestionsBox.appendChild(item);
+  });
+  
+  // Position suggestions box below input
+  const rect = roleInput.getBoundingClientRect();
+  roleInput.parentElement.style.position = 'relative';
+  suggestionsBox.style.top = (rect.height) + 'px';
+  suggestionsBox.style.left = '0px';
+  
+  roleInput.parentElement.appendChild(suggestionsBox);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const roleInput = document.getElementById('roleInput');
   const roleColor = document.getElementById('roleColor');
@@ -1146,6 +1325,15 @@ document.addEventListener('DOMContentLoaded', () => {
           previewBadge.style.color = defaultColor;
         }
       }
+    });
+    
+    // Add autocomplete suggestions from role hierarchy
+    roleInput.addEventListener('focus', () => {
+      updateRoleSuggestions(roleInput);
+    });
+    
+    roleInput.addEventListener('input', () => {
+      updateRoleSuggestions(roleInput);
     });
   }
   
@@ -1175,6 +1363,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (closeBtn) {
     closeBtn.addEventListener('click', closeRoleModal);
   }
+  
+  // Setup role hierarchy modal listeners
+  setupRoleHierarchyModalListeners();
 });
 
 // Login as a user (impersonate)
@@ -1253,9 +1444,15 @@ function getUserEmailById(userId) {
 // Helper: Reload users and refresh table (preserves current page)
 async function loadUsersAndRefresh() {
   // Fetch users for the current page and search term
-  const users = await fetchUsers(currentPage, currentSearch);
-  renderUserTable(users);
-  updateTrialCountdowns();
+  if (isFilterActive) {
+    // Re-apply filters to maintain consistency
+    await applyFilters();
+  } else {
+    const users = await fetchUsers(currentPage, currentSearch);
+    renderUserTable(users);
+    updateTrialCountdowns();
+  }
+  saveUIState();
 }
 
 // Real-time trial countdown
@@ -1283,6 +1480,331 @@ setInterval(updateTrialCountdowns, 1000);
 
 // On page load, fetch and render users
 let allUsers = [];
+
+// ========== ROLE HIERARCHY MANAGEMENT ========== //
+
+let roleHierarchy = [];
+
+// Fetch role hierarchy from Supabase
+async function fetchRoleHierarchy() {
+  try {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) return [];
+
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/manage-role-hierarchy`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ action: 'list' })
+    });
+
+    if (!response.ok) {
+      console.error('Failed to fetch role hierarchy');
+      return [];
+    }
+
+    const result = await response.json();
+    roleHierarchy = result.data || [];
+    return roleHierarchy;
+  } catch (error) {
+    console.error('Error fetching role hierarchy:', error);
+    return [];
+  }
+}
+
+// Save role hierarchy to Supabase
+async function saveRoleHierarchy(roles) {
+  try {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) throw new Error('No active session');
+
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/manage-role-hierarchy`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ action: 'update', roles })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to save role hierarchy');
+    }
+
+    roleHierarchy = roles;
+    console.log('Role hierarchy saved successfully');
+    return true;
+  } catch (error) {
+    console.error('Error saving role hierarchy:', error);
+    throw error;
+  }
+}
+
+// Auto-add a role to hierarchy if it doesn't exist
+async function ensureRoleInHierarchy(roleName, roleColor) {
+  try {
+    // Fetch current hierarchy
+    let hierarchy = await fetchRoleHierarchy();
+    
+    // Check if role already exists
+    const roleExists = hierarchy.some(r => r.role_name.toLowerCase() === roleName.toLowerCase());
+    
+    if (!roleExists) {
+      // Add new role to the end
+      const newHierarchy = [...hierarchy];
+      const maxOrder = newHierarchy.length > 0 ? Math.max(...newHierarchy.map(r => r.hierarchy_order)) : 0;
+      
+      newHierarchy.push({
+        role_name: roleName,
+        hierarchy_order: maxOrder + 1,
+        color: roleColor,
+        description: `${roleName} role`,
+        permissions: {}
+      });
+      
+      // Save updated hierarchy
+      await saveRoleHierarchy(newHierarchy);
+      roleHierarchy = newHierarchy;
+    }
+  } catch (error) {
+    console.warn('Could not auto-add role to hierarchy:', error);
+    // Continue anyway - this is not critical
+  }
+}
+
+// Initialize role hierarchy settings modal
+async function openRoleHierarchySettings() {
+  const modal = document.getElementById('roleHierarchyModal');
+  if (!modal) {
+    console.warn('Role hierarchy modal not found');
+    alert('⚠️ Role hierarchy modal not found. Please refresh the page.');
+    return;
+  }
+
+  // Show loading state
+  modal.classList.remove('hidden');
+  
+  // Show a loading message while fetching
+  const container = document.getElementById('roleHierarchyList');
+  if (container) {
+    container.innerHTML = '<p style="color: #8b949e; text-align: center; padding: 2rem;">Loading roles...</p>';
+  }
+  
+  try {
+    // Fetch latest hierarchy
+    const hierarchy = await fetchRoleHierarchy();
+    
+    if (!hierarchy || hierarchy.length === 0) {
+      if (container) {
+        container.innerHTML = '<p style="color: #8b949e;">No roles defined. Create roles in the main admin panel first.</p>';
+      }
+      return;
+    }
+    
+    renderRoleHierarchyList(hierarchy);
+    updateHierarchyInfo(hierarchy);
+  } catch (error) {
+    console.error('Error loading role hierarchy:', error);
+    
+    // Show error message in modal
+    if (container) {
+      container.innerHTML = `
+        <div style="
+          padding: 2rem;
+          text-align: center;
+          color: #ff6b6b;
+        ">
+          <svg style="width: 48px; height: 48px; margin-bottom: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <p style="margin: 0; font-weight: 500;">Failed to load roles</p>
+          <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: #8b949e;">
+            ${error instanceof Error ? error.message : 'Unknown error'}
+          </p>
+          <button onclick="openRoleHierarchySettings()" style="
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: #238636;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+          ">
+            Retry
+          </button>
+        </div>
+      `;
+    }
+  }
+}
+
+// Update hierarchy info display
+function updateHierarchyInfo(roles) {
+  const infoDiv = document.getElementById('hierarchyInfo');
+  if (!infoDiv || !roles) return;
+
+  if (roles.length === 0) {
+    infoDiv.innerHTML = '<div style="color: #8b949e;">No roles defined</div>';
+    return;
+  }
+
+  const html = roles.map((role, idx) => `
+    <div style="color: #8b949e; padding: 0.25rem 0; font-size: 0.9rem;">
+      <span style="color: #58a6ff; font-weight: 500;">[${idx + 1}]</span>
+      <span style="color: #c9d1d9; margin: 0 0.5rem;">${role.role_name}</span>
+      <span style="color: #8b949e;">(order: ${role.hierarchy_order})</span>
+    </div>
+  `).join('');
+
+  infoDiv.innerHTML = html;
+}
+
+// Render draggable role hierarchy list
+function renderRoleHierarchyList(roles) {
+  const container = document.getElementById('roleHierarchyList');
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  if (roles.length === 0) {
+    container.innerHTML = '<p style="color: #8b949e;">No roles defined. Create roles in the main admin panel first.</p>';
+    return;
+  }
+
+  const list = document.createElement('ul');
+  list.id = 'roleHierarchyItems';
+  list.style.cssText = 'list-style: none; padding: 0; margin: 0;';
+
+  roles.forEach((role, index) => {
+    const li = document.createElement('li');
+    li.draggable = true;
+    li.dataset.roleId = role.id || role.role_name;
+    li.dataset.roleIndex = index;
+    li.style.cssText = `
+      padding: 1rem;
+      margin: 0.5rem 0;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      cursor: move;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s, transform 0.2s;
+    `;
+
+    const roleInfo = document.createElement('div');
+    roleInfo.style.cssText = 'display: flex; gap: 1rem; align-items: center; flex: 1;';
+    roleInfo.innerHTML = `
+      <div style="cursor: grab; color: #8b949e; font-size: 1.2rem;">⋮⋮</div>
+      <div style="width: 20px; height: 20px; border-radius: 4px; background: ${role.color};"></div>
+      <div>
+        <div style="font-weight: 500; color: #c9d1d9;">${role.role_name}</div>
+        <div style="font-size: 0.8rem; color: #8b949e; margin-top: 0.2rem;">Order: ${role.hierarchy_order}</div>
+      </div>
+    `;
+
+    li.appendChild(roleInfo);
+
+    // Add drag event listeners
+    li.addEventListener('dragstart', (e) => {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', index);
+      li.style.opacity = '0.5';
+    });
+
+    li.addEventListener('dragend', () => {
+      li.style.opacity = '1';
+      // Reset all items' background
+      document.querySelectorAll('#roleHierarchyItems li').forEach(item => {
+        item.style.background = '#161b22';
+      });
+    });
+
+    li.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      li.style.background = '#30363d';
+    });
+
+    li.addEventListener('dragleave', () => {
+      li.style.background = '#161b22';
+    });
+
+    li.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'));
+      const targetIndex = parseInt(li.dataset.roleIndex);
+
+      if (draggedIndex !== targetIndex) {
+        // Reorder the roles array
+        const newRoles = [...roles];
+        const [draggedRole] = newRoles.splice(draggedIndex, 1);
+        newRoles.splice(targetIndex, 0, draggedRole);
+
+        // Update hierarchy order
+        newRoles.forEach((role, idx) => {
+          role.hierarchy_order = idx + 1;
+        });
+
+        // Save to database
+        try {
+          await saveRoleHierarchy(newRoles);
+          renderRoleHierarchyList(newRoles);
+        } catch (error) {
+          alert('Failed to save role hierarchy: ' + error.message);
+          renderRoleHierarchyList(roles); // Restore original
+        }
+      }
+
+      li.style.background = '#161b22';
+    });
+
+    list.appendChild(li);
+  });
+
+  container.appendChild(list);
+}
+
+// Close role hierarchy modal
+function closeRoleHierarchyModal() {
+  const modal = document.getElementById('roleHierarchyModal');
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+}
+
+// Setup modal event listeners (backdrop click, ESC key, close button)
+function setupRoleHierarchyModalListeners() {
+  const modal = document.getElementById('roleHierarchyModal');
+  if (!modal) return;
+
+  // Close when clicking backdrop (outside modal)
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeRoleHierarchyModal();
+    }
+  });
+
+  // Close when clicking the X button
+  const closeBtn = modal.querySelector('[data-modal="roleHierarchyModal"]');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeRoleHierarchyModal);
+  }
+
+  // Close when pressing ESC key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+      closeRoleHierarchyModal();
+    }
+  });
+}
 
 // Show unauthorized message
 function showUnauthorizedMessage(message) {
@@ -1370,9 +1892,27 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Load admin profile
   loadAdminProfile(session.user);
   
-  allUsers = await fetchUsers();
-  console.log('Loaded users:', allUsers);
-  renderUserTable(allUsers);
+  // Load role hierarchy for autocomplete and filters
+  roleHierarchy = await fetchRoleHierarchy();
+  console.log('Role hierarchy loaded:', roleHierarchy);
+  
+  // Try to restore UI state from localStorage
+  const stateRestored = restoreUIState();
+  
+  // Fetch initial users
+  let initialUsers;
+  if (stateRestored && isFilterActive) {
+    // If filters were active, refetch all users for filtering
+    allUsersUnfiltered = await fetchAllUsersPaginated();
+    await applyFilters();
+  } else {
+    // Normal load
+    initialUsers = await fetchUsers(currentPage, currentSearch);
+    allUsers = initialUsers;
+    console.log('Loaded users:', allUsers);
+    renderUserTable(allUsers);
+  }
+  
   updateTrialCountdowns();
   setupSearchListener();
   loadColumnPreferences();
@@ -1431,11 +1971,13 @@ async function performSearch() {
   renderUserTable(users);
   updateTrialCountdowns();
   updatePaginationInfo();
+  saveUIState();
 }
 
 // Column visibility management
 function openColumnsDropdown() {
-  document.getElementById('columnsDropdown').classList.toggle('hidden');
+  closeAllDropdowns();
+  document.getElementById('columnsDropdown').classList.remove('hidden');
 }
 
 function closeColumnsDropdown() {
@@ -1447,7 +1989,11 @@ function toggleSortDropdown() {
   const dropdown = document.getElementById('sortDropdown');
   if (!dropdown) createSortDropdown();
   const existing = document.getElementById('sortDropdown');
-  existing?.classList.toggle('hidden');
+  const isHidden = existing?.classList.contains('hidden');
+  closeAllDropdowns();
+  if (isHidden) {
+    existing?.classList.remove('hidden');
+  }
 }
 
 function createSortDropdown() {
@@ -1494,9 +2040,22 @@ function createSortDropdown() {
         currentSortDirection = 'asc';
       }
       updateSortLabel();
-      currentPage = 1; // Reset to page 1
-      const users = await fetchUsers(currentPage, currentSearch);
-      renderUserTable(users);
+      
+      // Don't reset page if filters are active (stay on current page)
+      if (!isFilterActive) {
+        currentPage = 1; // Reset to page 1 only when no filters
+      }
+      
+      if (isFilterActive) {
+        // Re-apply filters with new sort
+        await applyFilters();
+      } else {
+        // Fetch and render without changing page
+        const users = await fetchUsers(currentPage, currentSearch);
+        renderUserTable(users);
+      }
+      
+      saveUIState();
       document.getElementById('sortDropdown').classList.add('hidden');
     };
     dropdown.appendChild(option);
@@ -1523,6 +2082,7 @@ async function goToPage(pageNum) {
   renderUserTable(users);
   updateTrialCountdowns();
   updatePaginationInfo();
+  saveUIState();
   // Scroll to top
   document.querySelector('.user-table-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -1556,6 +2116,7 @@ function saveColumnsAndClose() {
   // Update table visibility
   updateTableColumnVisibility(visibleColumns);
   closeColumnsDropdown();
+  saveUIState();
 }
 
 function saveColumns() {
@@ -1574,6 +2135,7 @@ function resetColumns() {
   
   // Update table visibility immediately
   updateTableColumnVisibility(defaultColumns);
+  saveUIState();
 }
 
 function updateTableColumnVisibility(visibleColumns) {

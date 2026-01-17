@@ -1697,16 +1697,21 @@ textarea#input.voice-active {
   }
 
   .pin-digit {
-    width: 40px;
-    /* Make the PIN boxes slightly smaller */
-    height: 45px;
-    font-size: 24px;
-    scale: 0.86;
+    width: 38px;
+    /* Make the PIN boxes slightly smaller for mobile */
+    height: 42px;
+    font-size: 22px;
+    scale: 0.9;
+    /* Better touch targets for mobile */
+    padding: 8px;
+    /* Ensure consistent spacing */
   }
 
   .pin-digit-container {
-    gap: 10px;
-    /* Reduce the gap between PIN boxes */
+    gap: 8px;
+    /* Reduce the gap between PIN boxes for better mobile fit */
+    padding: 0 10px;
+    /* Add some padding to prevent edge touching */
   }
 
   .auth-link {
@@ -2592,6 +2597,13 @@ textarea#input.voice-active {
   box-sizing: border-box;
   outline: none;
   transition: all 0.2s ease;
+  /* Prevent zoom on iOS */
+  font-size: 16px;
+  /* Improve touch experience */
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  /* Remove spin arrows */
+  appearance: textfield;
 }
 
 .pin-digit:focus {
@@ -3545,6 +3557,39 @@ textarea#input::-webkit-scrollbar-thumb:hover {
 
 .history-list::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+/* --- Mobile PIN Input Enhancements --- */
+@media (max-width: 480px) {
+  .pin-digit-container {
+    gap: 6px;
+    padding: 0 5px;
+  }
+  
+  .pin-digit {
+    width: 35px;
+    height: 40px;
+    font-size: 18px;
+    padding: 6px;
+    /* Better for small mobile screens */
+  }
+  
+  /* Ensure numpad appears on mobile */
+  .pin-digit[inputmode="numeric"] {
+    /* Force numpad on iOS */
+    -webkit-appearance: none;
+  }
+}
+
+/* Additional mobile improvements for PIN inputs */
+@media (hover: none) and (pointer: coarse) {
+  .pin-digit {
+    /* Better touch targets */
+    min-width: 45px;
+    min-height: 50px;
+    /* Prevent accidental zoom */
+    font-size: 16px !important;
+  }
 }
 
 /* ========== CONVERSATION HISTORY UI IMPROVEMENTS ========== */
