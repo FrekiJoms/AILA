@@ -135,8 +135,17 @@ function getIconForUrl(url) {
 const modalQuestions = {
   Modules: {
     title: "Activity",
-    content: {
-      "Spreadsheet Navigation & Data Familiarization": {
+    content: [
+      {
+        "ICT CBLM v01":
+        "https://docs.google.com/document/d/1JNwuE3meO4pkWPcoKg2FNOaJKe7M5PRMwvdHucdlmH4/edit?tab=t.jx9apf815tpx",
+      },
+      {
+        "Registration ": 
+        "https://docs.google.com/forms/d/e/1FAIpQLSc_lbFreYsmITgDw13LQHDqjWyAEbibLdrZt1oA_pvNdUfiNA/viewform",
+      },
+      {
+      "Introduction to Spreadsheets and Basic Concepts": {
         _DESC_3_: "➡ Activity 1",
         "Information Sheet": "Activity 1 Information Sheet",
         "Activity Sheet": "Activity 1 Activity Sheet",
@@ -147,6 +156,8 @@ const modalQuestions = {
         "Activity 1 Assessment Form":
           "https://docs.google.com/forms/d/e/1FAIpQLSeIsO_7TlYWT8i6hXBVmTw6-3UFH8kYQ3ipll0lC9KxvOwOFg/viewform",
       },
+    },
+    {
       "Data Processing Using Spreadsheet Formulas and Tools": {
         _DESC_3_: "➡ Activity 2",
         "Information Sheet": "Activity 2 Information Sheet",
@@ -158,6 +169,8 @@ const modalQuestions = {
         "Activity 2 Assessment Form":
           "https://docs.google.com/forms/d/e/1FAIpQLScMn2q_BgZrUmJdSQyRqhiHcKNmDY7uxbWg07CZ1G7zajyC8w/viewform?usp=header",
       },
+    },
+    {
       "Spreadsheet Data Analysis Using Pivot Tables and Charts": {
         _DESC_3_: "➡ Activity 3",
         "Information Sheet": "Activity 3 Information Sheet",
@@ -170,12 +183,19 @@ const modalQuestions = {
           "https://docs.google.com/forms/d/e/1FAIpQLSexDGWOZ6CLnjh7WbItGeeShHdwzLGgUBa8m0B81_AeNSLOmw/viewform",
       },
     },
+    {
+      "Completion Assesment Form":
+        "https://docs.google.com/forms/u/0/d/1S3P8vaLIJ4qsgMCI9x2TEGsW2enUFgthzEY3H51eEM8/edit?authuser=0"
+    }
+  ],
   },
   Orientation: {
     title: "Orientation",
-    content: ["Orientation to Data Proccessing"],
+    content: [
+      "Orientation to Data Proccessing"
+    ],
   },
-  "Learning Materials": {
+  Materials: {
     title: "Learning Materials",
     content: [
       {
@@ -208,18 +228,35 @@ const modalQuestions = {
       },
       {
         "MRP Workbooks": {
-          Material_Requirement_Planning_20251113_wk02:
+          "Material_Requirement_Planning_20251113_wk02":
             "https://docs.google.com/spreadsheets/d/12-rQsdn698XDu1Fme0YR-LPHvFMLMcBKH3qtKOAQtEw/edit?usp=sharing",
-          Material_Requirement_Planning_20251113_wk03:
+          "Material_Requirement_Planning_20251113_wk03":
             "https://docs.google.com/spreadsheets/d/1ITMJd_yMIDhqNEoRe0umfdOawu2eQsWK/edit?usp=drivesdk&ouid=101212779968196364079&rtpof=true&sd=true",
-          Material_Requirement_Planning_20251113_wk04:
+          "Material_Requirement_Planning_20251113_wk04":
             "https://docs.google.com/spreadsheets/d/1UeVuVWZnXAty6ucR5vvUpqPB7f0iIw54J8G30cBGRAI/edit?usp=sharing",
-      }
+      },
     },  
     ],
   },
   tools: {
     title: "Tools & Resources",
+  },
+  test: {
+    title: "Coming Soon",
+    content: [
+      "hi",
+      {
+          "this is a dropdown":{
+            _DESC_:"this is a description inside a dropdown",
+            "drop1": "1",
+            "drop2": "2",
+            "drop3": "3",
+          },
+      },
+      {
+        "This is a link":"https://google.com",
+      },
+    ],
   },
 };
 
@@ -388,18 +425,23 @@ function openModal(contentType) {
     bodyContent = `
             <div class="tools-nav">
                 <button class="tools-nav-btn ${!targetSection || targetSection === 'tools-Modules' ? 'active' : ''}" data-target="tools-Modules">Activities</button>
-                <button class="tools-nav-btn ${targetSection === 'tools-orientation' ? 'active' : ''}" data-target="tools-orientation">Orientation</button>
                 <button class="tools-nav-btn ${targetSection === 'tools-materials' ? 'active' : ''}" data-target="tools-materials">Materials</button>
             </div>
             <div class="tools-content">
+                <div id="tools-test" class="tools-pane ${targetSection === 'tools-test' ? 'active' : ''}">${getPlaceholderContent(
+                  "test"
+                )}</div>
                 <div id="tools-Modules" class="tools-pane ${!targetSection || targetSection === 'tools-Modules' ? 'active' : ''}">${getPlaceholderContent(
                   "Modules"
                 )}</div>
                 <div id="tools-orientation" class="tools-pane ${targetSection === 'tools-orientation' ? 'active' : ''}">${getPlaceholderContent(
                   "Orientation"
                 )}</div>
-                <div id="tools-materials" class="tools-pane ${targetSection === 'tools-materials' ? 'active' : ''}">${getPlaceholderContent(
-                  "Learning Materials"
+                <div id="tools-materials" class="tools-pane 
+                ${targetSection === 'tools-materials' ? 'active' : ''
+                  
+                }">${getPlaceholderContent(
+                  "Materials"
                 )}</div>
             </div>
         `;
