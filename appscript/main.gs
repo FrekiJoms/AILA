@@ -1,5 +1,3 @@
-```js (copy the entire codeblock below)
-
 const SHEET_ID = "1h7wU2IlqCFkz5oz-8pVfFQ8LaUtoujO53ZmDZYqxMPY"; //replace this with your current google sheet ID
 const SHEET_NAME = "offline_response";  // name of the sheet
 
